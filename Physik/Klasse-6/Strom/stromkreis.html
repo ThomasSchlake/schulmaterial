@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.55rem 1.1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag" id="tag"></span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+/* Gemeinsame Strom-Animationen (Elektronen als Teilchen, Fluss von – nach +) */
+
+function ringPath(x,y,w,h){ const pts=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]]; const segs=[]; let len=0;
+  for(let i=0;i<4;i++){ const a=pts[i], b=pts[(i+1)%4]; const d=Math.hypot(b[0]-a[0],b[1]-a[1]); segs.push({a,b,d,acc:len}); len+=d; }
+  return { len, at(s){ s=((s%len)+len)%len; for(const g of segs){ if(s<=g.acc+g.d){ const t=(s-g.acc)/g.d; return [g.a[0]+(g.b[0]-g.a[0])*t, g.a[1]+(g.b[1]-g.a[1])*t]; } } return pts[0]; } }; }
+
+let _cir=0;
+// o: { open, lampOn, dim, spacing, names, gapMaterial:'-'|text }
+function stromCircuit(root,o){ o=o||{}; const c=root.querySelector('#c-cir'); if(!c) return; let last=0;
+  const spacing=o.spacing||46;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+    const flow=!o.open; ctx.clearRect(0,0,W,H);
+    const x0=W*0.17, y0=H*0.2, w=W*0.66, h=H*0.54, path=ringPath(x0,y0,w,h);
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    // Batterie links (oben – , unten +)
+    const bx=x0, by=y0+h/2;
+    ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-24); ctx.lineTo(bx,by+24); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-14); ctx.lineTo(bx+8,by-14); ctx.stroke();
+    ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-13,by+14); ctx.lineTo(bx+13,by+14); ctx.stroke();
+    // Pole nur zeigen, wenn Strom fließt
+    if(flow){ lbl(ctx,bx-18,by-14,'–',18,'#1f4fc4','right'); lbl(ctx,bx-18,by+14,'+',16,'#b23a26','right'); }
+    // Lampe oben
+    const lx=x0+w/2, ly=y0, on=flow&&o.lampOn!==false, glow=on?(o.dim?0.5:1):0;
+    if(glow>0){ const g=ctx.createRadialGradient(lx,ly,2,lx,ly,36); g.addColorStop(0,'rgba(245,211,0,'+(0.55*glow)+')'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,36,0,7); ctx.fill(); }
+    ctx.fillStyle=on?'#f5d000':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,14,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(lx-9,ly-9); ctx.lineTo(lx+9,ly+9); ctx.moveTo(lx+9,ly-9); ctx.lineTo(lx-9,ly+9); ctx.stroke();
+    // rechte Kante: Schalter / Materiallücke
+    const sx=x0+w, sy=y0+h/2;
+    if(o.open){ ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(sx,sy-22); ctx.lineTo(sx,sy+22); ctx.stroke();
+      ctx.strokeStyle='#e5533c'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(sx,sy+18); ctx.lineTo(sx+20,sy-12); ctx.stroke();
+      lbl(ctx,sx+26,sy,o.gapMaterial||'offen',13,'#b23a26','left'); }
+    // Elektronen entlang des Rings
+    if(flow&&!o.still) _cir+=dt*70;
+    const n=Math.floor(path.len/spacing);
+    for(let i=0;i<n;i++){ const s=(flow?_cir:0)+i*spacing, p=path.at(s), hot=o.names&&i<2;
+      ball(ctx,p[0],p[1],hot?7:5,hot?'#e5533c':'#2f6df6'); if(hot) lbl(ctx,p[0],p[1]-13,o.names[i],12,'#b23a26'); }
+    lbl(ctx, x0+w/2, y0+h+22, flow?'Elektronen laufen im Kreis von – nach +':'Kreis unterbrochen – nichts fließt', 14, '#5a6684');
+    if(!o.still) RAF=requestAnimationFrame(loop); };
+  stopRAF(); _cir=0; RAF=requestAnimationFrame(loop); }
+
+// Interaktives Mess- und Schaltlabor: Voltmeter + Amperemeter mit echten Werten,
+// umschaltbar zwischen einer Lampe / Reihe / parallel / Kurzschluss.
+function stromLab(root){ const c=root.querySelector('#c-lab'); if(!c) return;
+  let mode='eine'; const btns=root.querySelectorAll('[data-mode]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mode; btns.forEach(x=>x.classList.toggle('on',x.dataset.mode===mode)); }));
+  const U0=6, R=20; let ph=0,last=0;
+  const lamp=(ctx,px,py,glow)=>{ if(glow>0){ const g=ctx.createRadialGradient(px,py,2,px,py,32); g.addColorStop(0,'rgba(245,211,0,'+(0.6*glow)+')'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,32,0,7); ctx.fill(); }
+    ctx.fillStyle=glow>0?'#f5d000':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,13,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.beginPath(); ctx.moveTo(px-8,py-8); ctx.lineTo(px+8,py+8); ctx.moveTo(px+8,py-8); ctx.lineTo(px-8,py+8); ctx.stroke(); };
+  const meter=(ctx,x,y,letter,text,col)=>{ ctx.fillStyle='#fff'; ctx.strokeStyle='#3a4256'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,16,0,7); ctx.fill(); ctx.stroke(); lbl(ctx,x,y,letter,15,'#3a4256'); lbl(ctx,x,y-26,text,14,col||'#1b2440'); };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    let I,Ul,warn=false; if(mode==='eine'){I=U0/R;Ul=U0;} else if(mode==='reihe'){I=U0/(2*R);Ul=U0/2;} else if(mode==='parallel'){I=2*U0/R;Ul=U0;} else {I=U0/0.6;Ul=0;warn=true;}
+    const x0=W*0.16,y0=H*0.22,w=W*0.56,h=H*0.5, path=ringPath(x0,y0,w,h), lx=x0+w;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right'); lbl(ctx,bx-14,by+36,U0.toFixed(1)+' V',12,'#5a6684','right');
+    const spacing=Math.max(11,Math.min(130,18/I)); ph+=dt*70; const n=Math.floor(path.len/spacing);
+    for(let i=0;i<n;i++){ const p=path.at(ph+i*spacing), hot=i<2;
+      ball(ctx,p[0],p[1],hot?6:4,(hot||warn)?'#e5533c':'#2f6df6');
+      if(hot) lbl(ctx,p[0],p[1]-12,['Elli','Laura'][i],11,'#b23a26'); }
+    const bright=Ul/U0;
+    if(mode==='eine'){ lamp(ctx,lx,y0+h/2,bright); }
+    else if(mode==='reihe'){ lamp(ctx,lx,y0+h*0.3,bright); lamp(ctx,lx,y0+h*0.7,bright); }
+    else if(mode==='parallel'){ const dx=W*0.14; ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.moveTo(lx,y0); ctx.lineTo(lx-dx,y0); ctx.lineTo(lx-dx,y0+h); ctx.lineTo(lx,y0+h); ctx.stroke();
+      lamp(ctx,lx,y0+h/2,bright); lamp(ctx,lx-dx,y0+h/2,bright); }
+    else { ctx.strokeStyle='#e5533c'; ctx.lineWidth=7; ctx.beginPath(); ctx.moveTo(lx,y0); ctx.lineTo(lx,y0+h); ctx.stroke();
+      const tx=x0+w*0.5, tyy=y0+h+52; ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.moveTo(tx,tyy-16); ctx.lineTo(tx+15,tyy+8); ctx.lineTo(tx-15,tyy+8); ctx.closePath(); ctx.fill(); lbl(ctx,tx,tyy-2,'!',13,'#fff'); lbl(ctx,tx+26,tyy,'Kurzschluss – der Draht wird gefährlich heiß',13,'#b23a26','left'); }
+    meter(ctx,x0+w*0.5,y0,'A',warn?'I sehr groß!':('I = '+I.toFixed(2)+' A'),warn?'#b23a26':'#1b2440');
+    const vx=lx+W*0.11,vy=y0+h/2; ctx.setLineDash([4,4]); ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(lx,y0+h*0.16); ctx.lineTo(vx,y0+h*0.16); ctx.lineTo(vx,vy-16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx,y0+h*0.84); ctx.lineTo(vx,y0+h*0.84); ctx.lineTo(vx,vy+16); ctx.stroke(); ctx.setLineDash([]);
+    meter(ctx,vx,vy,'V','U = '+Ul.toFixed(1)+' V');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Skizze: der Strom teilt sich auf zwei Wege (verzweigter Kreis).
+// Optionaler Umschalter [data-split]: gleiche Wege (5+5) oder ungleiche Wege dick/dünn (7+3).
+function drawBranch(root){ const c=root.querySelector('#c-br'); if(!c) return;
+  let mode='gleich'; const btns=root.querySelectorAll('[data-split]');
+  const render=()=>{ stopRAF(); RAF=requestAnimationFrame(()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const y=H*0.5, xa=W*0.08, xb=W*0.37, xc=W*0.63, xd=W*0.92, up=H*0.28, dn=H*0.72;
+    const ung=mode==='ungleich', n1=ung?7:5, n2=10-n1;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineJoin='round';
+    // waagerechte Zweigstücke: dick (viel) bzw. dünn (wenig)
+    ctx.lineWidth=ung?9:5; ctx.beginPath(); ctx.moveTo(xb,up); ctx.lineTo(xc,up); ctx.stroke();
+    ctx.lineWidth=ung?4:5; ctx.beginPath(); ctx.moveTo(xb,dn); ctx.lineTo(xc,dn); ctx.stroke();
+    // übrige Leitungen und Verbindungen
+    ctx.lineWidth=5; ctx.beginPath();
+    ctx.moveTo(xa,y); ctx.lineTo(xb,y); ctx.lineTo(xb,up); ctx.moveTo(xb,y); ctx.lineTo(xb,dn);
+    ctx.moveTo(xc,up); ctx.lineTo(xc,y); ctx.lineTo(xd,y); ctx.moveTo(xc,dn); ctx.lineTo(xc,y); ctx.stroke();
+    const dot=(x,yy)=>ball(ctx,x,yy,5,'#2f6df6');
+    let k=0; for(let x=xa+16;x<xb-4;x+=22){ if(k<2){ ball(ctx,x,y,7,'#e5533c'); lbl(ctx,x,y-13,['Elli','Laura'][k],11,'#b23a26'); } else dot(x,y); k++; }
+    for(let x=xc+16;x<xd;x+=22) dot(x,y);
+    const sp1=Math.max(15,220/n1), sp2=Math.max(15,220/n2);
+    for(let x=xb+16;x<xc;x+=sp1) dot(x,up);
+    for(let x=xb+16;x<xc;x+=sp2) dot(x,dn);
+    lbl(ctx,(xa+xb)/2,y-24,'10 Elektronen pro Sekunde',12,'#5a6684');
+    lbl(ctx,(xb+xc)/2,up-14,'Weg 1: '+n1,12,'#5a6684'); lbl(ctx,(xb+xc)/2,dn+22,'Weg 2: '+n2,12,'#5a6684');
+    lbl(ctx,(xc+xd)/2,y-24,'wieder 10',12,'#5a6684');
+    // Zwei Amperemeter: vor und nach der Verzweigung – dieselbe Summe
+    const meterB=(mx,val)=>{ ctx.fillStyle='#fff'; ctx.strokeStyle='#3a4256'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(mx,y,14,0,7); ctx.fill(); ctx.stroke(); lbl(ctx,mx,y,'A',13,'#3a4256'); lbl(ctx,mx,y+28,val,12,'#1b2440'); };
+    meterB((xa+xb)/2,'misst 10'); meterB((xc+xd)/2,'misst 10');
+    lbl(ctx,(xa+xd)/2,H*0.92,'Knotenregel: was hineinfließt, fließt heraus – '+n1+' + '+n2+' = 10',12,'#1f7a34'); }); };
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.split; btns.forEach(x=>x.classList.toggle('on',x.dataset.split===mode)); render(); }));
+  render(); }
+
+// Interaktives Leiter/Isolator-Experiment: Material in die Luecke legen, Lampe + Ladungstraeger reagieren.
+const MATS={
+  kupfer:{n:'Kupferdraht', lvl:1, why:'Metall – sehr viele freie Elektronen', col:'#d98b52', liquid:false},
+  eisen:{n:'Eisennagel', lvl:1, why:'Metall – leitet gut', col:'#9aa3b2', liquid:false},
+  alu:{n:'Alufolie', lvl:1, why:'Metall (Aluminium) – viele freie Elektronen', col:'#c9ccd2', liquid:false},
+  graphit:{n:'Bleistiftmine (Graphit)', lvl:0.85, why:'leitet, obwohl es kein Metall ist', col:'#40454f', liquid:false},
+  salz:{n:'Salzwasser', lvl:0.5, why:'gelöste Salz-Teilchen tragen die Ladung', col:'#a9d3ea', liquid:true},
+  hand:{n:'feuchte Hand', lvl:0.35, why:'salziges Wasser auf der Haut leitet schwach', col:'#e2b48c', liquid:true},
+  destilliert:{n:'destilliertes Wasser', lvl:0, why:'keine gelösten Teilchen – es leitet nicht', col:'#d6edf8', liquid:true},
+  holz:{n:'Holz (trocken)', lvl:0, why:'Isolator – die Elektronen sind fest gebunden', col:'#c69a63', liquid:false},
+  plastik:{n:'Plastik', lvl:0, why:'Isolator – kein Strom kommt durch', col:'#79b0e6', liquid:false},
+  glas:{n:'Glas', lvl:0, why:'Isolator – kein Strom kommt durch', col:'#cfe6ea', liquid:false}
+};
+function materialLab(root){ const c=root.querySelector('#c-mat'); if(!c) return;
+  let mat='kupfer'; const btns=root.querySelectorAll('[data-mat]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mat=b.dataset.mat; btns.forEach(x=>x.classList.toggle('on',x.dataset.mat===mat)); }));
+  let last=0, ph=0, jig=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; jig+=dt;
+    const M=MATS[mat], lvl=M.lvl, flow=lvl>0.02; ctx.clearRect(0,0,W,H);
+    const x0=W*0.15,y0=H*0.16,w=W*0.5,h=H*0.5, lx=x0+w, path=ringPath(x0,y0,w,h);
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right');
+    if(flow) ph+=dt*70; const spacing=34, n=Math.floor(path.len/spacing);
+    for(let i=0;i<n;i++){ const s=(flow?ph:0)+i*spacing, p=path.at(s); if(p[0]>lx-8) continue; const hot=i<2;
+      ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6'); if(hot) lbl(ctx,p[0],p[1]-12,['Elli','Laura'][i],11,'#b23a26'); }
+    const lax=x0+w/2, lay=y0, glow=Math.max(0,Math.min(1,lvl));
+    if(glow>0.04){ const g=ctx.createRadialGradient(lax,lay,2,lax,lay,34); g.addColorStop(0,'rgba(245,211,0,'+(0.55*glow)+')'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lax,lay,34,0,7); ctx.fill(); }
+    ctx.fillStyle=glow>0.04?'#f5d000':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lax,lay,13,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(lax-8,lay-8); ctx.lineTo(lax+8,lay+8); ctx.moveTo(lax+8,lay-8); ctx.lineTo(lax-8,lay+8); ctx.stroke();
+    // Probe auf der rechten Kante
+    const sw=Math.min(W*0.13,62), sh=h*0.52, sxx=lx-sw/2, syy=y0+h/2-sh/2;
+    ctx.fillStyle='#f7faff'; ctx.fillRect(lx-8,syy-4,16,sh+8);
+    ctx.fillStyle=M.col; ctx.strokeStyle='#5a6684'; ctx.lineWidth=2; rr(ctx,sxx,syy,sw,sh,7); ctx.fill(); ctx.stroke();
+    const nc=Math.round(lvl*7), ccol=M.liquid?'#7a5bd0':'#2f6df6';
+    for(let i=0;i<nc;i++){ const rx=sxx+7+(sw-14)*((i*0.53)%1)+Math.sin(jig*2+i)*2, ry=syy+7+(sh-14)*((i*0.37+(flow?jig*0.3:0))%1);
+      ball(ctx, rx, ry, 3.5, ccol); }
+    if(M.liquid&&nc>0) lbl(ctx, lx, syy-10, 'gelöste Ladungen (Ionen)', 13, '#7a5bd0');
+    lbl(ctx, lx, syy+sh+15, M.n, 14, '#1b2440');
+    const verdict = lvl>=0.8?'leitet gut': lvl>=0.25?'leitet schwach': lvl>0.02?'leitet kaum':'leitet nicht';
+    lbl(ctx, x0+w/2, y0+h+24, verdict, 16, lvl>=0.25?'#1f7a34':'#b23a26');
+    lbl(ctx, x0+w/2, y0+h+45, M.why, 13, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Interaktive Stromstaerke: Regler aendert die Dichte (nicht das Tempo!), Helligkeit und den Amperewert.
+function stromAmount(root){ const c=root.querySelector('#c-amt'); if(!c) return;
+  const sl=root.querySelector('#sl-i'); let ph=0,last=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+    const v=sl?+sl.value:50, I=0.1+v/100*0.9; const vl=root.querySelector('#val-i'); if(vl) vl.textContent=I.toFixed(2)+' A';
+    ctx.clearRect(0,0,W,H);
+    const x0=W*0.16,y0=H*0.2,w=W*0.62,h=H*0.52, lx=x0+w/2, ly=y0, path=ringPath(x0,y0,w,h);
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right');
+    ph+=dt*70; const spacing=Math.max(13,60-v*0.47), n=Math.floor(path.len/spacing);
+    for(let i=0;i<n;i++){ const p=path.at(ph+i*spacing), hot=i<2; ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6'); if(hot) lbl(ctx,p[0],p[1]-12,['Elli','Laura'][i],11,'#b23a26'); }
+    const glow=Math.max(0,Math.min(1,I));
+    if(glow>0){ const g=ctx.createRadialGradient(lx,ly,2,lx,ly,38); g.addColorStop(0,'rgba(245,211,0,'+(0.6*glow)+')'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,38,0,7); ctx.fill(); }
+    ctx.fillStyle='#f5d000'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,14,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(lx-9,ly-9); ctx.lineTo(lx+9,ly+9); ctx.moveTo(lx+9,ly-9); ctx.lineTo(lx-9,ly+9); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#3a4256'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x0+w*0.5,y0+h,16,0,7); ctx.fill(); ctx.stroke(); lbl(ctx,x0+w*0.5,y0+h,'A',15,'#3a4256'); lbl(ctx,x0+w*0.5,y0+h+30,'I = '+I.toFixed(2)+' A',15,'#1b2440');
+    lbl(ctx, lx, y0-22, v>60?'viel Strom – hell':(v<35?'wenig Strom – schwach':'mittlerer Strom'), 14, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Energiepaket als Batterie-Icon mit Fuellstand (wie in der Schaltungen-Simulation).
+function drawEnergyIcon(ctx,x,y,e){ rr(ctx,x-11,y-6,20,12,2.5); ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#28323c'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#28323c'; rr(ctx,x+9,y-3,3,6,1); ctx.fill();
+  const w=Math.max(0,Math.min(1,e))*18; if(w>0.4){ ctx.fillStyle='#2e7d32'; rr(ctx,x-9,y-4,w,8,1); ctx.fill(); } }
+
+// Elektronen holen Energie an der Batterie und geben sie in der Lampe ab (Energiepaket).
+// o.count: kleine Anzeige "immer gleich viele Elektronen".
+function energyCarry(root,o){ o=o||{}; const c=root.querySelector('#c-en'); if(!c) return; let last=0, ph=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    const x0=W*0.16,y0=H*0.22,w=W*0.64,h=H*0.5, lx=x0+w/2, ly=y0, path=ringPath(x0,y0,w,h), L=path.len, sBatt=2*w+1.5*h, sLamp=w/2;
+    // Fuellstand: an der Lampe schlagartig entladen, an der Batterie schlagartig voll (wie in der Schaltungen-Datei).
+    const en=s=>{ s=((s%L)+L)%L; return (s<=sLamp || s>=sBatt) ? 1 : 0; };
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right');
+    const g=ctx.createRadialGradient(lx,ly,2,lx,ly,36); g.addColorStop(0,'rgba(245,211,0,0.6)'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,36,0,7); ctx.fill();
+    ctx.fillStyle='#f5d000'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,14,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.beginPath(); ctx.moveTo(lx-9,ly-9); ctx.lineTo(lx+9,ly+9); ctx.moveTo(lx+9,ly-9); ctx.lineTo(lx-9,ly+9); ctx.stroke();
+    ph+=dt*58; const spacing=46, n=Math.floor(L/spacing);
+    for(let i=0;i<n;i++){ const s=((ph+i*spacing)%L+L)%L, p=path.at(s), hot=i<2, carry=i<4;
+      ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6');
+      if(carry) drawEnergyIcon(ctx,p[0],p[1]-20,en(s));
+      if(hot) lbl(ctx,p[0],p[1]+15,['Elli','Laura'][i],11,'#b23a26'); }
+    if(o.count) lbl(ctx, x0, 15, 'Elektronen im Kreis: '+n+' – immer gleich viele', 13, '#1f7a34','left');
+    lbl(ctx,x0+w/2,y0+h+22,'An der Batterie füllt sich das Energiepaket (Batterie-Icon), in der Lampe wird es abgegeben.',13,'#5a6684');
+    lbl(ctx,x0+w/2,y0+h+42,'Danach laufen dieselben Elektronen leer weiter zurück zur Batterie.',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Zwei Lampen in Reihe: das Energiepaket wird an jeder Lampe zur Haelfte abgegeben.
+function energySplit(root){ const c=root.querySelector('#c-es'); if(!c) return; let last=0, ph=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    const x0=W*0.14,y0=H*0.26,w=W*0.68,h=H*0.46, path=ringPath(x0,y0,w,h), L=path.len, sBatt=2*w+1.5*h, L1=w*0.34, L2=w*0.66;
+    // An jeder Lampe schlagartig die Haelfte abgeben, an der Batterie schlagartig voll.
+    const en=s=>{ s=((s%L)+L)%L;
+      if(s<=L1 || s>=sBatt) return 1;
+      if(s<=L2) return 0.5;
+      return 0; };
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right');
+    const lamp=(lx,ly,gl,name)=>{ if(gl>0){ const g=ctx.createRadialGradient(lx,ly,2,lx,ly,30); g.addColorStop(0,'rgba(245,211,0,'+(0.55*gl)+')'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,30,0,7); ctx.fill(); }
+      ctx.fillStyle=gl>0?'#f5d000':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,13,0,7); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle='#c9a100'; ctx.beginPath(); ctx.moveTo(lx-8,ly-8); ctx.lineTo(lx+8,ly+8); ctx.moveTo(lx+8,ly-8); ctx.lineTo(lx-8,ly+8); ctx.stroke();
+      lbl(ctx,lx,ly-24,name,12,'#5a6684'); };
+    lamp(x0+L1,y0,0.5,'L1 – halb hell'); lamp(x0+L2,y0,0.5,'L2 – halb hell');
+    ph+=dt*58; const spacing=46, n=Math.floor(L/spacing);
+    for(let i=0;i<n;i++){ const s=((ph+i*spacing)%L+L)%L, p=path.at(s), hot=i<2, carry=i<4;
+      ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6');
+      if(carry) drawEnergyIcon(ctx,p[0],p[1]-20,en(s));
+      if(hot) lbl(ctx,p[0],p[1]+15,['Elli','Laura'][i],11,'#b23a26'); }
+    lbl(ctx,x0+w/2,y0+h+22,'voll → an L1 die Hälfte ab → halb → an L2 den Rest → leer',13,'#5a6684');
+    lbl(ctx,x0+w/2,y0+h+42,'Beide Lampen bekommen die Hälfte und leuchten nur halb so hell.',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Parallel: zwei Zweige an derselben Batterie. Jeder Zweig bekommt ein volles Energiepaket,
+// beide Lampen leuchten voll (Kontrast zur Reihe, wo geteilt wird).
+function energyParallel(root){ const c=root.querySelector('#c-epa'); if(!c) return; let last=0, ph=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ph+=dt*56; ctx.clearRect(0,0,W,H);
+    const x0=W*0.16, w=W*0.64, yA=H*0.11, hA=H*0.28, yB=H*0.55, hB=H*0.28;
+    const branch=(y0,h,name)=>{ const path=ringPath(x0,y0,w,h), L=path.len, sBatt=2*w+1.5*h, sLamp=w/2, ramp=w*0.12, lx=x0+w/2, ly=y0;
+      const en=s=>{ s=((s%L)+L)%L; if(s<=sLamp) return 1; if(s<=sLamp+ramp) return 1-(s-sLamp)/ramp; if(s<sBatt-ramp) return 0; if(s<sBatt) return (s-(sBatt-ramp))/ramp; return 1; };
+      ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=5; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+      const g=ctx.createRadialGradient(lx,ly,2,lx,ly,28); g.addColorStop(0,'rgba(245,211,0,.55)'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,28,0,7); ctx.fill();
+      ctx.fillStyle='#f5d000'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,12,0,7); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle='#c9a100'; ctx.beginPath(); ctx.moveTo(lx-8,ly-8); ctx.lineTo(lx+8,ly+8); ctx.moveTo(lx+8,ly-8); ctx.lineTo(lx-8,ly+8); ctx.stroke();
+      lbl(ctx,lx,ly-20,name+': volles Paket → voll hell',12,'#5a6684');
+      const spacing=46, n=Math.floor(L/spacing);
+      for(let i=0;i<n;i++){ const s=((ph+i*spacing)%L+L)%L, p=path.at(s), carry=i<3, hot=i<1; ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6'); if(carry) drawEnergyIcon(ctx,p[0],p[1]-17,en(s)); } };
+    branch(yA,hA,'Lampe 1'); branch(yB,hB,'Lampe 2');
+    // gemeinsame Batterie auf der linken Kante (verbindet beide Zweige)
+    const t=yA+hA/2, b=yB+hB/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(x0,t); ctx.lineTo(x0,b); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(x0-8,t); ctx.lineTo(x0+8,t); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x0-13,b); ctx.lineTo(x0+13,b); ctx.stroke();
+    lbl(ctx,x0-16,t,'–',16,'#1f4fc4','right'); lbl(ctx,x0-16,b,'+',15,'#b23a26','right');
+    lbl(ctx,x0+w*0.5,yB+hB+22,'Zwei parallele Zweige an derselben Batterie – jeder Zweig bekommt ein volles Paket.',13,'#5a6684');
+    lbl(ctx,x0+w*0.5,yB+hB+42,'Anders als in Reihe wird nichts geteilt: beide Lampen leuchten voll.',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Energiekette: Batterie -> Elektronen -> Lampe. An der Lampe leuchten Licht (Strahlen) und Waerme (Wellen).
+function drawEnergyChain(root){ const c=root.querySelector('#c-ec'); if(!c) return; let last=0,t=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t+=dt; ctx.clearRect(0,0,W,H);
+    const fs=Math.max(13,Math.round(W*0.024)), bw=W*0.26, bh=H*0.4, y=H*0.24, gap=(W-3*bw)/4, xs=[gap,2*gap+bw,3*gap+2*bw];
+    const box=[{n:'Batterie',s:'gespeicherte Energie',c:'#e8edf7'},{n:'Elektronen',s:'tragen die Energie',c:'#e3ecff'},{n:'Lampe',s:'Licht + Wärme',c:'#fff3cf'}];
+    const Lx=xs[2]+bw/2, Ly=y+bh*0.22, pulse=0.6+0.4*Math.sin(t*4);
+    // Glut hinter der Lampe-Box
+    const gl=ctx.createRadialGradient(Lx,y+bh/2,4,Lx,y+bh/2,bw*0.7); gl.addColorStop(0,'rgba(245,211,0,'+(0.35*pulse)+')'); gl.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(Lx,y+bh/2,bw*0.7,0,7); ctx.fill();
+    xs.forEach((x,i)=>{ ctx.fillStyle=box[i].c; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; rr(ctx,x,y,bw,bh,12); ctx.fill(); ctx.stroke();
+      lbl(ctx,x+bw/2,y+bh*0.42,box[i].n,Math.round(fs*1.15),'#1b2440'); lbl(ctx,x+bw/2,y+bh*0.68,box[i].s,fs,'#4a5878'); });
+    arrow(ctx,xs[0]+bw,y+bh/2,xs[1],y+bh/2,'#2f6df6',3); arrow(ctx,xs[1]+bw,y+bh/2,xs[2],y+bh/2,'#e5533c',3);
+    lbl(ctx,(xs[0]+bw+xs[1])/2,y-8,'aufladen',fs,'#2f6df6'); lbl(ctx,(xs[1]+bw+xs[2])/2,y-8,'umwandeln',fs,'#b23a26');
+    // Lichtstrahlen (gelb) rund um eine kleine Sonne oben in der Lampe-Box
+    ctx.strokeStyle='rgba(242,165,33,'+(0.55*pulse)+')'; ctx.lineWidth=3;
+    for(let a=0;a<8;a++){ const ang=a*Math.PI/4+t*0.7, r1=11, r2=11+8*pulse;
+      ctx.beginPath(); ctx.moveTo(Lx+Math.cos(ang)*r1,Ly+Math.sin(ang)*r1); ctx.lineTo(Lx+Math.cos(ang)*r2,Ly+Math.sin(ang)*r2); ctx.stroke(); }
+    ctx.fillStyle='#f5d000'; ctx.beginPath(); ctx.arc(Lx,Ly,6,0,7); ctx.fill();
+    // Waermewellen (rot) steigen ueber der Lampe-Box auf
+    ctx.strokeStyle='rgba(229,83,60,.7)'; ctx.lineWidth=2;
+    for(let k=0;k<2;k++){ const wx=Lx+18+k*12; ctx.beginPath();
+      for(let j=0;j<=10;j++){ const yy=y-2-j*3, xx=wx+Math.sin(j*0.9+t*3+k)*4; if(j===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); } ctx.stroke(); }
+    lbl(ctx,W/2,y+bh+26,'Die Energie wird umgewandelt – die Elektronen bleiben.',fs,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Kurzschluss: gluehender Draht, sehr dichte schnelle Elektronen.
+// Modus 'direkt' = kein Verbraucher; Modus 'lampe' = Lampe ueberbrueckt, Strom fliesst am Leuchtmittel vorbei.
+function kurzschlussViz(root){ const c=root.querySelector('#c-ks'); if(!c) return;
+  let mode='direkt'; const btns=root.querySelectorAll('[data-ks]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.ks; btns.forEach(x=>x.classList.toggle('on',x.dataset.ks===mode)); }));
+  let last=0, ph=0, t=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t+=dt; ctx.clearRect(0,0,W,H);
+    const x0=W*0.16,y0=H*0.3,w=W*0.64,h=H*0.4, path=ringPath(x0,y0,w,h), L=path.len, cx=x0+w/2;
+    const hotcol='rgba(229,83,60,'+(0.35+0.25*Math.sin(t*6))+')';
+    ctx.strokeStyle=hotcol; ctx.lineWidth=16; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    ctx.strokeStyle='#e5533c'; ctx.lineWidth=6; ctx.strokeRect(x0,y0,w,h);
+    const bx=x0,by=y0+h/2; ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-22); ctx.lineTo(bx,by+22); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-13); ctx.lineTo(bx+8,by-13); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+13); ctx.lineTo(bx+13,by+13); ctx.stroke();
+    lbl(ctx,bx-16,by-13,'–',17,'#1f4fc4','right'); lbl(ctx,bx-16,by+13,'+',15,'#b23a26','right');
+    if(mode==='lampe'){ // Lampe auf einem Stich oberhalb des Drahts, ueberbrueckt -> bleibt dunkel
+      const ly=y0-34; ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(cx-16,y0); ctx.lineTo(cx-16,ly); ctx.moveTo(cx+16,y0); ctx.lineTo(cx+16,ly); ctx.stroke();
+      ctx.fillStyle='#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,ly,14,0,7); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle='#9aa8c6'; ctx.beginPath(); ctx.moveTo(cx-9,ly-9); ctx.lineTo(cx+9,ly+9); ctx.moveTo(cx+9,ly-9); ctx.lineTo(cx-9,ly+9); ctx.stroke();
+      lbl(ctx,cx,ly-24,'Lampe – bleibt dunkel',13,'#5a6684');
+      // Kurzschluss-Bruecke direkt unter der Lampe (der "Rahmen")
+      ctx.strokeStyle='#e5533c'; ctx.lineWidth=7; ctx.beginPath(); ctx.moveTo(cx-16,y0); ctx.lineTo(cx+16,y0); ctx.stroke();
+      lbl(ctx,cx+90,y0-6,'Strom fließt über den Rahmen,',12,'#b23a26','left'); lbl(ctx,cx+90,y0+10,'nicht durch die Lampe',12,'#b23a26','left'); }
+    ph+=dt*150; const spacing=15, n=Math.floor(L/spacing);
+    for(let i=0;i<n;i++){ const p=path.at(ph+i*spacing), hot=i<2; ball(ctx,p[0],p[1],hot?6:4.5,'#e5533c'); if(hot) lbl(ctx,p[0],p[1]-12,['Elli','Laura'][i],11,'#b23a26'); }
+    const tx=x0, tyy=y0+h+34; ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.moveTo(tx+8,tyy-16); ctx.lineTo(tx+24,tyy+8); ctx.lineTo(tx-8,tyy+8); ctx.closePath(); ctx.fill(); lbl(ctx,tx+8,tyy-1,'!',13,'#fff');
+    lbl(ctx,tx+40,tyy, mode==='lampe'?'Die Lampe ist überbrückt: sehr viel Strom, Draht heiß, Lampe dunkel.':'Kein Verbraucher → sehr viel Strom → Draht wird glühend heiß',13,'#b23a26','left');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Ampelschaltung. Fußgänger = ein Umschalter (Rot ODER Grün), Auto = drei parallele
+// Zweige mit je einem Schalter. Der Moduswechsel ändert das Schaltbild sichtbar.
+function ampelSim(root){ const c=root.querySelector('#c-amp'); if(!c) return;
+  const PH={ fuss:[['rot'],['gruen']], mittel:[['rot'],['gelb'],['gruen']], schwer:[['rot'],['rot','gelb'],['gruen'],['gelb']] };
+  const NAME={rot:'Rot',gelb:'Gelb',gruen:'Grün'}, COL={rot:'#e5533c',gelb:'#f2c31e',gruen:'#3fae57'};
+  const LAMPS={ fuss:['rot','gruen'], mittel:['rot','gelb','gruen'], schwer:['rot','gelb','gruen'] };
+  const STUFE={fuss:'Fußgänger · Umschalter', mittel:'Auto · einzeln', schwer:'Auto · echte Folge'};
+  let level='fuss', idx=0, acc=0, auto=true, prev=0;
+  const sl=root.querySelector('#sl-amp');
+  const dur=()=> sl? (2.6-(+sl.value)/100*2.0) : 1.6;
+  const mb=root.querySelectorAll('[data-mode]'); mb.forEach(b=>b.addEventListener('click',()=>{ level=b.dataset.mode; idx=0; acc=0; mb.forEach(x=>x.classList.toggle('on',x.dataset.mode===level)); }));
+  const sb=root.querySelector('[data-act="step"]'); if(sb) sb.addEventListener('click',()=>{ idx=(idx+1)%PH[level].length; acc=0; });
+  const pb=root.querySelector('[data-act="play"]'); if(pb) pb.addEventListener('click',()=>{ auto=!auto; pb.textContent=auto?'Automatik: an':'Automatik: aus'; });
+  const lampR=(ctx,xx,yy,k,lit)=>{ if(lit){ const g=ctx.createRadialGradient(xx,yy,1,xx,yy,14); g.addColorStop(0,COL[k]); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(xx,yy,14,0,7); ctx.fill(); }
+    ctx.fillStyle=lit?COL[k]:'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(xx,yy,8,0,7); ctx.fill(); ctx.stroke(); };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,prev?(ts-prev)/1000:0); prev=ts;
+    const seq=PH[level]; const d=dur(); const vl=root.querySelector('#val-amp'); if(vl) vl.textContent=d.toFixed(1)+' s';
+    if(auto){ acc+=dt; if(acc>d){ acc=0; idx=(idx+1)%seq.length; } }
+    const on=seq[idx%seq.length]; ctx.clearRect(0,0,W,H);
+    // Ampelgehäuse links (2 Lampen beim Fußgänger, sonst 3)
+    const order=LAMPS[level], n=order.length;
+    const cw=Math.min(W*0.17,84), cx=W*0.16, top=H*0.09, r=cw*0.3, gap=r*2.5, hgt=gap*(n-1)+r*2+16;
+    ctx.fillStyle='#2a2f3a'; rr(ctx,cx-cw/2,top,cw,hgt,14); ctx.fill();
+    order.forEach((k,i)=>{ const yy=top+r+8+gap*i, lit=on.includes(k);
+      if(lit){ const g=ctx.createRadialGradient(cx,yy,2,cx,yy,r*1.7); g.addColorStop(0,COL[k]); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,yy,r*1.7,0,7); ctx.fill(); }
+      ctx.fillStyle=lit?COL[k]:'#3c414d'; ctx.beginPath(); ctx.arc(cx,yy,r,0,7); ctx.fill(); });
+    // Schaltbild rechts
+    const rx=W*0.4, rw=W*0.52, ry=top+6, rh=hgt-12, railA=rx, railB=rx+rw;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(railA,ry); ctx.lineTo(railA,ry+rh); ctx.moveTo(railB,ry); ctx.lineTo(railB,ry+rh); ctx.stroke();
+    lbl(ctx,railA,ry-10,'–',15,'#1f4fc4'); lbl(ctx,railB,ry-10,'+',15,'#b23a26');
+    if(level==='fuss'){
+      // Ein Umschalter legt den Strom auf genau eine Lampe
+      const yR=ry+rh*0.3, yG=ry+rh*0.7, pivX=rx+rw*0.26, pivY=(yR+yG)/2, conX=rx+rw*0.44;
+      ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(railA,pivY); ctx.lineTo(pivX,pivY); ctx.stroke();
+      [['rot',yR],['gruen',yG]].forEach(([k,yy])=>{ const lit=on.includes(k);
+        ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(conX,yy); ctx.lineTo(railB-24,yy); ctx.stroke();
+        ctx.fillStyle='#3a4256'; ctx.beginPath(); ctx.arc(conX,yy,2.8,0,7); ctx.fill(); lampR(ctx,railB-14,yy,k,lit); });
+      ctx.fillStyle='#3a4256'; ctx.beginPath(); ctx.arc(pivX,pivY,3,0,7); ctx.fill();
+      ctx.strokeStyle='#1f7a34'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.moveTo(pivX,pivY); ctx.lineTo(conX, on.includes('rot')?yR:yG); ctx.stroke();
+      lbl(ctx,pivX,pivY+20,'Umschalter',13,'#5a6684');
+    } else {
+      // Drei parallele Zweige mit je einem Schalter
+      [['rot',0.2],['gelb',0.5],['gruen',0.8]].forEach(([k,f])=>{ const yy=ry+rh*f, lit=on.includes(k);
+        ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(railA,yy); ctx.lineTo(rx+rw*0.32,yy); ctx.stroke();
+        const sxa=rx+rw*0.32, sxb=rx+rw*0.46;
+        ctx.strokeStyle=lit?'#1f7a34':'#b23a26'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(sxa,yy); ctx.lineTo(sxb, lit?yy:yy-12); ctx.stroke();
+        ctx.strokeStyle='#9aa8c6'; ctx.beginPath(); ctx.moveTo(sxb,yy); ctx.lineTo(railB-24,yy); ctx.stroke();
+        lampR(ctx,railB-14,yy,k,lit); });
+    }
+    lbl(ctx,cx,top+hgt+22,STUFE[level]+' · Phase '+(idx%seq.length+1)+'/'+seq.length,13,'#1b2440');
+    lbl(ctx,cx,top+hgt+42,'leuchtet: '+(on.length?on.map(k=>NAME[k]).join(' + '):'alles aus'),13,'#5a6684');
+    lbl(ctx,rx,top+hgt+22, level==='fuss'?'Der Umschalter verbindet – mit immer genau einer Lampe.':'Grüner Schalter = geschlossen, roter = offen.',12,'#5a6684','left');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Selbst schalten: Kind tippt die drei Schalter, das Programm prüft, ob die Kombination
+// eine gültige Ampelphase ist (Rot, Rot+Gelb, Grün oder Gelb allein).
+function ampelSelbst(root){ const c=root.querySelector('#c-self'); if(!c) return; c.style.touchAction='none';
+  const order=['rot','gelb','gruen'], COL={rot:'#e5533c',gelb:'#f2c31e',gruen:'#3fae57'}, NM={rot:'Rot',gelb:'Gelb',gruen:'Grün'};
+  const state={rot:false,gelb:false,gruen:false};
+  const valid=[['rot'],['rot','gelb'],['gruen'],['gelb']];
+  const key=arr=>arr.slice().sort().join(',');
+  const isValid=()=>{ const on=order.filter(k=>state[k]); return on.length>0 && valid.some(v=>key(v)===key(on)); };
+  let hit=[];
+  const draw=()=>{ stopRAF(); RAF=requestAnimationFrame(()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); hit=[];
+    const cw=Math.min(W*0.24,108), cx=W*0.26, top=H*0.08, r=cw*0.28, gap=r*2.5, hgt=gap*2+r*2+16;
+    ctx.fillStyle='#2a2f3a'; rr(ctx,cx-cw/2,top,cw,hgt,14); ctx.fill();
+    order.forEach((k,i)=>{ const yy=top+r+8+gap*i, lit=state[k];
+      if(lit){ const g=ctx.createRadialGradient(cx,yy,2,cx,yy,r*1.7); g.addColorStop(0,COL[k]); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,yy,r*1.7,0,7); ctx.fill(); }
+      ctx.fillStyle=lit?COL[k]:'#3c414d'; ctx.beginPath(); ctx.arc(cx,yy,r,0,7); ctx.fill(); });
+    const sxx=W*0.62; order.forEach((k,i)=>{ const yy=top+r+8+gap*i, lit=state[k], bw=W*0.3, bx=sxx-bw/2;
+      ctx.fillStyle=lit?'#1f7a34':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; rr(ctx,bx,yy-17,bw,34,9); ctx.fill(); ctx.stroke();
+      lbl(ctx,sxx,yy,NM[k]+': '+(lit?'an':'aus'),14,lit?'#fff':'#5a6684');
+      hit.push({box:[bx,yy-17,bw,34],k:k}); hit.push({box:[cx-r,yy-r,r*2,r*2],k:k}); });
+    const any=order.some(k=>state[k]), ok=isValid();
+    lbl(ctx,W*0.5,top+hgt+26, !any?'Tippe die Schalter und stelle eine gültige Ampelphase ein.':(ok?'Gültige Ampelphase':'So schaltet keine echte Ampel'),16, !any?'#5a6684':(ok?'#1f7a34':'#b23a26')); }); };
+  c.addEventListener('pointerdown',e=>{ const rect=c.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    for(const h of hit){ const [a,b,w2,h2]=h.box; if(mx>=a&&mx<=a+w2&&my>=b&&my<=b+h2){ state[h.k]=!state[h.k]; draw(); break; } } });
+  draw(); }
+
+// Automatischer Feuerloescher: Bimetallbruecke schliesst -> Summer + Propeller pustet Teelicht aus.
+function feuerloescherSim(root){ const c=root.querySelector('#c-fl'); if(!c) return;
+  let heat=0, flame=1, prop=0, last=0, testUntil=0;
+  const sl=root.querySelector('#sl-schwelle');
+  const lb=root.querySelector('[data-act="light"]'); if(lb) lb.addEventListener('click',()=>{ flame=1; });
+  const snb=root.querySelector('[data-act="snuff"]'); if(snb) snb.addEventListener('click',()=>{ flame=0; });
+  const rb=root.querySelector('[data-act="reset"]'); if(rb) rb.addEventListener('click',()=>{ heat=0; flame=1; });
+  const tb=root.querySelector('[data-act="test"]'); if(tb) tb.addEventListener('click',()=>{ testUntil=performance.now()+1500; });
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    const thr=sl? 0.35+(+sl.value)/100*0.55 : 0.72;
+    const vl=root.querySelector('#val-schwelle'); if(vl) vl.textContent=Math.round(20+thr*100)+' °C';
+    const flameOn=flame>0.5;
+    if(flameOn) heat=Math.min(1,heat+dt*0.35); else heat=Math.max(0,heat-dt*0.5);
+    const testing=ts<testUntil;
+    const closed=heat>thr||testing;
+    if(heat>thr) flame=Math.max(0,flame-dt*1.4);
+    prop+=(closed?dt*22:dt*1.5);
+    const temp=Math.round(20+heat*100);
+    // Teelicht unten links
+    const kx=W*0.2, kbot=H*0.86, kw=W*0.14;
+    ctx.fillStyle='#d9c07a'; rr(ctx,kx-kw/2,kbot-24,kw,24,4); ctx.fill();
+    if(flame>0.02){ const fh=26*flame; ctx.fillStyle='#f2a521'; ctx.beginPath(); ctx.moveTo(kx,kbot-24-fh); ctx.quadraticCurveTo(kx+11*flame,kbot-24-fh*0.4,kx,kbot-24); ctx.quadraticCurveTo(kx-11*flame,kbot-24-fh*0.4,kx,kbot-24-fh); ctx.fill();
+      ctx.fillStyle='#f5d000'; ctx.beginPath(); ctx.arc(kx,kbot-24-fh*0.35,4*flame,0,7); ctx.fill(); }
+    lbl(ctx,kx,kbot+14,'Teelicht',13,'#5a6684');
+    // Bimetallbruecke: zwei aufeinanderliegende Metalle (wie in der Wärmeausdehnung), rechts verankert, biegt bei Hitze nach unten
+    const ax=W*0.46, ay=H*0.28, len=W*0.28, maxBend=H*0.2, bend=heat*maxBend, th=Math.max(6,H*0.05), nB=20;
+    const topB=[],midB=[],botB=[];
+    for(let i=0;i<=nB;i++){ const tt=i/nB, cx=ax-tt*len, cy=ay+bend*tt*tt; topB.push([cx,cy-th]); midB.push([cx,cy]); botB.push([cx,cy+th]); }
+    const bandB=(a,b,col)=>{ ctx.beginPath(); ctx.moveTo(a[0][0],a[0][1]); a.forEach(p=>ctx.lineTo(p[0],p[1])); for(let j=b.length-1;j>=0;j--) ctx.lineTo(b[j][0],b[j][1]); ctx.closePath(); ctx.fillStyle=col; ctx.fill(); ctx.strokeStyle='#6f83ab'; ctx.lineWidth=1; ctx.stroke(); };
+    bandB(topB,midB,'#e0a24a'); bandB(midB,botB,'#9aa8c6');
+    ctx.fillStyle='#5a6684'; ctx.fillRect(ax,ay-th-14,12,th*2+28); lbl(ctx,ax-len*0.5,ay-th-18,'Bimetall (zwei Metalle)',13,'#5a6684');
+    // Kontakt unter der Bimetallspitze
+    const tipx=ax-len, conty=ay+0.72*maxBend+th+8;
+    ctx.strokeStyle='#5a6684'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(tipx,conty+4); ctx.lineTo(tipx,conty+16); ctx.stroke();
+    ctx.fillStyle=closed?'#1f7a34':'#b23a26'; ctx.beginPath(); ctx.arc(tipx,conty,5,0,7); ctx.fill();
+    lbl(ctx,tipx,conty+28,closed?'Kontakt zu':'Kontakt offen',11,closed?'#1f7a34':'#b23a26');
+    // Temperatur-Anzeige (Thermometer) am Bimetall
+    const thx=W*0.06, thTop=H*0.22, thH=H*0.42, thW=11;
+    rr(ctx,thx-thW/2,thTop,thW,thH,thW/2); ctx.fillStyle='#e7ecf6'; ctx.fill(); ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.stroke();
+    const fillH=Math.max(0,thH*heat); ctx.fillStyle='#e5533c'; rr(ctx,thx-thW/2+2.5,thTop+thH-fillH,thW-5,fillH,(thW-5)/2); ctx.fill();
+    ctx.beginPath(); ctx.arc(thx,thTop+thH+7,9,0,7); ctx.fillStyle='#e5533c'; ctx.fill(); ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.stroke();
+    const thy=thTop+thH-thH*thr; ctx.strokeStyle='#1f7a34'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(thx-thW/2-4,thy); ctx.lineTo(thx+thW/2+4,thy); ctx.stroke();
+    lbl(ctx,thx,thTop-12,temp+' °C',13,'#b23a26'); lbl(ctx,thx+thW/2+7,thy,'schließt bei '+Math.round(20+thr*100)+' °C',10,'#1f7a34','left');
+    // Stromkreis oben rechts: Batterie -> (Kontakt) -> Summer + Motor
+    const rx=W*0.62, ry=H*0.16, rw=W*0.32, rh=H*0.34;
+    ctx.strokeStyle=closed?'#2f6df6':'#c4cbdb'; ctx.lineWidth=4; ctx.strokeRect(rx,ry,rw,rh);
+    lbl(ctx,rx,ry-8,'Stromkreis',12,'#5a6684','left');
+    // Summer
+    const zx=rx+rw*0.32, zy=ry; ctx.fillStyle=closed?'#f2c31e':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(zx,zy,11,0,7); ctx.fill(); ctx.stroke(); lbl(ctx,zx,zy,'♪',14,closed?'#7a5b00':'#9aa8c6');
+    if(closed){ for(let k=1;k<=3;k++){ ctx.strokeStyle='rgba(242,195,30,'+(0.6-k*0.15)+')'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(zx,zy,11+k*6,-0.9,0.9); ctx.stroke(); } }
+    lbl(ctx,zx,zy-20,'Summer',11,'#5a6684');
+    // Motor + Propeller
+    const px=rx+rw, py=ry+rh*0.5; ctx.fillStyle='#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.translate(px,py); ctx.rotate(prop); ctx.strokeStyle='#3a4256'; ctx.lineWidth=3;
+    for(let b=0;b<3;b++){ ctx.rotate(2.094); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(16,3); ctx.stroke(); } ctx.restore();
+    lbl(ctx,px,py+22,'Propeller',11,'#5a6684');
+    // Windpfeile vom Propeller zur Flamme, wenn aktiv
+    if(closed){ ctx.strokeStyle='#7fb0ff'; ctx.lineWidth=2; for(let a=0;a<3;a++){ const yy=py-8+a*8; arrow(ctx,px-14,yy,kx+30,kbot-40,'#7fb0ff',2); } }
+    // Elektronen im Kreis, wenn geschlossen
+    if(closed){ const pth=ringPath(rx,ry,rw,rh); const ph=(ts/8)%pth.len; for(let s=ph;s<pth.len;s+=26){ const p=pth.at(s); ball(ctx,p[0],p[1],3.5,'#2f6df6'); } }
+    lbl(ctx,W*0.5,H*0.97, testing?'Selbsttest: Kontakt von Hand geschlossen – Summer und Propeller laufen kurz.':(closed?'Heiß genug: Kontakt zu → Summer + Propeller pusten die Flamme aus.':'Wird es heiß, biegt sich das Bimetall und schließt den Kontakt.'),13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const PAGE={ area:'Strom', slug:'stromkreis', title:'Der Stromkreis', h1:'Wie der Strom im Kreis fließt' };
+
+// Mini-Animation: zuerst ungeordnete, dann von der Batterie geordnete Elektronen.
+function orderElectrons(root){ const c=root.querySelector('#c-order'); if(!c) return;
+  const ps=parts(16,9,0.6); let last=0, t=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%7; ctx.clearRect(0,0,W,H);
+    const ordered=t>3.2;
+    const x0=W*0.12, bw=W*0.76, y0=H*0.28, bh=H*0.4;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=3; rr(ctx,x0,y0,bw,bh,10); ctx.stroke();
+    lbl(ctx,x0-6,y0+bh/2,'–',20,'#1f4fc4','right'); lbl(ctx,x0+bw+6,y0+bh/2,'+',18,'#b23a26','left');
+    if(!ordered){ move(ps,dt*1.2,0.05); }
+    else { ps.forEach(p=>{ p.y+=(0.5-p.y)*Math.min(1,dt*3); p.x+=dt*0.32; if(p.x>0.96) p.x-=0.92; }); }
+    ps.forEach(p=> ball(ctx, x0+p.x*bw, y0+p.y*bh, 5, '#2f6df6'));
+    lbl(ctx, x0+bw/2, y0+bh+24, ordered?'Batterie schiebt alle in eine Richtung: geordneter Strom von – nach +':'ohne Antrieb: die Elektronen schwirren ungeordnet umher', 13, ordered?'#1f7a34':'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Nur Schaltzeichen. Den Schalter per Tipp aufs Bild oder Knopf öffnen/schließen.
+// Die Pole (+/–) erscheinen nur, wenn der Kreis geschlossen ist und Strom fließt.
+function schaltzeichen(root){ const c=root.querySelector('#c-sym'); if(!c) return; c.style.touchAction='none';
+  const swBtn=root.querySelector('[data-sw]'); let open=false;
+  const battSym=(ctx,x,y,poles)=>{ ctx.strokeStyle='#3a4256'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-14,y-13); ctx.lineTo(x+14,y-13); ctx.stroke();
+    ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(x-7,y+13); ctx.lineTo(x+7,y+13); ctx.stroke();
+    if(poles){ lbl(ctx,x-18,y+13,'–',15,'#1f4fc4','right'); lbl(ctx,x-18,y-13,'+',14,'#b23a26','right'); } };
+  const lampSym=(ctx,x,y,r,on)=>{ if(on){ const g=ctx.createRadialGradient(x,y,2,x,y,r*2.4); g.addColorStop(0,'rgba(245,211,0,.55)'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r*2.4,0,7); ctx.fill(); }
+    ctx.fillStyle=on?'#f5d000':'#fff'; ctx.strokeStyle='#3a4256'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle=on?'#c9a100':'#3a4256'; ctx.beginPath(); ctx.moveTo(x-r*0.7,y-r*0.7); ctx.lineTo(x+r*0.7,y+r*0.7); ctx.moveTo(x+r*0.7,y-r*0.7); ctx.lineTo(x-r*0.7,y+r*0.7); ctx.stroke(); };
+  const switchSym=(ctx,x,y,isOpen)=>{ ctx.fillStyle='#3a4256'; ctx.strokeStyle='#3a4256'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(x,y-12,2.6,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(x,y+12,2.6,0,7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x,y+12); if(isOpen){ ctx.lineTo(x+12,y-9); } else { ctx.lineTo(x,y-12); } ctx.stroke(); };
+  const sync=()=>{ if(swBtn){ swBtn.classList.toggle('on',!open); swBtn.textContent=open?'Schalter: offen':'Schalter: geschlossen'; } };
+  const draw=()=>{ stopRAF(); RAF=requestAnimationFrame(()=>{ const {ctx,W,H}=fit(c); const flow=!open; ctx.clearRect(0,0,W,H);
+    const x0=W*0.24,y0=H*0.15,w=W*0.52,h=H*0.4, lx=x0+w/2, ly=y0, bx=x0, by=y0+h/2, sx=x0+w, sy=y0+h/2;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=5; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    battSym(ctx,bx,by,flow); lampSym(ctx,lx,ly,13,flow); switchSym(ctx,sx,sy,open);
+    lbl(ctx,x0+w/2,y0+h+20, flow?'Kreis geschlossen – Strom fließt, die Lampe leuchtet':'Schalter offen – kein Strom', 13, flow?'#1f7a34':'#5a6684');
+    // Legende: die drei Zeichen mit Namen (Referenz, immer mit Polen)
+    const ly2=y0+h+50, xs=[x0+w*0.1,x0+w*0.5,x0+w*0.9];
+    battSym(ctx,xs[0],ly2,true); lampSym(ctx,xs[1],ly2,12,false); switchSym(ctx,xs[2],ly2,false);
+    lbl(ctx,xs[0],ly2+24,'Batterie',12,'#5a6684'); lbl(ctx,xs[1],ly2+24,'Lampe',12,'#5a6684'); lbl(ctx,xs[2],ly2+24,'Schalter',12,'#5a6684'); }); };
+  const toggle=()=>{ open=!open; sync(); draw(); };
+  c.addEventListener('pointerdown',toggle); if(swBtn) swBtn.addEventListener('click',toggle);
+  sync(); draw(); }
+
+// Beim Schließen setzen sich alle Elektronen im schon vollen Draht gleichzeitig in Bewegung.
+function sofortLeuchten(root){ const c=root.querySelector('#c-sofort'); if(!c) return;
+  let last=0, t=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%5; ctx.clearRect(0,0,W,H);
+    const closed=t>2, shift=closed?(t-2)*70:0;
+    const x0=W*0.12,y0=H*0.24,w=W*0.66,h=H*0.42, path=ringPath(x0,y0,w,h), L=path.len, lx=x0+w/2, ly=y0, bx=x0, by=y0+h/2, sx=x0+w, sy=y0+h/2;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeRect(x0,y0,w,h);
+    ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,by-20); ctx.lineTo(bx,by+20); ctx.stroke();
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(bx-8,by-12); ctx.lineTo(bx+8,by-12); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-13,by+12); ctx.lineTo(bx+13,by+12); ctx.stroke();
+    lbl(ctx,bx-16,by-12,'–',16,'#1f4fc4','right'); lbl(ctx,bx-16,by+12,'+',14,'#b23a26','right');
+    // Schalter rechts
+    ctx.strokeStyle='#f7faff'; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(sx,sy-18); ctx.lineTo(sx,sy+18); ctx.stroke();
+    ctx.strokeStyle=closed?'#1f7a34':'#e5533c'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(sx,sy+15); ctx.lineTo(sx+(closed?0:16),sy-(closed?15:6)); ctx.stroke();
+    // Lampe
+    const glow=closed?1:0; if(glow){ const g=ctx.createRadialGradient(lx,ly,2,lx,ly,34); g.addColorStop(0,'rgba(245,211,0,.55)'); g.addColorStop(1,'rgba(245,211,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(lx,ly,34,0,7); ctx.fill(); }
+    ctx.fillStyle=closed?'#f5d000':'#e7ecf6'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(lx,ly,13,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#c9a100'; ctx.beginPath(); ctx.moveTo(lx-8,ly-8); ctx.lineTo(lx+8,ly+8); ctx.moveTo(lx+8,ly-8); ctx.lineTo(lx-8,ly+8); ctx.stroke();
+    // Der ganze Draht ist immer voller Elektronen – sie stehen (offen) oder laufen alle zugleich (zu)
+    const spacing=30, n=Math.floor(L/spacing);
+    for(let i=0;i<n;i++){ const p=path.at(shift+i*spacing), hot=i<2; ball(ctx,p[0],p[1],hot?6:4.5,hot?'#e5533c':'#2f6df6'); if(hot) lbl(ctx,p[0],p[1]-12,['Elli','Laura'][i],11,'#b23a26'); }
+    lbl(ctx,x0+w/2,y0+h+22, closed?'Kreis zu: alle Elektronen im ganzen Draht setzen sich gleichzeitig in Bewegung – die Lampe leuchtet sofort.':'Kreis offen: der Draht ist schon voller Elektronen, sie warten.',13, closed?'#1f7a34':'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Winzige Teilchen im Draht', init:orderElectrons, html:
+   `<p>In einem Metalldraht gibt es unzählige winzige, negativ geladene Teilchen: die <b>Elektronen</b>. Sie können sich im Metall frei bewegen.</p>
+    <p>Allein bewegen sie sich ungeordnet. Eine Batterie kann sie alle in dieselbe Richtung schieben – dann fließt Strom.</p>
+    <canvas class="mini" id="c-order"></canvas>
+    <div class="box warn"><span class="lbl">Sicherheit</span>Verbinde die Pole einer Batterie nie direkt mit einem blanken Draht (oder Schere, Alufolie). Ohne Bauteil dazwischen fließt viel zu viel Strom, alles wird heiß – ein Kurzschluss. Immer ein Lämpchen o. Ä. einbauen.</div>` },
+
+ { step:'Beispiel', title:'Die Taschenlampe leuchtet nur im Kreis', init:(r)=>{
+     const o={lampOn:true,names:['Elli','Laura'],open:false}; stromCircuit(r,o);
+     const c=r.querySelector('#c-cir'); if(c) c.style.touchAction='none';
+     const btn=r.querySelector('[data-sw]');
+     const sync=()=>{ if(btn){ btn.classList.toggle('on',!o.open); btn.textContent=o.open?'Schalter: offen':'Schalter: geschlossen'; } };
+     const toggle=()=>{ o.open=!o.open; sync(); };
+     if(c) c.addEventListener('pointerdown',toggle); if(btn) btn.addEventListener('click',toggle); sync();
+   }, html:
+   `<p>Eine Taschenlampe leuchtet nur, wenn Batterie, Draht und Lampe zu einem geschlossenen Ring verbunden sind. Fehlt ein Stück, bleibt sie dunkel.</p>
+    <canvas class="viz" id="c-cir"></canvas>
+    <div class="modes"><button data-sw="1" class="on">Schalter: geschlossen</button></div>
+    <p class="lead">Tipp auf das Bild oder auf den Schalter-Knopf: der Kreis öffnet und schließt sich, die Lampe reagiert sofort.</p>
+    <div class="box frage"><span class="lbl">Denk nach</span>Warum muss der Kreis vollständig geschlossen sein, damit die Lampe leuchtet?</div>` },
+
+ { step:'Schaltzeichen', title:'Die Schaltzeichen', init:schaltzeichen, html:
+   `<p>Damit man eine Schaltung schnell aufzeichnen kann, malt man die Bauteile nicht ab, sondern benutzt einfache genormte Zeichen.</p>
+    <canvas class="viz" id="c-sym"></canvas>
+    <div class="modes"><button data-sw="1" class="on">Schalter: geschlossen</button></div>
+    <p class="lead">Tipp auf das Bild oder den Knopf: der Schalter öffnet und schließt den Kreis. Batterie: langer Strich +, kurzer dicker Strich –. Lampe: Kreis mit Kreuz. Schalter: ein Hebel, der die Leitung öffnet. Unten stehen die drei Zeichen mit ihren Namen.</p>` },
+
+ { step:'Das Konzept', title:'Ein geschlossener Kreis', init:(r)=>stromCircuit(r,{lampOn:true,names:['Elli','Laura']}), html:
+   `<p>Die Batterie schiebt die Elektronen aus ihrem Minuspol heraus. Sie laufen durch den Draht, geben in der Lampe Energie ab und kommen am Pluspol wieder an.</p>
+    <p>Das geht nur im geschlossenen Ring. Ist der Kreis irgendwo unterbrochen, können die Elektronen nicht weiter – nichts fließt.</p>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0">Strom fließt nur in einem geschlossenen Stromkreis.</p>
+      <p style="margin:.15rem 0">Die Elektronen laufen von – nach + und geben unterwegs Energie ab.</p></div>` },
+
+ { step:'Mehr Beispiele', title:'Denk selbst nach', init:(r)=>{ revealCases(r); sofortLeuchten(r); }, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Der Schalter</h3><p>Ein Schalter unterbricht den Draht, wenn er „aus" ist. Warum geht dann die Lampe aus?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der offene Schalter unterbricht den Ring. Die Elektronen können nicht mehr im Kreis laufen – die Lampe wird dunkel.</div></div>
+      <div class="case"><h3>Lampe leuchtet sofort</h3><p>Schließt du den Kreis, leuchtet die Lampe sofort. Aber Elektronen sind langsam. Wie geht das?</p>
+        <canvas class="mini" id="c-sofort"></canvas>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der ganze Draht ist schon voller Elektronen. Beim Schließen setzen sich überall gleichzeitig alle in Bewegung – wie eine volle Wasserleitung.</div></div>
+      <div class="case"><h3>Ein Kabel locker</h3><p>Eine Lampe bleibt dunkel, obwohl die Batterie voll ist. Was kann sein?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Ein Kontakt ist lose – der Kreis ist unterbrochen. Ohne geschlossenen Ring fließt kein Strom.</div></div>
+      <div class="case"><h3>Batterie umgedreht</h3><p>Du drehst die Batterie im Kreis herum. Leuchtet die Lampe dann noch?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Ja. Der Kreis ist weiter geschlossen, die Elektronen laufen nur in die andere Richtung. Ein einfaches Lämpchen leuchtet in beide Richtungen gleich.</div></div>
+      <div class="case"><h3>Lichterkette</h3><p>An einer Lichterkette geht eine einzige Lampe kaputt und plötzlich sind alle dunkel. Wie kann das sein?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Lampen hängen hintereinander in einem Ring. Die kaputte Lampe unterbricht den Kreis an einer Stelle – dann fließt nirgends mehr Strom.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wie das zu Bekanntem passt', init:(r)=>{ stromCircuit(r,{lampOn:true,names:['Elli','Laura'],still:true}); revealCases(r); }, html:
+   `<p>So sieht der fertige, geschlossene Kreis aus – Batterie, Draht und Lampe zu einem Ring verbunden.</p>
+    <canvas class="viz" id="c-cir"></canvas>
+    <div class="cases">
+      <div class="case"><h3>Das kennst du schon</h3><p>Alles besteht aus Teilchen. Im Metall sind es bewegliche Elektronen.</p></div>
+      <div class="case"><h3>Das ist neu</h3><p>Fließen diese Elektronen geordnet im geschlossenen Kreis, nennen wir das elektrischen Strom.</p></div>
+      <div class="case"><h3>Ausblick</h3><p>Was ist, wenn zwei Lampen im Kreis sind – hintereinander oder jede auf eigenem Weg?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Hintereinander (Reihe) teilen sie sich die Energie und leuchten schwächer. Jede auf einem eigenen Weg (parallel) leuchtet voll. Mehr dazu in den späteren Stunden.</div></div>
+    </div>
+    <div class="box merke"><span class="lbl">Kurz</span>Der geschlossene Stromkreis ist die Grundlage für alles Weitere: Stromstärke, Leiter und die Wirkungen des Stroms.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p><b>Wann fließt in einem Stromkreis Strom?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="0">Immer, sobald eine Batterie da ist.</button>
+       <button class="choice" data-ok="1">Nur wenn der Kreis vollständig geschlossen ist.</button>
+       <button class="choice" data-ok="0">Nur wenn die Lampe kaputt ist.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Nur im geschlossenen Kreis können die Elektronen umlaufen. Jede Unterbrechung stoppt den Strom.</div></div></div>
+    <div class="q"><p><b>In welche Richtung laufen die Elektronen im Draht?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Vom Minuspol zum Pluspol.</button>
+       <button class="choice" data-ok="0">Vom Pluspol zum Minuspol.</button>
+       <button class="choice" data-ok="0">Mal so, mal so.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Die Elektronen laufen im Draht von – nach +. In der Batterie werden sie wieder zurückgeschoben.</div></div></div>
+    <div class="q"><p>Du öffnest einen Schalter im Kreis. <b>Was passiert mit der Lampe?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Sie geht aus – der Kreis ist unterbrochen.</button>
+       <button class="choice" data-ok="0">Sie leuchtet heller.</button>
+       <button class="choice" data-ok="0">Nichts ändert sich.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Der offene Schalter unterbricht den Ring, die Elektronen können nicht mehr laufen – die Lampe wird dunkel.</div></div></div>
+    <div class="q"><p><b>Was gehört mindestens zu einem einfachen Stromkreis?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Eine Stromquelle, Leitungen und ein Verbraucher zu einem Ring verbunden.</button>
+       <button class="choice" data-ok="0">Nur eine Batterie, sonst nichts.</button>
+       <button class="choice" data-ok="0">Nur ein einzelner Draht.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Erst Stromquelle, Leitungen und Verbraucher zusammen bilden einen geschlossenen Ring, in dem Strom fließen kann.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#tag').textContent=PAGE.area||'Physik'; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

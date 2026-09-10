@@ -1,0 +1,243 @@
+{
+  "students": [
+    {
+      "id": "s0",
+      "vorname": "Anna",
+      "nachname": "Müller",
+      "klasse": "9b"
+    },
+    {
+      "id": "s1",
+      "vorname": "Ben",
+      "nachname": "Schäfer",
+      "klasse": "9b"
+    },
+    {
+      "id": "s2",
+      "vorname": "Clara",
+      "nachname": "Weber",
+      "klasse": "9b"
+    },
+    {
+      "id": "s3",
+      "vorname": "David",
+      "nachname": "Fischer",
+      "klasse": "9b"
+    },
+    {
+      "id": "s4",
+      "vorname": "Emma",
+      "nachname": "Koch",
+      "klasse": "9b"
+    },
+    {
+      "id": "s5",
+      "vorname": "Chris",
+      "nachname": "Zöller",
+      "klasse": "10a"
+    },
+    {
+      "id": "s6",
+      "vorname": "Felix",
+      "nachname": "Braun",
+      "klasse": "10a"
+    },
+    {
+      "id": "s7",
+      "vorname": "Greta",
+      "nachname": "Hoffmann",
+      "klasse": "10a"
+    },
+    {
+      "id": "s8",
+      "vorname": "Hannah",
+      "nachname": "Wagner",
+      "klasse": "10a"
+    },
+    {
+      "id": "s9",
+      "vorname": "Ismail",
+      "nachname": "Krüger",
+      "klasse": "10a"
+    },
+    {
+      "id": "s10",
+      "vorname": "Jonas",
+      "nachname": "Schneider",
+      "klasse": "7c"
+    },
+    {
+      "id": "s11",
+      "vorname": "Lina",
+      "nachname": "Neumann",
+      "klasse": "7c"
+    },
+    {
+      "id": "s12",
+      "vorname": "Malik",
+      "nachname": "Böhm",
+      "klasse": "7c"
+    },
+    {
+      "id": "s13",
+      "vorname": "Nora",
+      "nachname": "Richter",
+      "klasse": "7c"
+    },
+    {
+      "id": "s14",
+      "vorname": "Oskar",
+      "nachname": "Schulz",
+      "klasse": "7c"
+    }
+  ],
+  "attendance": {
+    "2026-09-01": [
+      "s0",
+      "s1",
+      "s2",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-02": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-03": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s11",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-04": [
+      "s1",
+      "s3",
+      "s4",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s11",
+      "s13",
+      "s14"
+    ],
+    "2026-09-07": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s11",
+      "s12",
+      "s14"
+    ],
+    "2026-09-08": [
+      "s1",
+      "s3",
+      "s4",
+      "s5",
+      "s8",
+      "s9",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-09": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s11",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-10": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s11",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-11": [
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s12",
+      "s13",
+      "s14"
+    ],
+    "2026-09-14": [
+      "s0",
+      "s1",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s11",
+      "s12",
+      "s13",
+      "s14"
+    ]
+  }
+}

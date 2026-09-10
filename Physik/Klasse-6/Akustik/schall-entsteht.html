@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.55rem 1.1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag" id="tag"></span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+/* Gemeinsame Akustik-Animationen (Luftteilchen: Verdichtung und Verdünnung) */
+
+// Längswelle: Membran links schwingt, Verdichtungen wandern nach rechts.
+// o: { freq (Anzahl Verdichtungen), amp (Auslenkung 0..1), label,
+//      play (Frequenz -> Dauerton-Knopf), mark (eine Verdichtung markieren),
+//      markOne (ein nur pendelndes Teilchen), ear (Ohr rechts), vacuum (Luft an/aus),
+//      stations (Sender/Luft/Empfänger beschriften) }
+function airWave(root,o){ o=o||{}; const c=root.querySelector('#c-snd'); if(!c) return; let t0=0;
+  const N=64, freq=o.freq||3, amp=(o.amp==null?1:o.amp);
+  // optionaler Dauerton-Knopf (wie in toneLab)
+  let node=null; const pbtn=o.play?root.querySelector('[data-act="tone"]'):null;
+  const stopTone=()=>{ if(node){ try{node.osc.stop();node.osc.disconnect();node.g.disconnect();}catch(_){}} node=null; if(pbtn) pbtn.textContent='▶ Ton anhören'; };
+  if(pbtn){ window.__stopSound=stopTone; pbtn.addEventListener('click',()=>{ if(node){ stopTone(); return; } try{ node=_tone(o.play,0.18); pbtn.textContent='■ Ton stoppen'; }catch(e){ node=null; } }); }
+  // optionaler Vakuum-Schalter (Luft an/aus)
+  let air=true; const vbtn=o.vacuum?root.querySelector('[data-act="vac"]'):null;
+  const setVac=()=>{ if(vbtn){ vbtn.textContent = air?'Luft: an':'Vakuum: keine Luft'; vbtn.classList.toggle('on',!air); } };
+  if(vbtn){ setVac(); vbtn.addEventListener('click',()=>{ air=!air; setVac(); }); }
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const hasEar=!!(o.ear||o.stations);
+    const x0=W*0.18, x1=hasEar?W*0.80:W*0.93, y0=H*0.26, y1=H*0.74, span=x1-x0, A=span*0.018*amp, cy=(y0+y1)/2;
+    const phase=t*freq*0.9;
+    // Lautsprecher: Gehäuse + Konus + schwingende Membran
+    const mem=x0-6 + Math.sin(t*4*freq)*9*amp;
+    ctx.fillStyle='#8b93a7'; rr(ctx,x0-40,cy-26,16,52,4); ctx.fill();
+    ctx.fillStyle='#a7afc2'; ctx.beginPath(); ctx.moveTo(x0-26,cy-9); ctx.lineTo(mem-6,cy-22); ctx.lineTo(mem-6,cy+22); ctx.lineTo(x0-26,cy+9); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#6b7280'; rr(ctx,mem-8,cy-24,6,48,3); ctx.fill();
+    lbl(ctx,x0-34,y0-20,o.stations?'Sender':'Lautsprecher',13,'#5a6684','left');
+    // Luftteilchen in Reihen
+    if(air){ const rows=5; for(let r=0;r<rows;r++){ const yy=y0+(y1-y0)*(r+0.5)/rows;
+        for(let i=0;i<N;i++){ const base=i/(N-1); const disp=A*Math.sin((base*freq - phase)*2*Math.PI);
+          ball(ctx, x0+base*span+disp, yy, 2.8, '#6b7a9c'); } }
+    } else { lbl(ctx,(x0+x1)/2,cy,'Vakuum: keine Teilchen, die den Schall weitergeben',13,'#b23a26'); }
+    // ein einzelnes, nur pendelndes Teilchen
+    if(o.markOne && air){ const b0=0.5, xr=x0+b0*span, disp=A*Math.sin((b0*freq - phase)*2*Math.PI);
+      ctx.strokeStyle='#f2a521'; ctx.setLineDash([4,4]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xr,y0-2); ctx.lineTo(xr,y1+2); ctx.stroke(); ctx.setLineDash([]);
+      ball(ctx,xr+disp,cy,6,'#e5533c');
+      lbl(ctx,xr,y1+18,'dieses Teilchen pendelt nur hin und her',12,'#b23a26'); }
+    // eine Verdichtung markieren
+    if(o.mark && air){ let bm=null,bd=9; for(let k=-2;k<=freq+2;k++){ const b=(0.5+k+phase)/freq; if(b>0.25&&b<0.85){ const d=Math.abs(b-0.55); if(d<bd){bd=d;bm=b;} } }
+      if(bm!=null){ const xm=x0+bm*span; lbl(ctx,xm,y0-34,'hier sind die Teilchen dicht',12,'#b23a26'); arrow(ctx,xm,y0-24,xm,y0+(y1-y0)*0.12,'#e5533c',2); } }
+    // Ohr / Empfänger rechts
+    if(hasEar){ const ex=W*0.90; ctx.strokeStyle='#8b93a7'; ctx.lineWidth=6; ctx.beginPath(); ctx.arc(ex,cy,18,-1.9,1.9); ctx.stroke();
+      ctx.lineWidth=4; ctx.beginPath(); ctx.arc(ex-2,cy,8,-1.4,1.7); ctx.stroke();
+      lbl(ctx,ex,y0-20,o.stations?'Empfänger':'Ohr',13,'#5a6684');
+      lbl(ctx,ex,y1+18,air?'Schall kommt an':'nichts zu hören',12,air?'#177a4d':'#b23a26'); }
+    // Beschriftung unten
+    if(o.stations){ lbl(ctx,(x0+x1)/2,y1+20,'Luft trägt den Schall',13,'#5a6684'); }
+    else if(!o.markOne){ lbl(ctx,(x0+x1)/2,y1+24,o.label||'Verdichtung und Verdünnung wandern nach rechts',14,'#5a6684'); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Ein Schallpuls trifft eine Wand: oben hart (Echo), unten weich (absorbiert)
+function animEcho(root){ const c=root.querySelector('#c-ec'); if(!c) return; let t0=0, mat='hart';
+  const mbtns=root.querySelectorAll('[data-mat]'), ruf=root.querySelector('[data-act="ruf"]');
+  const setMat=m=>{ mat=m; mbtns.forEach(b=>b.classList.toggle('on',b.dataset.mat===m)); };
+  if(mbtns.length){ setMat('hart'); mbtns.forEach(b=>b.addEventListener('click',()=>setMat(b.dataset.mat))); }
+  let snd=null; const stop=()=>{ if(snd){ try{snd.stop();}catch(_){}} snd=null; };
+  if(ruf){ window.__stopSound=stop; ruf.addEventListener('click',()=>{ stop(); try{
+    snd = mat==='hart' ? _pulses([{t:0,f:520,dur:0.12,gain:0.22},{t:0.55,f:520,dur:0.12,gain:0.10}]) : _pulses([{t:0,f:520,dur:0.12,gain:0.22}]);
+  }catch(e){ snd=null; } }); }
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const x0=W*0.1, wall=W*0.82, span=wall-x0, period=3, sel=mbtns.length;
+    const drawRow=(y,reflect,label,dim)=>{
+      const base=dim?0.28:1;
+      ctx.globalAlpha=base; ctx.fillStyle=reflect?'#8b93a7':'#cdb28a'; rr(ctx,wall,y-42,14,84,3); ctx.fill();
+      const tt=(t%period)/period; let px, fade=1;
+      if(reflect){ px = tt<0.5 ? x0+span*(tt*2) : wall-span*((tt-0.5)*2); }
+      else { px = x0+span*Math.min(1,tt*2); if(tt>0.5) fade=Math.max(0,1-(tt-0.5)*4); }
+      ctx.globalAlpha=base*fade;
+      for(let k=-3;k<=3;k++){ const x=px+k*7; for(let r=0;r<4;r++) ball(ctx,x, y-18+r*12, 3, '#6b7a9c'); }
+      ctx.globalAlpha=1; lbl(ctx,x0,y-54,label,13,'#5a6684','left');
+      if(reflect) lbl(ctx,wall-6,y-54,'Reflexion – wie ein Spiegel beim Licht',11,'#2f4fae','right');
+    };
+    drawRow(H*0.3, true,  'harte Wand: der Schall kommt zurück (Echo)', sel && mat!=='hart');
+    drawRow(H*0.74, false, 'weiche Wand: der Schall wird geschluckt (absorbiert)', sel && mat!=='weich');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// WebAudio: gemeinsamer Kontext, Ton offline erzeugt
+let _actx=null;
+function _tone(freq,gain){ _actx=_actx||new (window.AudioContext||window.webkitAudioContext)(); if(_actx.state==='suspended')_actx.resume();
+  const osc=_actx.createOscillator(), g=_actx.createGain(); osc.type='sine'; osc.frequency.value=freq; g.gain.value=gain; osc.connect(g); g.connect(_actx.destination); osc.start(); return {osc,g,ctx:_actx}; }
+
+// WebAudio: kurze Tonimpulse zeitlich planen (z. B. Ruf + verzoegertes Echo). seq: [{t,f,dur,gain}]
+function _pulses(seq){ _actx=_actx||new (window.AudioContext||window.webkitAudioContext)(); if(_actx.state==='suspended')_actx.resume();
+  const t0=_actx.currentTime, nodes=[];
+  seq.forEach(s=>{ const osc=_actx.createOscillator(), g=_actx.createGain(); osc.type='sine'; osc.frequency.value=s.f;
+    const st=t0+(s.t||0), en=st+(s.dur||0.15), gv=(s.gain==null?0.2:s.gain);
+    g.gain.setValueAtTime(0,st); g.gain.linearRampToValueAtTime(gv,st+0.015); g.gain.setValueAtTime(gv,Math.max(st+0.02,en-0.03)); g.gain.linearRampToValueAtTime(0,en);
+    osc.connect(g); g.connect(_actx.destination); osc.start(st); osc.stop(en+0.03); nodes.push({osc,g}); });
+  const stop=()=>{ nodes.forEach(n=>{ try{n.osc.stop();n.osc.disconnect();n.g.disconnect();}catch(_){}}); };
+  return {stop}; }
+
+// Ton & Zeitverlauf: Frequenz (Tonhoehe) und Amplitude (Lautstaerke) getrennt regeln und hoeren.
+function toneLab(root){ const c=root.querySelector('#c-tone'); if(!c) return;
+  const sf=root.querySelector('#sl-f'), sa=root.querySelector('#sl-a'), vf=root.querySelector('#val-f'), va=root.querySelector('#val-a'), btn=root.querySelector('[data-act="tone"]'), cbtn=root.querySelector('[data-act="cmp"]');
+  let node=null, ph=0, last=0, showCmp=false;
+  const stop=()=>{ if(node){ try{node.osc.stop();node.osc.disconnect();node.g.disconnect();}catch(_){}} node=null; if(btn) btn.textContent='▶ Ton abspielen'; };
+  window.__stopSound=stop;
+  if(btn) btn.addEventListener('click',()=>{ if(node){ stop(); return; } try{ node=_tone(+sf.value,(+sa.value/100)*0.25); btn.textContent='■ Ton stoppen'; }catch(e){ node=null; } });
+  if(cbtn) cbtn.addEventListener('click',()=>{ showCmp=!showCmp; cbtn.classList.toggle('on',showCmp); });
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+    const f=sf?+sf.value:440, a=sa?+sa.value:60; if(vf) vf.textContent=f+' Hz'; if(va) va.textContent=a+' %';
+    if(node){ node.osc.frequency.setTargetAtTime(f,node.ctx.currentTime,0.02); node.g.gain.setTargetAtTime((a/100)*0.25,node.ctx.currentTime,0.03); }
+    ctx.clearRect(0,0,W,H);
+    const midY=H*0.50, ax0=W*0.14, ax1=W*0.92, amp=(a/100)*(H*0.28);
+    // kleiner Lautsprecher links, Ausschlag der Membran = Lautstaerke
+    const sx=W*0.035, mem=sx+8+Math.sin(ts/1000*6)*(a/100)*7;
+    ctx.fillStyle='#8b93a7'; rr(ctx,sx-6,midY-16,12,32,3); ctx.fill();
+    ctx.fillStyle='#a7afc2'; ctx.beginPath(); ctx.moveTo(sx+6,midY-6); ctx.lineTo(mem,midY-15); ctx.lineTo(mem,midY+15); ctx.lineTo(sx+6,midY+6); ctx.closePath(); ctx.fill();
+    lbl(ctx,sx,midY+30,'Ausschlag',10,'#5a6684');
+    ctx.strokeStyle='#e3e9f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ax0,midY); ctx.lineTo(ax1,midY); ctx.stroke(); lbl(ctx,ax1,midY+16,'Zeit →',13,'#9aa8c6','right');
+    const cycles=1+(f-100)/900*10; ph+=dt*2.4;
+    // Vergleichskurve (tiefer & leiser), gestrichelt
+    if(showCmp){ const cyc2=1+((f*0.6)-100)/900*10, amp2=amp*0.5; ctx.setLineDash([6,6]); ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath();
+      for(let k=0;k<=260;k++){ const u=k/260, x=ax0+(ax1-ax0)*u, y=midY-amp2*Math.sin(u*cyc2*2*Math.PI-ph*0.6); if(k===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke(); ctx.setLineDash([]);
+      lbl(ctx,ax1,midY-amp2-12,'tiefer & leiser (Vergleich)',12,'#7a86a3','right'); }
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3; ctx.beginPath();
+    for(let k=0;k<=260;k++){ const u=k/260, x=ax0+(ax1-ax0)*u, y=midY-amp*Math.sin(u*cycles*2*Math.PI-ph); if(k===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.stroke();
+    if(amp>4){ arrow(ctx,ax0-2,midY,ax0-2,midY-amp,'#25b071',2); arrow(ctx,ax0-2,midY,ax0-2,midY+amp,'#25b071',2); }
+    lbl(ctx,ax0+4,H*0.08,'Frequenz = Tonhöhe ('+f+' Hz)',13,'#2f4fae','left');
+    lbl(ctx,ax0+4,H*0.08+18,'Amplitude = Lautstärke ('+a+' %)',13,'#177a4d','left');
+    // Frequenzband: tief / mittel / hoch, mit Marke fuer den aktuellen Ton
+    const by=H*0.88, bx0=ax0, bx1=ax1, fu=(Math.min(1000,Math.max(100,f))-100)/900;
+    [[0,0.22,'tief','#7fb0ff'],[0.22,0.56,'mittel','#8fd0a8'],[0.56,1,'hoch','#f2b56b']].forEach(([s,e,name,col])=>{
+      ctx.fillStyle=col; rr(ctx,bx0+(bx1-bx0)*s,by-5,(bx1-bx0)*(e-s)-2,10,4); ctx.fill(); lbl(ctx,bx0+(bx1-bx0)*(s+e)/2,by+15,name,11,'#5a6684'); });
+    const mx=bx0+(bx1-bx0)*fu; ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.moveTo(mx,by-8); ctx.lineTo(mx+6,by-18); ctx.lineTo(mx-6,by-18); ctx.closePath(); ctx.fill();
+    if(Math.abs(f-440)<=12) lbl(ctx,mx,by-26,'440 Hz – Kammerton a',12,'#b23a26');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Dezibel: nicht-lineare (logarithmische) Skala sehen und hoeren.
+function dbLab(root){ const c=root.querySelector('#c-db'); if(!c) return;
+  const sl=root.querySelector('#sl-db'), vd=root.querySelector('#val-db'), btn=root.querySelector('[data-act="db"]');
+  const sA=root.querySelector('#sl-adb'), sB=root.querySelector('#sl-bdb'), vA=root.querySelector('#val-adb'), vB=root.querySelector('#val-bdb');
+  let node=null; const gainFor=db=>Math.min(0.5,0.5*Math.pow(10,(db-100)/20));
+  const stop=()=>{ if(node){ try{node.osc.stop();node.osc.disconnect();node.g.disconnect();}catch(_){}} node=null; if(btn) btn.textContent='▶ anhören'; root.querySelectorAll('[data-ab]').forEach(b=>b.classList.remove('on')); };
+  window.__stopSound=stop;
+  root.querySelectorAll('[data-db]').forEach(b=>b.addEventListener('click',()=>{ if(sl) sl.value=b.dataset.db; }));
+  if(btn) btn.addEventListener('click',()=>{ if(node){ stop(); return; } try{ node=_tone(440,gainFor(+sl.value)); btn.textContent='■ stopp'; }catch(e){ node=null; } });
+  // A/B-Vergleich: zwei Werte nacheinander anhören
+  root.querySelectorAll('[data-ab]').forEach(b=>b.addEventListener('click',()=>{ const on=b.classList.contains('on'); stop(); if(on) return;
+    const v=b.dataset.ab==='A'?(sA?+sA.value:60):(sB?+sB.value:80); try{ node=_tone(440,gainFor(v)); b.classList.add('on'); }catch(e){ node=null; } }));
+  const REF=[[10,'Blätter'],[30,'Flüstern'],[60,'Gespräch'],[85,'Straße'],[110,'Konzert'],[120,'Düsenjet']];
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const db=sl?+sl.value:60; if(vd) vd.textContent=db+' dB';
+    if(vA&&sA) vA.textContent=sA.value+' dB'; if(vB&&sB) vB.textContent=sB.value+' dB';
+    if(node) node.g.gain.setTargetAtTime(gainFor(db),node.ctx.currentTime,0.03);
+    ctx.clearRect(0,0,W,H);
+    lbl(ctx,W/2,H*0.12,'+10 dB = 10× Energie, klingt etwa doppelt so laut',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    const x0=W*0.08,x1=W*0.92,y=H*0.42;
+    // Warnbereich ab 85 dB (Gehörschutz)
+    const xw=x0+(x1-x0)*85/120; ctx.fillStyle='rgba(229,83,60,.12)'; ctx.fillRect(xw,y-30,x1-xw,60);
+    lbl(ctx,(xw+x1)/2,y-40,'ab 85 dB: Gehörschutz',11,'#b23a26');
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    for(let d=0;d<=120;d+=10){ const x=x0+(x1-x0)*d/120; ctx.strokeStyle='#d7deea'; ctx.beginPath(); ctx.moveTo(x,y-5); ctx.lineTo(x,y+5); ctx.stroke(); if(d%20===0) lbl(ctx,x,y+18,d+'',11,'#9aa8c6'); }
+    REF.forEach(([d,name])=>{ const x=x0+(x1-x0)*d/120; ball(ctx,x,y,4,'#7fb0ff'); lbl(ctx,x,y-14,name,10,'#5a6684'); });
+    const cx=x0+(x1-x0)*db/120; ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.moveTo(cx,y-10); ctx.lineTo(cx+7,y-22); ctx.lineTo(cx-7,y-22); ctx.closePath(); ctx.fill(); lbl(ctx,cx,y-30,db+' dB',15,'#b23a26');
+    // Energiebalken: waechst mit dB, ab 85 dB rot
+    const fac=Math.pow(10,db/10), ftxt = fac>=1e6?(Math.round(fac/1e6))+' Mio.-fach': fac>=1000?Math.round(fac/1000)+' Tausend-fach':Math.round(fac)+'-fach';
+    const ey=H*0.72, ew=x1-x0, frac=db/120; lbl(ctx,x0,ey-14,'Schall-Energie im Vergleich zu 0 dB (Hörschwelle)',12,'#5a6684','left');
+    ctx.fillStyle='#e7ecf6'; rr(ctx,x0,ey,ew,20,10); ctx.fill();
+    ctx.fillStyle=db>=85?'#e5533c':'#25b071'; rr(ctx,x0,ey,Math.max(10,ew*frac),20,10); ctx.fill();
+    lbl(ctx,W/2,ey+34,ftxt,14,'#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+/* ===== Neue Easy-Win-Animationen ===== */
+
+// 01: Membran schnell/langsam schwingen lassen, Ton dazu koppeln (Frequenz sichtbar + hörbar).
+function membraneRate(root){ const c=root.querySelector('#c-mem'); if(!c) return; let t0=0, rate='langsam', node=null;
+  const RT={langsam:{f:180,vis:4},schnell:{f:520,vis:11}};
+  const btn=root.querySelector('[data-act="tone"]'), rbtns=root.querySelectorAll('[data-rate]');
+  const stop=()=>{ if(node){ try{node.osc.stop();node.osc.disconnect();node.g.disconnect();}catch(_){}} node=null; if(btn) btn.textContent='▶ Ton anhören'; };
+  window.__stopSound=stop;
+  const setR=r=>{ rate=r; rbtns.forEach(b=>b.classList.toggle('on',b.dataset.rate===r)); if(node){ node.osc.frequency.setTargetAtTime(RT[rate].f,node.ctx.currentTime,0.03); } };
+  if(rbtns.length){ setR('langsam'); rbtns.forEach(b=>b.addEventListener('click',()=>setR(b.dataset.rate))); }
+  if(btn) btn.addEventListener('click',()=>{ if(node){ stop(); return; } try{ node=_tone(RT[rate].f,0.18); btn.textContent='■ Ton stoppen'; }catch(e){ node=null; } });
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const vis=RT[rate].vis, cy=H*0.52, mx=W*0.34, amp=W*0.028, off=Math.sin(t*vis*2*Math.PI)*amp;
+    ctx.fillStyle='#8b93a7'; rr(ctx,mx-46,cy-30,18,60,4); ctx.fill();
+    ctx.fillStyle='#a7afc2'; ctx.beginPath(); ctx.moveTo(mx-28,cy-11); ctx.lineTo(mx+off,cy-26); ctx.lineTo(mx+off,cy+26); ctx.lineTo(mx-28,cy+11); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#6b7280'; rr(ctx,mx+off-3,cy-28,6,56,3); ctx.fill();
+    const N=Math.round(vis*4), x0=mx+20, span=W*0.58;
+    for(let i=0;i<N;i++){ const base=i/(N-1); const disp=amp*0.8*Math.sin((base*vis - t*vis)*2*Math.PI); ball(ctx, x0+base*span+disp, cy, 3, '#6b7a9c'); }
+    lbl(ctx,mx-20,cy-46, rate==='schnell'?'schnell → hoher Ton':'langsam → tiefer Ton',13, rate==='schnell'?'#b23a26':'#2f4fae','left');
+    lbl(ctx,W/2,H*0.92,'Wie schnell die Membran schwingt, ist die Frequenz.',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 01: Stimmgabel taucht ins Wasser, die schwingenden Zinken schleudern Tropfen weg.
+function tuningForkWater(root){ const c=root.querySelector('#c-fork'); if(!c) return; let t0=0; const drops=[];
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000, dt=1/60; ctx.clearRect(0,0,W,H);
+    const cx=W*0.5, topY=H*0.14, waterY=H*0.64, vib=Math.sin(t*40)*3;
+    ctx.fillStyle='#dcefff'; ctx.fillRect(0,waterY,W,H-waterY);
+    ctx.strokeStyle='#7fb0ff'; ctx.lineWidth=2; ctx.beginPath();
+    for(let x=0;x<=W;x+=6){ const y=waterY+Math.sin(x*0.06 - t*6)*2; if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke();
+    ctx.strokeStyle='#8b93a7'; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx, waterY+8); ctx.lineTo(cx, H*0.44); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-12+vib, topY); ctx.lineTo(cx-12+vib*0.3, H*0.44); ctx.lineTo(cx+12-vib*0.3, H*0.44); ctx.lineTo(cx+12-vib, topY); ctx.stroke();
+    ctx.lineCap='butt';
+    if(Math.random()<0.4){ drops.push({x:cx+(Math.random()-0.5)*30, y:waterY-2, vx:(Math.random()-0.5)*80, vy:-60-Math.random()*90, life:0}); }
+    for(let k=drops.length-1;k>=0;k--){ const d=drops[k]; d.life+=dt; d.vy+=260*dt; d.x+=d.vx*dt; d.y+=d.vy*dt; ball(ctx,d.x,d.y,2.5,'#5aa0e6'); if(d.y>waterY||d.life>1.5) drops.splice(k,1); }
+    lbl(ctx,W/2,H*0.95,'Die schwingenden Zinken schleudern Wasser weg.',12,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 02: Blitz und Donner zählen – Laufzeit als Entfernung (3 s ≈ 1 km).
+function thunderCount(root){ const c=root.querySelector('#c-thun'); if(!c) return; let t0=0; const period=5, gap=3;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000, tt=t%period; ctx.clearRect(0,0,W,H);
+    const cloudX=W*0.16, earX=W*0.86, gy=H*0.5;
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H*0.8); ctx.lineTo(W,H*0.8); ctx.stroke();
+    ctx.fillStyle='#9aa8c6'; [[-16,0,16],[0,-8,20],[18,0,15]].forEach(a=>{ ctx.beginPath(); ctx.arc(cloudX+a[0],gy-30+a[1],a[2],0,7); ctx.fill(); });
+    const flash = tt<0.25;
+    if(flash){ ctx.strokeStyle='#f2c200'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(cloudX,gy-14); ctx.lineTo(cloudX-8,gy+6); ctx.lineTo(cloudX+4,gy+6); ctx.lineTo(cloudX-6,gy+30); ctx.stroke(); }
+    ball(ctx,earX,gy,9,'#6b7280'); lbl(ctx,earX,gy+26,'Beobachter',11,'#5a6684');
+    const prog=Math.min(1, tt/gap), wx=cloudX+(earX-cloudX)*prog;
+    if(tt<gap){ ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2; for(let k=0;k<3;k++){ ctx.globalAlpha=0.7-k*0.2; ctx.beginPath(); ctx.arc(wx-k*10,gy,14,-1,1); ctx.stroke(); } ctx.globalAlpha=1; }
+    lbl(ctx,W/2,H*0.14, flash?'Blitz! Jetzt zählen …':(tt<gap?('… '+(Math.floor(tt)+1)+' Sekunde(n)'):'Donner!'), Math.max(14,Math.round(W*0.026)), (tt<gap&&!flash)?'#2f4fae':'#b23a26');
+    lbl(ctx,W/2,H*0.92,'Sekunden × 343 m/s ≈ Entfernung   (3 s ≈ 1 km)',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 02: Längswelle (Schall) und Querwelle (Wasser) im Bild gegenüberstellen.
+function longVsTrans(root){ const c=root.querySelector('#c-lt'); if(!c) return; let t0=0; const N=48, k=3;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const x0=W*0.08, x1=W*0.94, span=x1-x0, ph=t*1.4;
+    const y1=H*0.32, A1=span*0.02;
+    lbl(ctx,x0,y1-34,'Schall = Längswelle: Teilchen schwingen in Laufrichtung (vor/zurück)',12,'#2f4fae','left');
+    for(let i=0;i<N;i++){ const base=i/(N-1); const disp=A1*Math.sin((base*k-ph)*2*Math.PI); ball(ctx,x0+base*span+disp,y1,3,'#6b7a9c'); }
+    arrow(ctx,x0,y1+22,x1,y1+22,'#c4cbdb',1.5); lbl(ctx,x1,y1+34,'Laufrichtung →',11,'#9aa8c6','right');
+    const y2=H*0.72, A2=H*0.10;
+    lbl(ctx,x0,y2-48,'Wasserwelle = Querwelle: Teilchen schwingen quer (auf/ab)',12,'#177a4d','left');
+    ctx.strokeStyle='#7fb0ff'; ctx.lineWidth=2; ctx.beginPath();
+    for(let j=0;j<=120;j++){ const u=j/120, x=x0+u*span, y=y2 - A2*Math.sin((u*k-ph)*2*Math.PI); if(j===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke();
+    for(let i=0;i<N;i+=3){ const base=i/(N-1); const y=y2 - A2*Math.sin((base*k-ph)*2*Math.PI); ball(ctx,x0+base*span,y,3,'#25b071'); }
+    arrow(ctx,x0,y2+28,x1,y2+28,'#c4cbdb',1.5); lbl(ctx,x1,y2+40,'Laufrichtung →',11,'#9aa8c6','right');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 03: Zwei Töne nacheinander hören (tief/hoch als kleines Intervall). Nur Audio, kein Loop.
+function twoTones(root){ if(!root) return; let snd=null;
+  const stop=()=>{ if(snd){ try{snd.stop();}catch(_){}} snd=null; };
+  window.__stopSound=stop;
+  const play=seq=>{ stop(); try{ snd=_pulses(seq); }catch(e){ snd=null; } };
+  const bLo=root.querySelector('[data-act="lo"]'), bHi=root.querySelector('[data-act="hi"]'), bBoth=root.querySelector('[data-act="both"]');
+  if(bLo) bLo.addEventListener('click',()=>play([{t:0,f:262,dur:0.6,gain:0.2}]));
+  if(bHi) bHi.addEventListener('click',()=>play([{t:0,f:330,dur:0.6,gain:0.2}]));
+  if(bBoth) bBoth.addEventListener('click',()=>play([{t:0,f:262,dur:0.5,gain:0.2},{t:0.65,f:330,dur:0.5,gain:0.2}])); }
+
+// 03: Hörbereich 20 Hz–20 000 Hz als Skala mit Notenmarken; Marken hörbar.
+function hearingScale(root){ const c=root.querySelector('#c-hr'); if(!c) return; let t0=0, markF=null, node=null;
+  const stop=()=>{ if(node){ try{node.osc.stop();node.osc.disconnect();node.g.disconnect();}catch(_){}} node=null; root.querySelectorAll('[data-note]').forEach(b=>b.classList.remove('on')); };
+  window.__stopSound=stop;
+  root.querySelectorAll('[data-note]').forEach(b=>b.addEventListener('click',()=>{ const on=b.classList.contains('on'); stop(); if(on){ markF=null; return; } const f=+b.dataset.note; markF=f; try{ node=_tone(f,0.18); b.classList.add('on'); }catch(e){ node=null; } }));
+  const lo=Math.log10(20), hi=Math.log10(20000);
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; ctx.clearRect(0,0,W,H);
+    const x0=W*0.07, x1=W*0.93, y=H*0.56, px=f=>x0+(x1-x0)*(Math.log10(f)-lo)/(hi-lo);
+    ctx.fillStyle='#e6f3ec'; ctx.fillRect(x0,y-10,x1-x0,20);
+    lbl(ctx,W/2,H*0.16,'Der Mensch hört von etwa 20 Hz bis 20 000 Hz',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    [[20,'20 Hz'],[100,'100'],[1000,'1000'],[10000,'10 000'],[20000,'20 000 Hz']].forEach(m=>{ const x=px(m[0]); ctx.strokeStyle='#9aa8c6'; ctx.beginPath(); ctx.moveTo(x,y-6); ctx.lineTo(x,y+6); ctx.stroke(); lbl(ctx,x,y+18,m[1],10,'#5a6684'); });
+    [[65,'tiefes C'],[440,'Kammerton a'],[1047,'hohes C']].forEach(m=>{ const x=px(m[0]); ball(ctx,x,y,4,'#f2a521'); lbl(ctx,x,y-16,m[1],10,'#b06f00'); });
+    if(markF){ const x=px(markF); ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.moveTo(x,y-24); ctx.lineTo(x+7,y-36); ctx.lineTo(x-7,y-36); ctx.closePath(); ctx.fill(); lbl(ctx,x,y-44,markF+' Hz',13,'#b23a26'); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 04: Alltagsskala als Bild – von der tickenden Uhr bis zur Kettensäge, mit dB-Werten.
+function dbEveryday(root){ const c=root.querySelector('#c-dbe'); if(!c) return; let t0=0;
+  const D=[['tickende Uhr',20],['Flüstern',30],['Kühlschrank',40],['Gespräch',60],['Straße',80],['Presslufthammer',100],['Kettensäge',110]];
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; ctx.clearRect(0,0,W,H);
+    lbl(ctx,W/2,H*0.08,'Alltagsgeräusche und ihre Lautstärke',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    const x0=W*0.30, x1=W*0.80, top=H*0.18, bot=H*0.94, n=D.length, rh=(bot-top)/n;
+    D.forEach((d,i)=>{ const y=top+rh*i+rh*0.5, frac=d[1]/120, col=d[1]>=85?'#e5533c':(d[1]>=60?'#f2a521':'#25b071');
+      lbl(ctx,x0-8,y,d[0],12,'#5a6684','right');
+      ctx.fillStyle='#e7ecf6'; rr(ctx,x0,y-8,x1-x0,16,8); ctx.fill();
+      ctx.fillStyle=col; rr(ctx,x0,y-8,Math.max(10,(x1-x0)*frac),16,8); ctx.fill();
+      lbl(ctx,x1+8,y,d[1]+' dB',12,col,'left'); });
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 04: Abstand verdoppeln → etwa −6 dB.
+function distanceDb(root){ const c=root.querySelector('#c-dd'); if(!c) return; let t0=0, dist=1; const base=80;
+  const btns=root.querySelectorAll('[data-dist]');
+  const setD=d=>{ dist=d; btns.forEach(b=>b.classList.toggle('on',+b.dataset.dist===d)); };
+  if(btns.length){ setD(1); btns.forEach(b=>b.addEventListener('click',()=>setD(+b.dataset.dist))); }
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const sx=W*0.12, cy=H*0.55, ex=sx+(W*0.74)*(dist/8), db=base-6*Math.log2(dist);
+    lbl(ctx,W/2,H*0.12,'Abstand verdoppeln → etwa −6 dB',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    ctx.fillStyle='#8b93a7'; rr(ctx,sx-10,cy-14,10,28,3); ctx.fill();
+    ctx.fillStyle='#a7afc2'; ctx.beginPath(); ctx.moveTo(sx,cy-8); ctx.lineTo(sx+10,cy-16); ctx.lineTo(sx+10,cy+16); ctx.lineTo(sx,cy+8); ctx.closePath(); ctx.fill();
+    lbl(ctx,sx,cy+30,'Quelle',11,'#5a6684');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2; for(let k=0;k<4;k++){ const r0=((t*60+k*30)%120); ctx.globalAlpha=Math.max(0,1-r0/120)*0.8; ctx.beginPath(); ctx.arc(sx+6,cy,r0,-1,1); ctx.stroke(); } ctx.globalAlpha=1;
+    ball(ctx,ex,cy,9,'#6b7280'); lbl(ctx,ex,cy+26,dist+' m',13,'#5a6684');
+    lbl(ctx,ex,cy-24,Math.round(db)+' dB',15,db>=85?'#b23a26':'#177a4d');
+    lbl(ctx,W/2,H*0.9,'1 m: 80 dB · 2 m: 74 · 4 m: 68 · 8 m: 62',12,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 05: Entfernung aus der Echo-Laufzeit (Sonar/Fledermaus). Regler = gemessene Laufzeit.
+function echoDistance(root){ const c=root.querySelector('#c-ed'); if(!c) return; let t0=0;
+  const sl=root.querySelector('#sl-ed'), vv=root.querySelector('#val-ed');
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    const T=sl?+sl.value/10:2.0; if(vv) vv.textContent=T.toFixed(1)+' s';
+    const dist=Math.round(343*T/2), x0=W*0.12, wall=W*0.85, span=wall-x0, cy=H*0.5, period=Math.max(1.2,T);
+    ball(ctx,x0-4,cy,9,'#6b7280'); lbl(ctx,x0-4,cy+26,'Sender/Empfänger',11,'#5a6684');
+    ctx.fillStyle='#8b93a7'; rr(ctx,wall,cy-40,12,80,3); ctx.fill(); lbl(ctx,wall+6,cy+54,'Hindernis',11,'#5a6684');
+    const tt=(t%period)/period, out=tt<0.5, px= out? x0+span*(tt*2) : wall-span*((tt-0.5)*2), col= out?'#2f6df6':'#e5533c';
+    for(let k=0;k<3;k++){ ctx.globalAlpha=1-k*0.28; ball(ctx,px-(out?1:-1)*k*9,cy,5,col); } ctx.globalAlpha=1;
+    lbl(ctx,(x0+wall)/2,cy-30,out?'Schall läuft hin':'Echo kommt zurück',12,out?'#2f4fae':'#b23a26');
+    lbl(ctx,W/2,H*0.14,'Entfernung aus der Echo-Laufzeit',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    lbl(ctx,W/2,H*0.9,'Entfernung = 343 m/s × '+T.toFixed(1)+' s ÷ 2 = '+dist+' m',13,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 05: Halligkeit regeln – Raum mit/ohne Vorhänge, Nachhall hörbar.
+function reverbLab(root){ const c=root.querySelector('#c-rev'); if(!c) return; let t0=0, snd=null;
+  const sl=root.querySelector('#sl-rev'), vv=root.querySelector('#val-rev'), btn=root.querySelector('[data-act="rev"]');
+  const stop=()=>{ if(snd){ try{snd.stop();}catch(_){}} snd=null; };
+  window.__stopSound=stop;
+  const seqFor=h=>{ const refl=0.2+h/100*0.7, n=3+Math.round(h/9), seq=[]; for(let k=0;k<n;k++){ const g=0.24*Math.pow(refl,k); if(g<0.01) break; seq.push({t:k*0.15,f:520,dur:0.08,gain:g}); } return seq; };
+  if(btn) btn.addEventListener('click',()=>{ stop(); try{ snd=_pulses(seqFor(sl?+sl.value:60)); }catch(e){ snd=null; } });
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000, h=sl?+sl.value:60; if(vv) vv.textContent = h<33?'viele Vorhänge':(h<66?'teils möbliert':'kahler Raum');
+    const refl=0.2+h/100*0.7; ctx.clearRect(0,0,W,H);
+    lbl(ctx,W/2,H*0.14,'Halligkeit: Vorhänge schlucken den Nachhall',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    const rx=W*0.12, rw=W*0.76, ry=H*0.28, rh=H*0.42;
+    ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,rx,ry,rw,rh,10); ctx.stroke();
+    const cov=(1-h/100)*rh*0.9; ctx.fillStyle='rgba(178,58,38,.18)';
+    ctx.fillRect(rx+3,ry+rh/2-cov/2,10,cov); ctx.fillRect(rx+rw-13,ry+rh/2-cov/2,10,cov);
+    const cy=ry+rh/2, span=rw-30, period=0.9, b=Math.floor(t/period)%6, amp=Math.pow(refl,b), dir=b%2===0?1:-1, tt=(t%period)/period;
+    const bx= dir>0 ? rx+15+span*tt : rx+15+span*(1-tt);
+    ctx.globalAlpha=Math.max(0.15,amp); ball(ctx,bx,cy,7,'#2f6df6'); ctx.globalAlpha=1;
+    lbl(ctx,W/2,ry+rh+26, h<33?'kurzer Nachhall – der Schall ist schnell weg':(h<66?'mittlerer Nachhall':'langer Nachhall – es hallt'),12,'#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 06: Hörbereiche Mensch/Hund/Fledermaus als Balken nebeneinander (log. Skala).
+function hearingRanges(root){ const c=root.querySelector('#c-hg'); if(!c) return; let t0=0;
+  const lo=Math.log10(20), hi=Math.log10(120000);
+  const D=[['Mensch',20,20000,'#7fb0ff'],['Hund',40,45000,'#25b071'],['Fledermaus',1000,120000,'#f2a521']];
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; ctx.clearRect(0,0,W,H);
+    const x0=W*0.24, x1=W*0.94, px=f=>x0+(x1-x0)*(Math.log10(f)-lo)/(hi-lo);
+    lbl(ctx,W/2,H*0.1,'Wer hört welche Frequenzen?',Math.max(13,Math.round(W*0.024)),'#1b2440');
+    [[20,'20 Hz'],[1000,'1 kHz'],[20000,'20 kHz'],[120000,'120 kHz']].forEach(m=>{ const x=px(m[0]); ctx.strokeStyle='#d7deea'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,H*0.22); ctx.lineTo(x,H*0.86); ctx.stroke(); lbl(ctx,x,H*0.93,m[1],10,'#9aa8c6'); });
+    const xh=px(20000); ctx.strokeStyle='#b23a26'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(xh,H*0.2); ctx.lineTo(xh,H*0.86); ctx.stroke(); ctx.setLineDash([]);
+    lbl(ctx,xh,H*0.17,'obere Hörgrenze Mensch',10,'#b23a26');
+    D.forEach((d,i)=>{ const y=H*(0.34+i*0.17); ctx.fillStyle=d[3]; rr(ctx,px(d[1]),y-9,Math.max(6,px(d[2])-px(d[1])),18,9); ctx.fill(); lbl(ctx,x0-8,y,d[0],12,'#5a6684','right'); });
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// 06: Lautsprecher und Mikrofon als Umkehrung (Sender ↔ Empfänger).
+function micSpeaker(root){ const c=root.querySelector('#c-ms'); if(!c) return; let t0=0;
+  const node=(ctx,x,y,w,text,col)=>{ ctx.fillStyle=col; rr(ctx,x-w/2,y-16,w,32,8); ctx.fill(); lbl(ctx,x,y,text,12,'#1b2440'); };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const t=(ts-t0)/1000; ctx.clearRect(0,0,W,H);
+    lbl(ctx,W/2,H*0.1,'Lautsprecher und Mikrofon: derselbe Aufbau, umgekehrt genutzt',Math.max(12,Math.round(W*0.022)),'#1b2440');
+    const w=W*0.2, xA=W*0.2, xB=W*0.5, xC=W*0.8, vib=Math.sin(t*14)*3;
+    const y1=H*0.38;
+    lbl(ctx,W/2,y1-30,'Lautsprecher (Sender): Signal wird zu Schall',12,'#2f4fae');
+    node(ctx,xA,y1,w,'Signal','#fde6c2'); node(ctx,xB,y1,w,'Membran','#e7ecf6'); node(ctx,xC,y1,w,'Schall','#d7e6ff');
+    arrow(ctx,xA+w/2,y1,xB-w/2,y1,'#5a6684',2); arrow(ctx,xB+w/2,y1,xC-w/2,y1,'#5a6684',2); ball(ctx,xB+vib,y1,4,'#e5533c');
+    const y2=H*0.76;
+    lbl(ctx,W/2,y2-30,'Mikrofon (Empfänger): Schall wird zu Signal',12,'#177a4d');
+    node(ctx,xA,y2,w,'Schall','#d7e6ff'); node(ctx,xB,y2,w,'Membran','#e7ecf6'); node(ctx,xC,y2,w,'Signal','#fde6c2');
+    arrow(ctx,xA+w/2,y2,xB-w/2,y2,'#5a6684',2); arrow(ctx,xB+w/2,y2,xC-w/2,y2,'#5a6684',2); ball(ctx,xB+vib,y2,4,'#e5533c');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const PAGE={ area:'Akustik', slug:'schall-entsteht', title:'Wie Schall entsteht', h1:'Wie ein Ton entsteht' };
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Luft besteht aus Teilchen', html:
+   `<p>Auch die Luft besteht aus winzigen Teilchen. Normalerweise schwirren sie nur ungeordnet umher.</p>
+    <p>Man kann sie aber anstoßen und in eine geordnete Bewegung bringen. Genau das macht eine Schallquelle.</p>` },
+
+ { step:'Beispiel', title:'Der Lautsprecher schwingt', init:(r)=>airWave(r,{freq:3, play:262}), html:
+   `<p>Berührst du einen laufenden Lautsprecher vorsichtig, spürst du: Die Membran zittert schnell hin und her. Genauso schwingt eine gezupfte Gitarrensaite.</p>
+    <canvas class="viz" id="c-snd"></canvas>
+    <div class="modes"><button data-act="tone">▶ Ton anhören</button></div>
+    <div class="box frage"><span class="lbl">Denk nach</span>Was macht die schwingende Membran mit der Luft davor? Hörst du: Schwingung wird zum Ton?</div>` },
+
+ { step:'Das Konzept', title:'Schwingung erzeugt Schall', init:(r)=>airWave(r,{freq:3, mark:true}), html:
+   `<p>Die Schallquelle schwingt vor und zurück. Bei jeder Vorwärtsbewegung drückt sie die Luftteilchen zusammen – eine <b>Verdichtung</b>. Bei jeder Rückwärtsbewegung lässt sie ihnen mehr Platz – eine <b>Verdünnung</b>.</p>
+    <p>Dieses schnelle Wechseln aus Verdichtung und Verdünnung ist der Schall.</p>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0">Schall entsteht, wenn etwas schwingt.</p>
+      <p style="margin:.15rem 0">Die Schwingung drückt die Luftteilchen abwechselnd zusammen und auseinander.</p></div>` },
+
+ { step:'Ausprobieren', title:'Schnell oder langsam schwingen', init:membraneRate, html:
+   `<p>Schalte zwischen langsamer und schneller Schwingung der Membran um und hör den Ton dazu. Wie schnell die Membran schwingt, nennt man die Frequenz.</p>
+    <canvas class="viz" id="c-mem"></canvas>
+    <div class="modes"><button data-rate="langsam">langsam</button><button data-rate="schnell">schnell</button></div>
+    <div class="modes"><button data-act="tone">▶ Ton anhören</button></div>
+    <div class="box frage"><span class="lbl">Denk nach</span>Bei welcher Einstellung liegen die Verdichtungen dichter beieinander – und wie klingt der Ton dann?</div>` },
+
+ { step:'Mehr Beispiele', title:'Denk selbst nach', init:(r)=>{ revealCases(r); tuningForkWater(r); }, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <canvas class="mini" id="c-fork"></canvas>
+    <div class="cases">
+      <div class="case"><h3>Gezupfte Saite</h3><p>Eine gezupfte Gitarrensaite sieht man verschwommen zittern, solange sie klingt. Was bedeutet das?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Sie schwingt hin und her und stößt dabei die Luft an. Hält man sie an, ist der Ton sofort weg.</div></div>
+      <div class="case"><h3>Stimmgabel im Wasser</h3><p>Taucht man eine angeschlagene Stimmgabel ins Wasser, spritzt es. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Zinken schwingen schnell hin und her. Diese Schwingung schleudert das Wasser weg – im normalen Betrieb stößt sie die Luft an.</div></div>
+      <div class="case"><h3>Hand an den Hals</h3><p>Legst du beim Sprechen die Hand an den Hals, spürst du ein Kribbeln. Was ist das?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Deine Stimmbänder schwingen. Diese Schwingung erzeugt den Schall deiner Stimme.</div></div>
+      <div class="case"><h3>Lineal an der Tischkante</h3><p>Lässt man ein überstehendes Lineal an der Tischkante schnippen, brummt es. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Lineal schwingt schnell auf und ab und stößt dabei die Luft an. Diese Schwingung hört man als Ton.</div></div>
+      <div class="case"><h3>Reis auf der Trommel</h3><p>Streut man Reiskörner auf ein Trommelfell und schlägt daneben, hüpfen sie. Was zeigt das?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Fell schwingt, wenn die Trommel klingt. Diese Schwingung wirft die Reiskörner in die Höhe.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wie das zu Bekanntem passt', html:
+   `<div class="cases">
+      <div class="case"><h3>Das kennst du schon</h3><p>Alles besteht aus Teilchen – auch die Luft.</p></div>
+      <div class="case"><h3>Das ist neu</h3><p>Eine Schwingung ordnet die Luftteilchen zu Verdichtungen und Verdünnungen. Das ist Schall.</p></div>
+    </div>
+    <div class="box merke"><span class="lbl">Kurz</span>Kein Schwingen, kein Schall. Als Nächstes: Wie kommt der Schall zu unserem Ohr?</div>
+    <div class="box frage"><span class="lbl">Ausblick</span>In der nächsten Stunde probierst du aus, was passiert, wenn man die Luft wegnimmt (Vakuum): Kein Medium, kein Schall.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p><b>Wie entsteht ein Ton?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Etwas schwingt und stößt die Luftteilchen an.</button>
+       <button class="choice" data-ok="0">Die Luft wird warm.</button>
+       <button class="choice" data-ok="0">Die Luftteilchen leuchten.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Eine Schwingung erzeugt abwechselnd Verdichtungen und Verdünnungen der Luft – das ist Schall.</div></div></div>
+    <div class="q"><p>Du hältst die schwingende Saite mit dem Finger an. <b>Was passiert mit dem Ton?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Er hört sofort auf.</button>
+       <button class="choice" data-ok="0">Er wird lauter.</button>
+       <button class="choice" data-ok="0">Er wird höher.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Ohne Schwingung kein Schall – der Ton verstummt.</div></div></div>
+    <div class="q"><p><b>Was ist eine Verdichtung?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Eine Stelle, an der die Luftteilchen dicht zusammengedrückt sind.</button>
+       <button class="choice" data-ok="0">Eine Stelle ganz ohne Luftteilchen.</button>
+       <button class="choice" data-ok="0">Ein besonders warmes Luftpaket.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Bei einer Verdichtung sind die Teilchen zusammengedrückt; bei einer Verdünnung haben sie mehr Platz.</div></div></div>
+    <div class="q"><p><b>Was passiert mit der Luft direkt vor einer schwingenden Membran?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Sie wird abwechselnd zusammengedrückt und wieder auseinandergelassen.</button>
+       <button class="choice" data-ok="0">Sie wird nur erwärmt.</button>
+       <button class="choice" data-ok="0">Sie strömt als Wind mit dem Ton mit.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Bei jeder Vorwärtsbewegung entsteht eine Verdichtung, bei jeder Rückwärtsbewegung eine Verdünnung. Dieser Wechsel ist der Schall.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#tag').textContent=PAGE.area||'Physik'; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

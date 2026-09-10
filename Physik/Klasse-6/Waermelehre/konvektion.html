@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:4ch; text-align:right}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font-size:1rem; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag">Wärmelehre</span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+const PAGE={ slug:'konvektion', title:'Konvektion', h1:'Wie Wärme mit Strömungen wandert' };
+
+// Konvektionskreislauf: warm steigt in der Mitte (rot), kuehl sinkt an den Seiten (blau)
+function animConvect(root,o){ o=o||{}; const c=root.querySelector(o.sel||'#c-cv'); if(!c) return;
+  let P=[]; for(let i=0;i<44;i++) P.push({x:0.08+Math.random()*0.84, y:0.08+Math.random()*0.84});
+  let last=0, mode='heiz';
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+    const bx=W*0.14, by=H*0.2, bw=W*0.72, bh=H*0.56, sp=0.55;
+    P.forEach(p=>{ const mid=Math.abs(p.x-0.5)<0.2; let vx=0, vy=mid?-sp:sp;
+      if(p.y<0.2) vx=(p.x<0.5?-1:1)*sp; else if(p.y>0.8) vx=(p.x<0.5?1:-1)*sp;
+      p.x+=vx*dt; p.y+=vy*dt;
+      p.x=Math.max(0.05,Math.min(0.95,p.x)); p.y=Math.max(0.05,Math.min(0.95,p.y)); p.mid=mid; });
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='rgba(127,176,255,.12)'; ctx.strokeStyle='#6f83ab'; ctx.lineWidth=2; rr(ctx,bx,by,bw,bh,10); ctx.fill(); ctx.stroke();
+    P.forEach(p=> ball(ctx, bx+p.x*bw, by+p.y*bh, Math.min(bw,bh)*0.03, p.mid?'#e5533c':'#4a90ff'));
+    const cx=bx+bw/2;
+    if(mode==='koch'){
+      const fy=by+bh+18; ctx.fillStyle='#f2a521'; ctx.beginPath(); ctx.moveTo(cx,fy-22); ctx.quadraticCurveTo(cx+11,fy-4,cx,fy+6); ctx.quadraticCurveTo(cx-11,fy-4,cx,fy-22); ctx.fill();
+      ctx.strokeStyle='#6f83ab'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(bx, by+bh*0.22, 10, Math.PI*0.5, Math.PI*1.5); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx+bw, by+bh*0.22, 10, -Math.PI*0.5, Math.PI*0.5); ctx.stroke();
+      lbl(ctx, cx, by+bh+34, 'Kochtopf auf dem Herd', 14, '#5a6684');
+    } else {
+      const rw=bw*0.34, rh=H*0.09, rx=cx-rw/2, ry=by+bh+8;
+      ctx.fillStyle='#e7ecf6'; ctx.strokeStyle='#b23a26'; ctx.lineWidth=2; rr(ctx,rx,ry,rw,rh,5); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle='rgba(178,58,38,.45)'; ctx.lineWidth=2; for(let xx=rx+6; xx<rx+rw-3; xx+=7){ ctx.beginPath(); ctx.moveTo(xx,ry+3); ctx.lineTo(xx,ry+rh-3); ctx.stroke(); }
+      lbl(ctx, cx, ry+rh+14, 'Heizkörper im Raum', 14, '#5a6684');
+    }
+    // Strömungspfeile direkt beschriften
+    arrow(ctx, cx, by+bh*0.72, cx, by+bh*0.3, 'rgba(229,83,60,.85)', 3);
+    lbl(ctx, cx+10, by+bh*0.5, 'warm steigt auf', 13, '#b23a26', 'left');
+    arrow(ctx, bx+bw*0.13, by+bh*0.32, bx+bw*0.13, by+bh*0.72, 'rgba(47,109,246,.85)', 3);
+    arrow(ctx, bx+bw*0.87, by+bh*0.32, bx+bw*0.87, by+bh*0.72, 'rgba(47,109,246,.85)', 3);
+    lbl(ctx, bx+bw*0.13, by+bh*0.82, 'kühl sinkt', 14, '#2f6df6');
+    lbl(ctx, bx+bw*0.87, by+bh*0.82, 'kühl sinkt', 14, '#2f6df6');
+    lbl(ctx, cx, by-8, 'Erwärmtes steigt in der Mitte auf (rot), Kühleres sinkt an den Seiten (blau)', 13.5, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  root.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mode;
+    root.querySelectorAll('[data-mode]').forEach(x=>x.className='btn ghost'); b.className='btn'; }));
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Thermik: über erwärmtem Boden steigt Luft auf, ein Greifvogel kreist darauf nach oben
+function animThermik(root){ const c=root.querySelector('#c-thermik'); if(!c) return; let last=0, t=0, P=[];
+  for(let i=0;i<22;i++) P.push({x:Math.random(), y:Math.random(), s:0.08+Math.random()*0.12});
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t+=dt;
+    ctx.clearRect(0,0,W,H);
+    const groundY=H*0.86, topY=H*0.12, cx=W*0.5, colW=W*0.4;
+    // Sonne
+    const sx=W*0.14, sy=H*0.2, sr=Math.min(W,H)*0.07; ctx.fillStyle='#f5b301'; ctx.beginPath(); ctx.arc(sx,sy,sr,0,7); ctx.fill();
+    for(let i=0;i<8;i++){ const a=i*Math.PI/4; ctx.strokeStyle='#f5b301'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(sx+Math.cos(a)*sr*1.2,sy+Math.sin(a)*sr*1.2); ctx.lineTo(sx+Math.cos(a)*sr*1.5,sy+Math.sin(a)*sr*1.5); ctx.stroke(); }
+    // erwärmter Boden
+    ctx.fillStyle='#c98f6b'; rr(ctx, cx-colW/2, groundY, colW, H*0.06, 4); ctx.fill();
+    lbl(ctx, cx, groundY+H*0.03, 'erwärmter Boden', 13, '#fff');
+    // aufsteigende warme Luft
+    P.forEach(p=>{ p.y-=p.s*dt; if(p.y<0){ p.y=1; p.x=Math.random(); } });
+    P.forEach(p=>{ const px=cx-colW/2+p.x*colW, py=groundY-p.y*(groundY-topY); ctx.fillStyle='rgba(229,83,60,'+(0.25+0.4*p.y).toFixed(2)+')'; ctx.beginPath(); ctx.arc(px,py,4,0,7); ctx.fill(); });
+    // Greifvogel kreist spiralförmig nach oben
+    const cyc=7, ph=(t%cyc)/cyc, by=groundY-(groundY-topY)*ph, ang=t*2.4, bx=cx+Math.cos(ang)*colW*0.32;
+    const wing=Math.min(W,H)*0.04*(0.8+0.2*Math.sin(ang));
+    ctx.strokeStyle='#3a4256'; ctx.lineWidth=3; ctx.beginPath();
+    ctx.moveTo(bx-wing, by); ctx.quadraticCurveTo(bx-wing*0.3, by-wing*0.5, bx, by); ctx.quadraticCurveTo(bx+wing*0.3, by-wing*0.5, bx+wing, by); ctx.stroke();
+    lbl(ctx, W/2, topY-2, 'warme Luft steigt auf (Thermik)', 13.5, '#5a6684');
+    lbl(ctx, W/2, H*0.98, 'Der Greifvogel kreist auf der Strömung nach oben – ohne Flügelschlag', 12.5, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Erwärmtes ist leichter', init:(r)=>animConvect(r,{sel:'#c-cv-mini'}), html:
+   `<p>In Flüssigkeiten und Gasen sind die Teilchen frei beweglich – anders als im festen Stoff.</p>
+    <p>Und du weißt schon: Wärme dehnt einen Stoff aus. Erwärmtes Wasser oder erwärmte Luft ist dadurch dünner und leichter als der kühlere Teil daneben.</p>
+    <canvas class="mini" id="c-cv-mini"></canvas>` },
+
+ { step:'Beispiel', title:'Der Heizkörper wärmt den ganzen Raum', init:animConvect, html:
+   `<p>Ein Heizkörper sitzt unten an der Wand, trotzdem wird der ganze Raum warm – bis hoch zur Decke. Auch im Kochtopf beginnt das Wasser zu strömen, lange bevor es kocht.</p>
+    <canvas class="viz" id="c-cv"></canvas>
+    <div class="nav"><button class="btn" data-mode="heiz">Heizkörper</button><button class="btn ghost" data-mode="koch">Kochtopf</button></div>
+    <div class="box frage"><span class="lbl">Denk nach</span>Wie kommt die Wärme von unten nach oben und in den ganzen Raum?</div>` },
+
+ { step:'Das Konzept', title:'Die Strömung trägt die Wärme mit', init:animConvect, html:
+   `<p>Das erwärmte Wasser (oder die erwärmte Luft) dehnt sich aus, wird leichter und steigt auf. Oben kühlt es ab, wird schwerer und sinkt wieder.</p>
+    <p>So entsteht ein Kreislauf, der die Wärme im ganzen Raum verteilt. Die Teilchen wandern dabei selbst mit.</p>
+    <canvas class="viz" id="c-cv"></canvas>
+    <div class="nav"><button class="btn" data-mode="heiz">Heizkörper</button><button class="btn ghost" data-mode="koch">Kochtopf</button></div>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0">Konvektion: erwärmter Stoff steigt auf, kühlerer sinkt ab – ein Kreislauf verteilt die Wärme.</p>
+      <p style="margin:.15rem 0">Das geht nur in Flüssigkeiten und Gasen, weil sich dort die Teilchen frei bewegen können.</p></div>` },
+
+ { step:'Thermik', title:'Konvektion in der Natur', init:animThermik, html:
+   `<p>Konvektion gibt es auch im Großen. Die Sonne erwärmt den Boden, darüber steigt warme Luft auf – das nennt man <b>Thermik</b>.</p>
+    <canvas class="viz" id="c-thermik"></canvas>
+    <p class="lead">Greifvögel und Segelflieger nutzen diese aufsteigende Luft: Sie kreisen darin und lassen sich nach oben tragen, ohne mit den Flügeln zu schlagen.</p>` },
+
+ { step:'Mehr Beispiele', title:'Denk selbst nach', init:revealCases, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Heizung unter dem Fenster</h3><p>Warum baut man Heizkörper oft direkt unter das Fenster?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Am kalten Fenster sinkt kühle Luft nach unten. Der Heizkörper darunter erwärmt sie, sie steigt wieder auf – so entsteht ein Kreislauf und es zieht nicht.</div></div>
+      <div class="case"><h3>Greifvögel kreisen</h3><p>Adler und Segelflieger kreisen ohne Flügelschlag nach oben. Was trägt sie nach oben?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Über erwärmtem Boden steigt die erwärmte Luft auf (Thermik). Auf dieser aufsteigenden Strömung lassen sich die Vögel nach oben tragen.</div></div>
+      <div class="case"><h3>Oben ist es wärmer</h3><p>Im Zimmer ist es an der Decke wärmer als am Boden. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Erwärmte Luft ist leichter und sammelt sich oben. Die kühlere, schwerere Luft bleibt am Boden.</div></div>
+      <div class="case"><h3>Wind am Meer</h3><p>Tagsüber weht am Strand oft ein Wind vom Meer zum Land. Woher kommt er?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Land erwärmt sich tagsüber schneller als das Wasser. Über dem Land steigt die warme Luft auf, kühle Luft vom Meer strömt nach – das ist der Seewind. Nachts kühlt das Land schneller ab und es kehrt sich um (Landwind). Das ist Konvektion im ganz Großen.</div></div>
+      <div class="case"><h3>Rauch über dem Feuer</h3><p>Der Rauch eines Lagerfeuers steigt immer nach oben. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Luft über dem Feuer wird erwärmt, dehnt sich aus und wird leichter. Sie steigt auf und nimmt den Rauch mit nach oben.</div></div>
+      <div class="case"><h3>Nudeln im Kochtopf</h3><p>Im kochenden Wasser wirbeln die Nudeln ständig herum. Was treibt sie an?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Am heißen Topfboden steigt erwärmtes Wasser auf, kühleres sinkt nach unten. Dieser Kreislauf nimmt die Nudeln mit und wirbelt sie herum.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wie das zu Bekanntem passt', html:
+   `<div class="cases">
+      <div class="case"><h3>Das kennst du schon</h3><p>Bei der Wärmeleitung bleibt der Stoff an Ort und Stelle, nur die Bewegung wird weitergegeben.</p></div>
+      <div class="case"><h3>Das ist neu</h3><p>Bei der Konvektion wandern die Teilchen selbst mit – deshalb geht das nur in Flüssigkeiten und Gasen.</p></div>
+    </div>
+    <div class="box merke"><span class="lbl">Kurz</span>Konvektion ist der zweite Transportweg. Der dritte, die Wärmestrahlung, kommt als Nächstes.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Du hältst die Hand einmal über, einmal neben eine Kerze (gleich weit weg). <b>Wo wird es wärmer?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Über der Kerze – die erwärmte Luft steigt auf.</button>
+       <button class="choice" data-ok="0">Neben der Kerze.</button>
+       <button class="choice" data-ok="0">Überall gleich.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Über der Kerze: Die erwärmte, leichtere Luft steigt auf und trägt die Wärme nach oben.</div></div></div>
+    <div class="q"><p><b>Warum baut man Heizkörper meist unten an die Wand?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Erwärmte Luft steigt auf und verteilt sich im ganzen Raum.</button>
+       <button class="choice" data-ok="0">Erwärmte Luft sinkt nach unten.</button>
+       <button class="choice" data-ok="0">Nur aus Platzgründen.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Unten erwärmte Luft steigt auf, kühlt oben ab und sinkt wieder – dieser Kreislauf verteilt die Wärme.</div></div></div>
+    <div class="q"><p><b>Wo gibt es Konvektion?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="0">In festen Stoffen.</button>
+       <button class="choice" data-ok="1">In Flüssigkeiten und Gasen.</button>
+       <button class="choice" data-ok="0">Nur im leeren Raum.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Nur wo sich Teilchen frei bewegen können – in Flüssigkeiten und Gasen. In festen Stoffen strömt nichts.</div></div></div>
+    <div class="q"><p><b>Was bewegt sich bei der Konvektion?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Der erwärmte Stoff strömt selbst mit und trägt die Wärme.</button>
+       <button class="choice" data-ok="0">Der Stoff bleibt, nur die Bewegung wird weitergegeben.</button>
+       <button class="choice" data-ok="0">Nichts, die Wärme strahlt durch den leeren Raum.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Bei der Konvektion wandern die Teilchen selbst mit. Darum geht das nur in Flüssigkeiten und Gasen.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

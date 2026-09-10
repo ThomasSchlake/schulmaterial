@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.55rem 1.1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag" id="tag"></span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+// Klasse 9 – Mechanik: gemeinsame Zeichen-Helfer für Bewegungsdiagramme.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr. Farben am Bildschirm erlaubt.
+
+// Zeichnet einen Diagrammrahmen (Ursprung unten links) mit beschrifteten Achsen.
+// box = {x,y,w,h}. Gibt Mapper X(wert), Y(wert) und die Achsdaten zurück.
+function chartFrame(ctx, box, xMax, yMax, xlab, ylab){
+  const {x,y,w,h}=box, ox=x+40, oy=y+h-28, pw=w-52, ph=h-42;
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox, y+6); ctx.lineTo(ox, oy); ctx.lineTo(ox+pw, oy); ctx.stroke();
+  arrow(ctx, ox, oy+0.1, ox, y+4, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy+16, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+2, y+2, ylab, 13, '#5a6684', 'left');
+  const X = v => ox + (v/xMax)*pw, Y = v => oy - (v/yMax)*ph;
+  // Achsen-Zahlen (damit man Werte und Steigung ablesen kann)
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (Number.isInteger(r)?r:r.toFixed(1).replace('.',',')); };
+  const xs=nice(xMax), ys=nice(yMax);
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  for(let v=xs; v<=xMax+1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#8a94a8', 'right');
+  return { X, Y, ox, oy, pw, ph };
+}
+
+// Kleine Bewegungs-Bahn: Kugel bei Bruchteil p (0..1) auf einer waagerechten Strecke,
+// optional mit Zeitmarken an den übergebenen Positionen (Bruchteile 0..1).
+function track(ctx, x, y, w, ball_col, p, marks){
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y); ctx.stroke();
+  if(marks) marks.forEach(m=>{ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+m*w, y-7); ctx.lineTo(x+m*w, y+7); ctx.stroke(); });
+  ball(ctx, x + Math.max(0,Math.min(1,p))*w, y, 9, ball_col);
+}
+
+// Kariertes Koordinatensystem, das ±R Kästchen in box zeigt (Ursprung mittig).
+// Gibt Mapper X(u),Y(v) (v nach oben positiv) und die Zellgröße zurück.
+function coordGrid(ctx, box, R){
+  const {x,y,w,h}=box, cell=Math.min(w,h)/(2*R+1), ox=x+w/2, oy=y+h/2;
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  ctx.strokeStyle='#e6ebf5'; ctx.lineWidth=1;
+  for(let k=-R;k<=R;k++){
+    ctx.beginPath(); ctx.moveTo(ox+k*cell,y); ctx.lineTo(ox+k*cell,y+h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,oy+k*cell); ctx.lineTo(x+w,oy+k*cell); ctx.stroke();
+  }
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x,oy); ctx.lineTo(x+w,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,y); ctx.lineTo(ox,y+h); ctx.stroke();
+  // Einheitszahlen an den Achsen (jede zweite Marke, damit es nicht überläuft)
+  for(let k=-R;k<=R;k++){ if(k===0 || k%2!==0) continue;
+    lbl(ctx, ox+k*cell, oy+13, String(k), 11, '#9aa3b5');
+    lbl(ctx, ox-8, oy-k*cell, String(k), 11, '#9aa3b5', 'right'); }
+  ctx.restore();
+  return { X:u=>ox+u*cell, Y:v=>oy-v*cell, ox, oy, cell };
+}
+
+const PAGE={ area:'Mechanik', slug:'beschleunigung', title:'Beschleunigung', h1:'Wenn sich das Tempo ändert' };
+
+// Das Konzept – Körper wird schneller: jede Sekunde kommt Tempo dazu (mit Tempo-Balken)
+function animAccel(root){ const c=root.querySelector('#c-acc'); if(!c) return; let last=0, t=0; const a=2.5;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%4; ctx.clearRect(0,0,W,H);
+    const x0=W*0.08, tw=W*0.84, y=H*0.42, smax=0.5*a*16;
+    track(ctx,x0,y,tw,'#e5533c', Math.min(1,(0.5*a*t*t)/smax));
+    const bx=W*0.24, bw=W*0.6, by=H*0.14, v=a*t, vmax=a*4;
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.strokeRect(bx,by,bw,14);
+    ctx.fillStyle='#e5533c'; ctx.fillRect(bx,by,bw*Math.min(1,v/vmax),14);
+    lbl(ctx, bx-6, by+7, 'Tempo', 13, '#5a6684', 'right');
+    lbl(ctx, W*0.5, H*0.66, 't = '+t.toFixed(1)+' s      v = '+(a*t).toFixed(1)+' m/s', 16, '#1b2440');
+    lbl(ctx, W*0.5, H*0.82, 'jede Sekunde kommen '+a.toFixed(1)+' m/s dazu  →  a = '+a.toFixed(1)+' m/s²', 15, '#b23a26');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Einordnung – gleichförmig vs. beschleunigt nebeneinander, mit Mini-v-t
+function contrastLab(root){ const c=root.querySelector('#c-cmp'); if(!c) return; let last=0, t=0; const T=5;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=t+dt; if(t>T) t=0; ctx.clearRect(0,0,W,H);
+    const x0=W*0.06, tw=W*0.56, yA=H*0.3, yB=H*0.64;
+    const v0=tw/T, a=2*tw/(T*T);
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(x0,yA); ctx.lineTo(x0+tw,yA); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,yB); ctx.lineTo(x0+tw,yB); ctx.stroke();
+    for(let k=1;k<=Math.floor(t);k++){ const xc=x0+Math.min(tw,v0*k), xb=x0+Math.min(tw,0.5*a*k*k);
+      ctx.strokeStyle='#7fb0ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(xc,yA-9); ctx.lineTo(xc,yA+9); ctx.stroke();
+      ctx.strokeStyle='#f0997b'; ctx.beginPath(); ctx.moveTo(xb,yB-9); ctx.lineTo(xb,yB+9); ctx.stroke(); }
+    ball(ctx, x0+Math.min(tw,v0*t), yA, 11, '#2f6df6');
+    ball(ctx, x0+Math.min(tw,0.5*a*t*t), yB, 11, '#e5533c');
+    lbl(ctx, x0, yA-22, 'gleichförmig – v bleibt gleich', 13, '#1f4fc4', 'left');
+    lbl(ctx, x0, yB-22, 'beschleunigt – v wächst', 13, '#b23a26', 'left');
+    const mx=W*0.68, mw=W*0.26, miniVT=(cy,rising)=>{ const a0=mx, b0=cy+30, ah=52;
+      ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(a0,b0-ah); ctx.lineTo(a0,b0); ctx.lineTo(a0+mw,b0); ctx.stroke();
+      ctx.strokeStyle=rising?'#e5533c':'#2f6df6'; ctx.lineWidth=2.4; ctx.beginPath();
+      if(rising){ ctx.moveTo(a0,b0); ctx.lineTo(a0+mw,b0-ah*0.9); } else { ctx.moveTo(a0,b0-ah*0.5); ctx.lineTo(a0+mw,b0-ah*0.5); } ctx.stroke();
+      lbl(ctx, a0+mw/2, b0+12, 'v-t', 13, '#8a94a8'); };
+    miniVT(yA, false); miniVT(yB, true);
+    lbl(ctx, W*0.5, H*0.9, 'Marken je Sekunde: oben gleiche Abstände, unten immer größere.', 13, '#1b2440');
+    lbl(ctx, W*0.5, H*0.97, 't = '+t.toFixed(1)+' s', 13, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Aus der Geschwindigkeits-Stunde', html:
+   `<p>Das brauchst du:</p>
+    <ul>
+      <li>Geschwindigkeit ist <b>Weg pro Zeit</b>: v = s/t (in m/s).</li>
+      <li><b>Gleichförmig</b> heißt: die Geschwindigkeit bleibt gleich.</li>
+    </ul>
+    <p>In dieser Stunde geht es darum, was passiert, wenn sich die Geschwindigkeit <b>ändert</b>.</p>` },
+
+ { step:'Das Konzept', title:'Das Tempo ändert sich', init:animAccel, html:
+   `<p>Wird ein Körper immer schneller (oder langsamer), ist die Bewegung <b>beschleunigt</b>. Beim Anfahren wird ein Auto mit jeder Sekunde schneller.</p>
+    <canvas class="viz" id="c-acc"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>Die <b>Beschleunigung</b> sagt, wie stark sich die Geschwindigkeit pro Zeit ändert: <b>a = Δv / Δt</b>. Einheit: Meter pro Sekunde im Quadrat (m/s²).</div>` },
+
+ { step:'Mehr Beispiele', title:'Rechne selbst nach', init:revealCases, html:
+   `<p>a = Δv / Δt. Überlege erst – dann aufdecken.</p>
+    <div class="cases">
+      <div class="case"><h3>Anfahren</h3><p>Ein Auto wird in 8 s von 0 auf 20 m/s schnell. Wie groß ist a?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>a = Δv / Δt = 20 m/s ÷ 8 s = 2,5 m/s².</div></div>
+      <div class="case"><h3>Freier Fall</h3><p>Was bedeutet a = 10 m/s²?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Jede Sekunde wird ein fallender Körper um 10 m/s schneller (Ortsfaktor der Erde, gerundet).</div></div>
+      <div class="case"><h3>Bremsen</h3><p>Ein Rad wird in 6 s von 12 m/s auf 0 gebremst. Was passiert mit v?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Δv = −12 m/s in 6 s → a = −2 m/s². Das Minus heißt: die Geschwindigkeit nimmt ab (Bremsen).</div></div>
+      <div class="case"><h3>U-Bahn</h3><p>Eine U-Bahn wird in 5 s von 0 auf 15 m/s schnell. Wie groß ist a?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>a = Δv / Δt = 15 m/s ÷ 5 s = 3 m/s².</div></div>
+      <div class="case"><h3>Endgeschwindigkeit</h3><p>Ein Körper startet bei 0 und beschleunigt 4 s lang mit 2,5 m/s². Wie schnell ist er dann?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Aus a = Δv/Δt folgt Δv = a · Δt = 2,5 m/s² · 4 s = 10 m/s.</div></div>
+      <div class="case"><h3>Fall von der Mauer</h3><p>Jemand springt von einer Mauer. Mit welcher Geschwindigkeit landet er nach 0,5 s? (g = 10 m/s²)</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Δv = g · t = 10 m/s² · 0,5 s = 5 m/s.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Gleichförmig oder beschleunigt?', init:contrastLab, html:
+   `<p>Der Unterschied wird nebeneinander sichtbar: Beide starten gleichzeitig, bei jeder Sekunde wird eine Marke gesetzt.</p>
+    <canvas class="viz" id="c-cmp"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0"><b>Gleichförmig:</b> gleiche Abstände, die Beschleunigung ist <b>null</b>.</p>
+      <p style="margin:.15rem 0"><b>Beschleunigt:</b> immer größere Abstände, die Geschwindigkeit wächst.</p>
+      <p style="margin:.15rem 0">Auch schnell und gleichmäßig fahren ist <b>keine</b> Beschleunigung – erst wenn sich das Tempo ändert.</p></div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Ein Motorrad wird in 4 s von 0 auf 24 m/s schnell. <b>Wie groß ist a?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">6 m/s²</button>
+       <button class="choice" data-ok="0">24 m/s²</button>
+       <button class="choice" data-ok="0">96 m/s²</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>a = Δv / Δt = 24 m/s / 4 s = 6 m/s².</div></div></div>
+    <div class="q"><p>Ein Auto fährt konstant 100 km/h. <b>Wie groß ist seine Beschleunigung?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">null – das Tempo ändert sich nicht</button>
+       <button class="choice" data-ok="0">100 m/s²</button>
+       <button class="choice" data-ok="0">sehr groß, weil es schnell ist</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Schnell ≠ beschleunigt. Bleibt v gleich, ist a = 0.</div></div></div>
+    <div class="q"><p>Die Einheit der Beschleunigung ist …</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">m/s²</button>
+       <button class="choice" data-ok="0">m/s</button>
+       <button class="choice" data-ok="0">km/h</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>a = (m/s) pro s = m/s².</div></div></div>
+    <div class="q"><p>Ein Körper fällt (g = 10 m/s²). <b>Um wie viel wird er in 3 s schneller?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">um 30 m/s</button>
+       <button class="choice" data-ok="0">um 10 m/s</button>
+       <button class="choice" data-ok="0">um 3 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Δv = a · t = 10 m/s² · 3 s = 30 m/s.</div></div></div>
+    <div class="q"><p>Ein Zug bremst von 20 m/s in 10 s bis zum Stillstand. <b>Wie groß ist a?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">−2 m/s²</button>
+       <button class="choice" data-ok="0">−200 m/s²</button>
+       <button class="choice" data-ok="0">+2 m/s²</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Δv = −20 m/s in 10 s → a = −2 m/s² (Minus = Bremsen).</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#tag').textContent=PAGE.area||'Physik'; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1209 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schaltzeichen und Schaltungen</title>
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#ffffff; --ink:#1f2933; --muted:#5b6b7b;
+    --wire:#28323c; --live:#ffb300; --glow:#ffd21e; --accent:#1565c0;
+    --accent2:#e8f0fe; --line:#d3dae3; --off:#9aa7b4; --good:#2e7d32;
+    --e:#1e88e5; --e1:#e53935; --e2:#8e24aa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI",system-ui,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:18px; line-height:1.4;
+    -webkit-text-size-adjust:100%;
+    display:flex; flex-direction:column; min-height:100vh; min-height:100dvh;
+  }
+  header{
+    background:var(--panel); border-bottom:2px solid var(--line);
+    padding:14px 20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    position:sticky; top:0; z-index:20;
+  }
+  header h1{font-size:24px; margin:0; font-weight:700}
+  header .sub{color:var(--muted); font-size:16px}
+  .spacer{flex:1}
+  .toggle{
+    display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer;
+    background:var(--accent2); border:2px solid var(--accent); color:var(--accent);
+    padding:8px 14px; border-radius:999px; font-weight:600; font-size:16px;
+  }
+  .toggle input{width:20px; height:20px; accent-color:var(--accent); cursor:pointer}
+  .navwrap{ display:flex; align-items:flex-end; gap:6px; padding:12px 16px 0; }
+  .navwrap nav{ flex:1 1 auto; padding:0; }
+  .navarrow{
+    flex:0 0 auto; height:42px; width:40px; margin-bottom:0;
+    font:inherit; font-size:22px; font-weight:700; line-height:1; cursor:pointer;
+    color:var(--accent); background:var(--accent2);
+    border:2px solid var(--accent); border-radius:10px; touch-action:manipulation;
+  }
+  .navarrow:active{ background:var(--accent); color:#fff; }
+  nav{
+    display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; padding:12px 20px 0;
+    -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain;
+    scrollbar-width:none;
+  }
+  nav::-webkit-scrollbar{ display:none; }
+  nav button{
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer;
+    border:2px solid var(--line); background:var(--panel); color:var(--ink);
+    padding:9px 16px; border-radius:12px 12px 0 0;
+    flex:0 0 auto; white-space:nowrap; touch-action:pan-x;
+  }
+  nav button.active{ border-color:var(--accent); border-bottom-color:var(--panel);
+    color:var(--accent); background:var(--panel); }
+  main{padding:0 20px 40px}
+  .panel{
+    background:var(--panel); border:2px solid var(--accent); border-radius:0 12px 12px 12px;
+    padding:20px; margin-top:0;
+  }
+  .lead{color:var(--muted); max-width:70ch; margin:0 0 6px}
+  h2{margin:0 0 10px; font-size:22px}
+  .stage{display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start}
+  .board{
+    flex:1 1 560px; min-width:320px;
+    background:#fbfcfe; border:2px solid var(--line); border-radius:12px; padding:8px;
+  }
+  .side{flex:1 1 260px; min-width:240px}
+  svg{width:100%; height:auto; display:block; touch-action:manipulation}
+  .status{
+    font-size:19px; font-weight:600; padding:12px 14px; border-radius:10px;
+    background:var(--accent2); border:2px solid var(--line); margin-bottom:12px;
+  }
+  .status.on{ background:#eafbea; border-color:#a5d6a7; color:var(--good) }
+  .info{color:var(--muted); font-size:16px}
+  .info b{color:var(--ink)}
+  .btn{
+    font:inherit; font-weight:600; cursor:pointer; border:2px solid var(--accent);
+    background:var(--panel); color:var(--accent); padding:8px 16px; border-radius:10px;
+  }
+  .btn:active{background:var(--accent2)}
+  .hint{background:#fff8e1; border:2px solid #ffe082; border-radius:10px; padding:10px 12px;
+    font-size:16px; margin-top:12px}
+  /* SVG components */
+  .wire{fill:none; stroke:var(--wire); stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
+  .term{fill:none; stroke:var(--wire); stroke-width:5; stroke-linecap:round}
+  /* Elektronen als einzelne Teilchen (Positionen setzt das Skript pro Bild) */
+  .flow circle{fill:var(--e)}
+  .hideflow .flow, .hideflow .enamed{ display:none }
+  .enamed circle{ stroke:#fff; stroke-width:2 }
+  .enamed text{ font:700 13px "Segoe UI",Arial,sans-serif; paint-order:stroke; stroke:#fff; stroke-width:3px }
+  .node{fill:var(--wire)}
+  .sym{fill:none; stroke:var(--wire); stroke-width:4; stroke-linecap:round; stroke-linejoin:round}
+  .symfill{fill:var(--wire)}
+  .glass{fill:#fff}
+  .lampglow{ fill:var(--glow); opacity:0; transition:opacity .12s }
+  .lamp-on .lampring{ stroke:#c88a00 }
+  /* Blackbox */
+  .bbox{cursor:pointer}
+  .bbox-fill{fill:#1f2933}
+  .bbox.open .bbox-fill{fill:transparent}
+  .bbox-frame{fill:none; stroke:#1f2933; stroke-width:3; stroke-dasharray:12 8; display:none}
+  .bbox.open .bbox-frame{display:inline}
+  .bbox-q{font:700 64px "Segoe UI",Arial,sans-serif; fill:#fff}
+  .bbox-l{font:600 16px "Segoe UI",Arial,sans-serif; fill:#c9d3dd}
+  .bbox.open .bbox-q, .bbox.open .bbox-l{display:none}
+  .method{margin:0 0 12px; padding-left:22px; font-size:16px; color:var(--ink)}
+  .method li{margin:4px 0}
+  .method b{color:var(--accent)}
+  .solution{background:#eafbea; border:2px solid #a5d6a7; border-radius:10px; padding:10px 12px; font-size:16px; margin-top:12px}
+  .solution h3{margin:0 0 6px; font-size:17px; color:var(--good)}
+  .clickable{cursor:pointer}
+  .hit{fill:transparent}
+  .lbl{font:600 17px "Segoe UI",Arial,sans-serif; fill:var(--ink)}
+  .lbl-s{font:600 15px "Segoe UI",Arial,sans-serif; fill:var(--muted)}
+  .plusminus{font:700 20px "Segoe UI",Arial,sans-serif; fill:var(--wire)}
+  /* Gallery / Quiz */
+  .quizbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px}
+  .qtabs{display:inline-flex; border:2px solid var(--accent); border-radius:10px; overflow:hidden}
+  .qbtn{font:inherit; font-weight:600; font-size:16px; cursor:pointer; border:0;
+    background:var(--panel); color:var(--accent); padding:8px 16px}
+  .qbtn.active{background:var(--accent); color:#fff}
+  .qhint{color:var(--muted); font-size:15px}
+  .gallery{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; align-content:stretch}
+  @media (max-width:1250px){ .gallery{grid-template-columns:repeat(6,1fr)} }
+  @media (max-width:820px){ .gallery{grid-template-columns:repeat(4,1fr)} }
+  .card{border:2px solid var(--line); border-radius:10px; padding:6px; background:#fbfcfe;
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:120px}
+  .card svg{width:100%; height:auto; max-height:100%; flex:0 1 auto}
+  .card .name{font-weight:600; font-size:16px; margin-top:4px; line-height:1.15}
+  .card .desc{color:var(--muted); font-size:13px; line-height:1.2}
+  .card .answer{display:none}
+  .card .guess{display:block; font-weight:700; color:var(--accent); line-height:1; font-size:clamp(28px,5vh,60px)}
+  .card.reveal .answer, .gallery.solve .card .answer{display:block}
+  .card.reveal .guess, .gallery.solve .card .guess{display:none}
+  .card.reveal{border-color:var(--accent)}
+  .gallery.solve .card{cursor:default}
+  .tag{display:inline-block; font-size:13px; color:var(--accent); background:var(--accent2);
+    border-radius:999px; padding:0 8px; margin-top:2px}
+  /* Galerie-Tab: volle Bildschirmhoehe nutzen, Symbole so gross wie moeglich.
+     vh-Fallback fuer Browser ohne dvh (aeltere Tafel-Browser); passt es nicht, wird gescrollt. */
+  body.gallery-active{height:100vh; height:100dvh; overflow:hidden}
+  body.gallery-active main{flex:1 1 auto; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch}
+  body.gallery-active #view{height:100%}
+  body.gallery-active .panel{height:100%; display:flex; flex-direction:column; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch}
+  body.gallery-active .gallery{flex:1 1 auto; min-height:0; grid-auto-rows:1fr}
+  body.gallery-active .card svg{flex:1 1 auto; min-height:0; height:100%}
+</style>
+
+<header>
+  <a href="../index.html" style="display:inline-block;color:var(--accent);text-decoration:none;font-weight:700;font-size:.85rem;margin-right:.6rem;align-self:center">‹ Übersicht</a>
+  <h1>Schaltzeichen &amp; Schaltungen</h1>
+  <span class="sub">Elektrik zum Ausprobieren</span>
+  <span class="spacer"></span>
+  <label class="toggle" id="flowWrap"><input type="checkbox" id="flowToggle" checked> Elektronen zeigen</label>
+</header>
+
+<div class="navwrap">
+  <button class="navarrow" id="nav-left" type="button" aria-label="Reiter nach links">‹</button>
+  <nav id="nav"></nav>
+  <button class="navarrow" id="nav-right" type="button" aria-label="Reiter nach rechts">›</button>
+</div>
+<main><div id="view"></div></main>
+
+<script>
+"use strict";
+/* ============================================================
+   Kleine Schaltungs-Engine
+   Ein Bauteil ist eine "Kante" zwischen zwei (oder mehr) Knoten.
+   Die Engine prueft per Graph-Suche, ueber welche Kanten wirklich
+   ein Strom zwischen den beiden Polen fliessen kann. Nur diese leuchten / fliessen.
+   ============================================================ */
+
+function makeCircuit(vb){ return {vb, nodes:{}, parts:[]}; }
+function setNode(c,n,xy){ c.nodes[n]=xy; }
+function P(c,n){ return c.nodes[n]; }
+
+/* ---- Bauteile hinzufuegen (registrieren Knoten + Zeichnung) ---- */
+function battery(c,at,pName,nName){
+  const [x,y]=at;
+  setNode(c,pName,[x,y-30]); setNode(c,nName,[x,y+30]);
+  c.parts.push({kind:'battery', at, p:pName, n:nName});
+}
+function lamp(c,id,label,at,a,b,orient){
+  const [x,y]=at; const h=28;
+  if(orient==='v'){ setNode(c,a,[x,y-h]); setNode(c,b,[x,y+h]); }
+  else { setNode(c,a,[x-h,y]); setNode(c,b,[x+h,y]); }
+  c.parts.push({kind:'lamp', id, label, at, a, b, orient:orient||'h'});
+}
+function swi(c,id,label,at,a,b,orient,state){
+  const [x,y]=at; const h=42;
+  if(orient==='v'){ setNode(c,a,[x,y-h]); setNode(c,b,[x,y+h]); }
+  else { setNode(c,a,[x-h,y]); setNode(c,b,[x+h,y]); }
+  c.parts.push({kind:'switch', id, label, at, a, b, orient:orient||'h', state:!!state, toggle:true});
+}
+function taster(c,id,label,at,a,b,orient){
+  const [x,y]=at; const h=42;
+  if(orient==='v'){ setNode(c,a,[x,y-h]); setNode(c,b,[x,y+h]); }
+  else { setNode(c,a,[x-h,y]); setNode(c,b,[x+h,y]); }
+  c.parts.push({kind:'taster', id, label, at, a, b, orient:orient||'h', state:false, toggle:true, momentary:true});
+}
+/* Wechsel-/Umschalter: gemeinsamer Kontakt com, zwei Wege t1/t2.
+   mirror=true -> com rechts, Wege links (fuer die zweite Seite). */
+function changeover(c,id,label,at,com,t1,t2,state,mirror){
+  const [x,y]=at; const dx=40, dy=26;
+  if(mirror){
+    setNode(c,com,[x+dx,y]); setNode(c,t1,[x-dx,y-dy]); setNode(c,t2,[x-dx,y+dy]);
+  } else {
+    setNode(c,com,[x-dx,y]); setNode(c,t1,[x+dx,y-dy]); setNode(c,t2,[x+dx,y+dy]);
+  }
+  c.parts.push({kind:'changeover', id, label, at, com, t1, t2, state:state?1:0, toggle:true, mirror:!!mirror});
+}
+function wire(c,a,b,mids){
+  c.parts.push({kind:'wire', a, b, mids:mids||[]});
+}
+function dot(c,n){ c.parts.push({kind:'dot', n}); }
+
+/* ---- Loesen: welche Kanten fuehren Strom? ---- */
+function edgesOf(c){
+  const E=[];
+  c.parts.forEach((p,i)=>{
+    if(p.kind==='battery') E.push({u:p.p,v:p.n,kind:'battery',pi:i});
+    else if(p.kind==='wire') E.push({u:p.a,v:p.b,kind:'wire',pi:i});
+    else if(p.kind==='lamp') E.push({u:p.a,v:p.b,kind:'lamp',pi:i});
+    else if(p.kind==='switch'||p.kind==='taster'){ if(p.state) E.push({u:p.a,v:p.b,kind:p.kind,pi:i}); }
+    else if(p.kind==='changeover'){ const t=p.state?p.t2:p.t1; E.push({u:p.com,v:t,kind:'changeover',pi:i}); }
+  });
+  return E;
+}
+function reach(E,start,skip){
+  const adj={};
+  E.forEach((e,idx)=>{ if(idx===skip||e.kind==='battery') return;
+    (adj[e.u]=adj[e.u]||[]).push(e.v); (adj[e.v]=adj[e.v]||[]).push(e.u); });
+  const seen={}; const st=[start]; seen[start]=1;
+  while(st.length){ const x=st.pop(); (adj[x]||[]).forEach(y=>{ if(!seen[y]){seen[y]=1;st.push(y);} }); }
+  return seen;
+}
+function solve(c){
+  const bat=c.parts.find(p=>p.kind==='battery');
+  const E=edgesOf(c);
+  const live={}; // key: edge index in E -> bool
+  E.forEach((e,idx)=>{
+    if(e.kind==='battery') return;
+    const s=reach(E,bat.p,idx), t=reach(E,bat.n,idx);
+    live[idx]=(s[e.u]&&t[e.v])||(s[e.v]&&t[e.u]);
+  });
+  // Ergebnis pro part-Index
+  const partLive={};
+  E.forEach((e,idx)=>{ partLive[e.pi]=live[idx]; });
+  return {E, live, partLive};
+}
+
+/* ============================================================
+   Zeichnen (SVG als String)
+   ============================================================ */
+function svgWire(c,p){
+  const a=P(c,p.a), b=P(c,p.b);
+  const pts=[a, ...p.mids, b].map(q=>q.join(',')).join(' ');
+  return `<polyline class="wire" points="${pts}"/>`;
+}
+
+function svgBattery(c,p){
+  const [x,y]=p.at, a=P(c,p.p), n=P(c,p.n);
+  // vertikal: + oben (lange, duenne Linie), - unten (kurze, dicke Linie)
+  let s='';
+  s+=`<line class="term" x1="${x}" y1="${a[1]}" x2="${x}" y2="${y-6}"/>`;
+  s+=`<line class="term" x1="${x}" y1="${y+6}" x2="${x}" y2="${n[1]}"/>`;
+  s+=`<line class="sym" x1="${x-22}" y1="${y-6}" x2="${x+22}" y2="${y-6}" stroke-width="3"/>`; // lang (+)
+  s+=`<line class="sym" x1="${x-11}" y1="${y+6}" x2="${x+11}" y2="${y+6}" stroke-width="7"/>`;  // kurz (-)
+  s+=`<text class="plusminus" x="${x+28}" y="${y-1}">+</text>`;
+  s+=`<text class="plusminus" x="${x+28}" y="${y+22}">&#8722;</text>`;
+  return s;
+}
+
+/* u = Spannung an der Lampe (Anteil der Batteriespannung) -> Helligkeit */
+function svgLamp(c,p,on,u){
+  const [x,y]=p.at, r=22;
+  const a=P(c,p.a), b=P(c,p.b);
+  const lit = on && u>0.02;
+  const cls=lit?'lamp-on':'';
+  const glow = lit ? (0.2+0.7*Math.min(1,u)).toFixed(2) : '0';
+  let s=`<g class="${cls}">`;
+  // Zuleitungen
+  if(p.orient==='v'){
+    s+=`<line class="term" x1="${x}" y1="${a[1]}" x2="${x}" y2="${y-r}"/>`;
+    s+=`<line class="term" x1="${x}" y1="${y+r}" x2="${x}" y2="${b[1]}"/>`;
+  } else {
+    s+=`<line class="term" x1="${a[0]}" y1="${y}" x2="${x-r}" y2="${y}"/>`;
+    s+=`<line class="term" x1="${x+r}" y1="${y}" x2="${b[0]}" y2="${y}"/>`;
+  }
+  s+=`<circle class="lampglow" style="opacity:${glow}" cx="${x}" cy="${y}" r="${r+10}"/>`;
+  s+=`<circle class="glass lampring sym" cx="${x}" cy="${y}" r="${r}"/>`;
+  const d=r*0.7071;
+  s+=`<line class="sym" x1="${x-d}" y1="${y-d}" x2="${x+d}" y2="${y+d}"/>`;
+  s+=`<line class="sym" x1="${x-d}" y1="${y+d}" x2="${x+d}" y2="${y-d}"/>`;
+  s+=`</g>`;
+  if(p.label) s+=labelFor(p);
+  return s;
+}
+
+function svgSwitch(c,p,carry){
+  const [x,y]=p.at;
+  const a=P(c,p.a), b=P(c,p.b);
+  const closed=p.state;
+  let s=`<g class="clickable" data-id="${p.id}">`;
+  let c1,c2; // Kontaktpunkte
+  if(p.orient==='v'){ c1=[x,y-24]; c2=[x,y+24];
+    s+=`<line class="term" x1="${x}" y1="${a[1]}" x2="${c1[0]}" y2="${c1[1]}"/>`;
+    s+=`<line class="term" x1="${x}" y1="${c2[1]}" x2="${x}" y2="${b[1]}"/>`;
+  } else { c1=[x-24,y]; c2=[x+24,y];
+    s+=`<line class="term" x1="${a[0]}" y1="${y}" x2="${c1[0]}" y2="${y}"/>`;
+    s+=`<line class="term" x1="${c2[0]}" y1="${y}" x2="${b[0]}" y2="${y}"/>`;
+  }
+  s+=`<circle class="node" cx="${c1[0]}" cy="${c1[1]}" r="4"/>`;
+  s+=`<circle class="node" cx="${c2[0]}" cy="${c2[1]}" r="4"/>`;
+  // Hebel
+  let tip;
+  if(closed){ tip=c2; }
+  else {
+    if(p.orient==='v'){ tip=[c2[0]+30, c2[1]-14]; } else { tip=[c2[0]-14, c2[1]-30]; }
+  }
+  s+=`<line class="sym" x1="${c1[0]}" y1="${c1[1]}" x2="${tip[0]}" y2="${tip[1]}" stroke-width="5"/>`;
+  // Klickflaeche
+  s+=`<rect class="hit" x="${x-40}" y="${y-40}" width="80" height="80"/>`;
+  s+=`</g>`;
+  if(p.label) s+=labelFor(p, closed?'geschlossen':'offen');
+  return s;
+}
+
+function svgChangeover(c,p,carry){
+  const [x,y]=p.at;
+  const com=P(c,p.com), t1=P(c,p.t1), t2=P(c,p.t2);
+  const active = p.state? t2 : t1;
+  const cx = p.mirror ? x+24 : x-24; // Drehpunkt nahe com
+  const pivot=[cx, y];
+  let s=`<g class="clickable" data-id="${p.id}">`;
+  // Zuleitung com -> pivot
+  s+=`<line class="term" x1="${com[0]}" y1="${com[1]}" x2="${pivot[0]}" y2="${pivot[1]}"/>`;
+  // Kontakte t1/t2 (kurze Stummel)
+  const k1=[ p.mirror? x-18:x+18, t1[1] ], k2=[ p.mirror? x-18:x+18, t2[1] ];
+  s+=`<line class="term" x1="${t1[0]}" y1="${t1[1]}" x2="${k1[0]}" y2="${k1[1]}"/>`;
+  s+=`<line class="term" x1="${t2[0]}" y1="${t2[1]}" x2="${k2[0]}" y2="${k2[1]}"/>`;
+  s+=`<circle class="node" cx="${pivot[0]}" cy="${pivot[1]}" r="4"/>`;
+  s+=`<circle class="node" cx="${k1[0]}" cy="${k1[1]}" r="4"/>`;
+  s+=`<circle class="node" cx="${k2[0]}" cy="${k2[1]}" r="4"/>`;
+  const tip = p.state? k2 : k1;
+  s+=`<line class="sym" x1="${pivot[0]}" y1="${pivot[1]}" x2="${tip[0]}" y2="${tip[1]}" stroke-width="5"/>`;
+  s+=`<rect class="hit" x="${x-42}" y="${y-34}" width="84" height="68"/>`;
+  s+=`</g>`;
+  if(p.label) s+=labelFor(p, p.state?'Weg 2':'Weg 1');
+  return s;
+}
+
+function labelFor(p, sub){
+  const [x,y]=p.at;
+  let ly = y-38;
+  if(p.orient==='v') { return `<text class="lbl" x="${x+34}" y="${y-4}">${p.label}</text>`
+      + (sub?`<text class="lbl-s" x="${x+34}" y="${y+16}">${sub}</text>`:''); }
+  let s=`<text class="lbl" text-anchor="middle" x="${x}" y="${ly}">${p.label}</text>`;
+  if(sub) s+=`<text class="lbl-s" text-anchor="middle" x="${x}" y="${y+50}">${sub}</text>`;
+  return s;
+}
+
+function svgDot(c,p){ const n=P(c,p.n); return `<circle class="node" cx="${n[0]}" cy="${n[1]}" r="6"/>`; }
+
+/* Blackbox: verdeckt einen Teil der Schaltung, antippen deckt auf (Zustand in c.boxOpen) */
+function box(c,x,y,w,h){ c.parts.push({kind:'box', x, y, w, h}); }
+function svgBox(c,p){
+  const cx=p.x+p.w/2, cy=p.y+p.h/2;
+  return `<g class="bbox ${c.boxOpen?'open':''}" data-box="1">
+    <rect class="bbox-fill" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="12"/>
+    <rect class="bbox-frame" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="12"/>
+    <text class="bbox-q" text-anchor="middle" x="${cx}" y="${cy+22}">?</text>
+    <text class="bbox-l" text-anchor="middle" x="${cx}" y="${p.y+p.h-14}">Blackbox</text>
+  </g>`;
+}
+
+/* ============================================================
+   Elektronen als einzelne Teilchen
+   ------------------------------------------------------------
+   Richtung: Die gezeigten Teilchen sind Elektronen. Sie laufen ausserhalb
+   der Quelle vom Minus- zum Pluspol (physikalische Stromrichtung), in der
+   Batterie von Plus nach Minus (die Batterie "pumpt" sie zurueck).
+   Stromstaerke: Alle Teilchen sind gleich schnell (FLOW_SPEED). Die
+   Stromstaerke steckt im Abstand: FLOW_GAP bei Stromstaerke 1 (eine Lampe
+   direkt an der Batterie), bei Stromstaerke I ist der Abstand FLOW_GAP/I.
+   Der Abstand ist also absolut vergleichbar: Reihenschaltung = weniger
+   Strom = groessere Abstaende, Parallelschaltung = mehr Strom = engere.
+   An jeder Verzweigung teilen sich die Teilchen im Verhaeltnis der
+   Stromstaerken auf (Knotenregel); sie werden nie verdoppelt.
+   Stromstaerken kommen aus dem Knotenpotenzialverfahren (Lampe R=1,
+   Schalter R=1e-3, Draht R=1e-6, Batterie ideal mit U=1).
+   ============================================================ */
+const ELECTRONS = ['Elli', 'Laura'];   // Namen der beiden hervorgehobenen Elektronen
+const ELEKTRONENFLUSS = true;          // true: Elektronen (- nach +). false: positive Ladungen (+ nach -)
+const FLOW_SPEED = 90;                 // px/s, fuer ALLE Teilchen gleich
+const FLOW_GAP = 24;                   // px Abstand bei Stromstaerke 1 (eine Lampe an der Batterie)
+
+function near(a,b){ return Math.abs(a[0]-b[0])<0.5 && Math.abs(a[1]-b[1])<0.5; }
+function partCenterline(c,p){
+  if(p.kind==='wire') return [P(c,p.a), ...(p.mids||[]), P(c,p.b)];
+  if(p.kind==='changeover'){
+    // exakt dem gezeichneten Hebel folgen: Anschluss -> Drehpunkt -> Hebelspitze -> aktiver Weg
+    const x=p.at[0], y=p.at[1];
+    const t=p.state?p.t2:p.t1;
+    const pivot=[ p.mirror? x+24 : x-24, y ];
+    const k=[ p.mirror? x-18 : x+18, P(c,t)[1] ];
+    return [P(c,p.com), pivot, k, P(c,t)];
+  }
+  return [P(c,p.a), p.at, P(c,p.b)];
+}
+function polyLen(pts){ let L=0; for(let i=1;i<pts.length;i++) L+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); return L; }
+
+/* ---- Lineares Gleichungssystem (Gauss mit Spaltenpivot) ---- */
+function gaussSolve(A,b){
+  const n=b.length;
+  for(let col=0;col<n;col++){
+    let piv=col;
+    for(let r=col+1;r<n;r++) if(Math.abs(A[r][col])>Math.abs(A[piv][col])) piv=r;
+    if(piv!==col){ const t=A[col]; A[col]=A[piv]; A[piv]=t; const tb=b[col]; b[col]=b[piv]; b[piv]=tb; }
+    const d=A[col][col]; if(Math.abs(d)<1e-15) continue;
+    for(let r=col+1;r<n;r++){
+      const m=A[r][col]/d; if(!m) continue;
+      for(let k=col;k<n;k++) A[r][k]-=m*A[col][k];
+      b[r]-=m*b[col];
+    }
+  }
+  const x=new Array(n).fill(0);
+  for(let r=n-1;r>=0;r--){
+    let s=b[r]; for(let k=r+1;k<n;k++) s-=A[r][k]*x[k];
+    x[r]=Math.abs(A[r][r])<1e-15?0:s/A[r][r];
+  }
+  return x;
+}
+
+/* ---- Stromstaerken per Knotenpotenzialverfahren ----
+   Liefert je Bauteil (Index) den Strom in technischer Richtung (from -> to) und
+   das Potenzial jedes Knotens (Plus = 1, Minus = 0). */
+function solveCurrents(c,sol,bat){
+  const edges=[];
+  c.parts.forEach((p,i)=>{
+    if(!sol.partLive[i] || p.kind==='battery' || p.kind==='dot') return;
+    let u,v; if(p.kind==='changeover'){ u=p.com; v=p.state?p.t2:p.t1; } else { u=p.a; v=p.b; }
+    const G = p.kind==='lamp' ? 1 : (p.kind==='wire' ? 1e6 : 1e3);
+    edges.push({pi:i,u,v,G});
+  });
+  if(!edges.length) return null;
+  const fixedV = nm => nm===bat.p ? 1 : (nm===bat.n ? 0 : null);
+  const names=[], idx={};
+  edges.forEach(e=>[e.u,e.v].forEach(nm=>{ if(idx[nm]===undefined && fixedV(nm)===null){ idx[nm]=names.length; names.push(nm); } }));
+  const n=names.length, A=[], b=[];
+  for(let i=0;i<n;i++){ A.push(new Array(n).fill(0)); b.push(0); }
+  edges.forEach(e=>{
+    const fu=fixedV(e.u), fv=fixedV(e.v);
+    if(fu===null){ const i=idx[e.u]; A[i][i]+=e.G; if(fv===null) A[i][idx[e.v]]-=e.G; else b[i]+=e.G*fv; }
+    if(fv===null){ const j=idx[e.v]; A[j][j]+=e.G; if(fu===null) A[j][idx[e.u]]-=e.G; else b[j]+=e.G*fu; }
+  });
+  const V = n ? gaussSolve(A,b) : [];
+  const pot = nm => { const f=fixedV(nm); return f!==null ? f : (idx[nm]===undefined ? 0 : V[idx[nm]]); };
+  const cur={}; let Isrc=0;
+  edges.forEach(e=>{
+    const I=e.G*(pot(e.u)-pot(e.v));
+    cur[e.pi]={ I:Math.abs(I), from: I>=0?e.u:e.v, to: I>=0?e.v:e.u };
+    if(e.u===bat.p) Isrc+=I; if(e.v===bat.p) Isrc-=I;
+  });
+  return {cur, Isrc, pot};
+}
+
+/* ---- Gerichteter Fluss-Graph in Laufrichtung der Teilchen ---- */
+function mkEdge(from,to,pts,f,isLamp,isBattery,pi){
+  const cum=[0];
+  for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  return {from,to,pts,cum,len:cum[cum.length-1],f,lamp:isLamp,battery:isBattery,pi};
+}
+function edgePos(e,s){
+  if(e.len<=0) return e.pts[0];
+  let i=1; while(i<e.cum.length-1 && e.cum[i]<s) i++;
+  const a=e.pts[i-1], b=e.pts[i], L=e.cum[i]-e.cum[i-1];
+  const t = L>0 ? Math.max(0,Math.min(1,(s-e.cum[i-1])/L)) : 0;
+  return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];
+}
+function flowGraph(c,sol,cs){
+  const bat=c.parts.find(p=>p.kind==='battery'); if(!bat) return null;
+  if(!cs) cs=solveCurrents(c,sol,bat);
+  if(!cs || cs.Isrc<=1e-9) return null;
+  const edges=[];
+  c.parts.forEach((p,i)=>{
+    const k=cs.cur[i]; if(!k) return;
+    const f=k.I; if(f<1e-4) return;           // absolute Stromstaerke (1 = eine Lampe an der Batterie)
+    let from=k.from, to=k.to;
+    if(ELEKTRONENFLUSS){ const t=from; from=to; to=t; }
+    const uNode = p.kind==='changeover' ? p.com : p.a;   // partCenterline beginnt bei uNode
+    const pts=partCenterline(c,p).slice();
+    if(from!==uNode) pts.reverse();
+    edges.push(mkEdge(from,to,pts,f,p.kind==='lamp',false,i));
+  });
+  const pP=P(c,bat.p), pN=P(c,bat.n);
+  const battEdge = ELEKTRONENFLUSS ? mkEdge(bat.p,bat.n,[pP,pN],cs.Isrc,false,true,-1)
+                                   : mkEdge(bat.n,bat.p,[pN,pP],cs.Isrc,false,true,-1);
+  edges.push(battEdge);
+  const out={};
+  edges.forEach(e=>{ (out[e.from]=out[e.from]||[]).push(e); });
+  // Energie eines Teilchens an einem Knoten (Anteil der Batteriespannung, der noch nicht abgegeben ist)
+  const energyAt = nm => ELEKTRONENFLUSS ? 1-cs.pot(nm) : cs.pot(nm);
+  return {edges,out,battEdge,energyAt};
+}
+
+/* ---- Teilchen-Simulation ---- */
+function makeSim(c,sol,cs){
+  const g=flowGraph(c,sol,cs); if(!g) return null;
+  const V=FLOW_SPEED, GAP=FLOW_GAP/g.battEdge.f;   // Teilchenabstand am Batteriestrom
+  const acc={};   // Verzweigung: gewichtete Reihum-Verteilung, Anteile exakt wie die Stromstaerken
+  function nextEdge(node,pref,dry){
+    const outs=g.out[node]||[]; if(!outs.length) return null;
+    if(outs.length===1) return outs[0];
+    if(dry) return outs[Math.min(pref,outs.length-1)];
+    const a=acc[node]||(acc[node]=outs.map(()=>0));
+    const tot=outs.reduce((s,e)=>s+e.f,0);
+    outs.forEach((e,i)=>{ a[i]+=e.f/tot; });
+    let bi=0;
+    if(pref!==null && pref!==undefined) bi=Math.min(pref,outs.length-1);
+    else outs.forEach((e,i)=>{ if(a[i]>a[bi]+1e-9) bi=i; });
+    a[bi]-=1;
+    return outs[bi];
+  }
+  const particles=[], named=[];
+  let open=true;   // Fuellphase: Rueckkehrer werden am Batterieanfang entfernt (Quelle/Senke)
+  function midEvent(p){
+    // Energie schlagartig auf den Wert hinter dem Bauteil setzen (Lampe: Stufe runter, Batterie: voll)
+    if(p.e.lamp || p.e.battery) p.energy=Math.max(0,Math.min(1,g.energyAt(p.e.to)));
+  }
+  function advance(p,dt){
+    p.s+=V*dt;
+    for(let guard=0; guard<30; guard++){
+      if(!p.mid && p.s>=p.e.len/2){ p.mid=true; if(p.name) midEvent(p); }
+      if(p.s<p.e.len) break;
+      p.s-=p.e.len;
+      const nx=nextEdge(p.e.to,p.pref,false);
+      if(!nx){ p.s=0; break; }
+      if(nx===g.battEdge){ if(open){ p.dead=true; break; } p.returned=true; }
+      p.e=nx; p.mid=false;
+    }
+  }
+  function step(dt){
+    for(let i=0;i<particles.length;i++) advance(particles[i],dt);
+    if(open) for(let i=particles.length-1;i>=0;i--) if(particles[i].dead) particles.splice(i,1);
+  }
+
+  // Fuellen: offener Kreis. Am Batterieanfang wird im festen Takt eingespeist, wer die
+  // Runde geschafft hat, verschwindet. So stellt sich in jedem Zweig die richtige Dichte
+  // ein (auch in langen Zweigen). Danach wird der Kreis geschlossen: die Rueckkehrer
+  // laufen weiter, die Einspeisung endet.
+  (function fill(){
+    const dt=1/30; let t=0, tInj=0;
+    const totalLen=g.edges.reduce((s,e)=>s+e.len,0);
+    const Topen=totalLen/V+3;                     // laenger als jeder moegliche Weg
+    while(t<Topen){
+      while(tInj<=t+1e-9){ particles.push({e:g.battEdge, s:(t-tInj)*V, mid:false, pref:null, name:null, energy:1, returned:false, dead:false}); tInj+=GAP/V; }
+      step(dt); t+=dt;
+    }
+    open=false;
+    let guard=0; while(!particles.some(p=>p.returned) && guard++<3000) step(dt);
+    // Naht: liegt der erste Rueckkehrer dicht hinter dem letzten eingespeisten Teilchen,
+    // faellt dieses weg (sonst saehe man einen Doppelpunkt)
+    const r=particles.find(p=>p.returned);
+    if(r){
+      let ahead=null;
+      particles.forEach(p=>{ if(p!==r && p.e===g.battEdge && p.s>r.s && (!ahead || p.s<ahead.s)) ahead=p; });
+      if(ahead && ahead.s-r.s<GAP/2) particles.splice(particles.indexOf(ahead),1);
+    }
+    particles.forEach(p=>{ p.returned=false; });
+  })();
+
+  // Weg, den ein Teilchen mit fester Abzweig-Vorliebe nimmt (fuer Startposition/Energie)
+  function pathFor(pref){
+    const list=[]; let e=g.battEdge, cum=0;
+    for(let guard=0; guard<200; guard++){
+      list.push({e,cum}); cum+=e.len;
+      const nx=nextEdge(e.to,pref,true); if(!nx || nx===g.battEdge) break; e=nx;
+    }
+    return {list,total:cum};
+  }
+  ELECTRONS.forEach((nm,k)=>{
+    const path=pathFor(k);
+    const target = k===0 ? g.battEdge.len : path.total/2;   // versetzt starten
+    let best=null, bd=Infinity;
+    particles.forEach(p=>{
+      if(p.name) return;
+      const it=path.list.find(x=>x.e===p.e); if(!it) return;
+      const d=Math.abs(it.cum+p.s-target); if(d<bd){ bd=d; best=p; }
+    });
+    if(!best) best=particles.find(p=>!p.name);
+    if(!best) return;
+    best.name=nm; best.pref=k;
+    best.energy=Math.max(0,Math.min(1,g.energyAt(best.mid ? best.e.to : best.e.from)));
+    named.push(best);
+  });
+  const plain=particles.filter(p=>!p.name);
+
+  // Zeichnen
+  const cols=['var(--e1)','var(--e2)'], maxW=16;
+  function markup(){
+    let s='<g class="flow">';
+    plain.forEach(()=>{ s+='<circle r="5"/>'; });
+    s+='</g>';
+    named.forEach((p,k)=>{
+      s+=`<g class="enamed">`
+        +`<g transform="translate(0,-24)">`
+        +`<rect x="-11" y="-6" width="20" height="12" rx="2.5" fill="#fff" stroke="#28323c" stroke-width="1.5"/>`
+        +`<rect x="9" y="-3" width="2.6" height="6" rx="1" fill="#28323c"/>`
+        +`<rect class="ebar" x="-9" y="-4" width="${maxW}" height="8" rx="1" fill="#2e7d32"/></g>`
+        +`<circle r="8" fill="${cols[k]}"/>`
+        +`<text text-anchor="middle" x="0" y="24" fill="${cols[k]}">${p.name}</text>`
+        +`</g>`;
+    });
+    return s;
+  }
+  const el={dots:[], named:[], bars:[]};
+  function bind(svg){
+    el.dots=Array.prototype.slice.call(svg.querySelectorAll('g.flow circle'));
+    el.named=Array.prototype.slice.call(svg.querySelectorAll('g.enamed'));
+    el.bars=el.named.map(gr=>gr.querySelector('.ebar'));
+  }
+  function draw(){
+    for(let i=0;i<plain.length && i<el.dots.length;i++){
+      const q=edgePos(plain[i].e,plain[i].s);
+      el.dots[i].setAttribute('cx',q[0].toFixed(1)); el.dots[i].setAttribute('cy',q[1].toFixed(1));
+    }
+    for(let k=0;k<named.length && k<el.named.length;k++){
+      const q=edgePos(named[k].e,named[k].s);
+      el.named[k].setAttribute('transform',`translate(${q[0].toFixed(1)},${q[1].toFixed(1)})`);
+      el.bars[k].setAttribute('width',(named[k].energy*maxW).toFixed(1));
+    }
+  }
+  return {step, draw, markup, bind, particles, named, last:0};
+}
+
+/* ---- Animationsschleife (eine aktive Simulation) ---- */
+let activeSim=null, rafId=0;
+function runSim(sim){
+  activeSim=sim;
+  if(sim){ sim.last=performance.now(); if(!rafId) rafId=requestAnimationFrame(tick); }
+}
+function tick(now){
+  if(!activeSim){ rafId=0; return; }
+  const dt=Math.min(0.05, Math.max(0,(now-activeSim.last)/1000));
+  activeSim.last=now;
+  activeSim.step(dt); activeSim.draw();
+  rafId=requestAnimationFrame(tick);
+}
+
+function renderCircuit(c){
+  const sol=solve(c);
+  const bat=c.parts.find(p=>p.kind==='battery');
+  let cs=null; try{ cs=bat?solveCurrents(c,sol,bat):null; }catch(e){ cs=null; }
+  // Spannung an jeder Lampe (Anteil der Batteriespannung); ohne Loesung: 1 wenn stromfuehrend
+  const lampU={};
+  c.parts.forEach((p,i)=>{ if(p.kind!=='lamp') return;
+    lampU[i] = (cs && sol.partLive[i]) ? Math.abs(cs.pot(p.a)-cs.pot(p.b)) : (sol.partLive[i]?1:0); });
+  let body='';
+  // 1) Draehte
+  c.parts.forEach(p=>{ if(p.kind==='wire') body+=svgWire(c,p); });
+  c.parts.forEach(p=>{ if(p.kind==='dot') body+=svgDot(c,p); });
+  // 2) Bauteile
+  c.parts.forEach((p,i)=>{
+    const carry=sol.partLive[i];
+    if(p.kind==='battery') body+=svgBattery(c,p);
+    else if(p.kind==='lamp') body+=svgLamp(c,p,carry,lampU[i]);
+    else if(p.kind==='switch'||p.kind==='taster') body+=svgSwitch(c,p,carry);
+    else if(p.kind==='changeover') body+=svgChangeover(c,p,carry);
+  });
+  // 3) Elektronen als eigene Ebene GANZ OBEN (kein Verschwinden hinter Bauteilen)
+  let sim=null; try{ sim=makeSim(c,sol,cs); }catch(e){ sim=null; }
+  if(sim) body+=sim.markup();
+  // 4) Blackbox zuoberst (verdeckt auch die Elektronen)
+  c.parts.forEach(p=>{ if(p.kind==='box') body+=svgBox(c,p); });
+  const lit={}; Object.keys(lampU).forEach(i=>{ lit[i]=lampU[i]>0.02; });
+  return {svg:`<svg viewBox="${c.vb}">${body}</svg>`, sol, sim, lampU, lit};
+}
+
+/* ============================================================
+   Gallery: statische Schaltzeichen
+   ============================================================ */
+function gcard(name, desc, inner, tag){ return {name, desc, tag:tag||'', inner}; }
+const W='stroke="#28323c" stroke-width="4" fill="none" stroke-linecap="round"';
+const Wt='stroke="#28323c" stroke-width="3" fill="none" stroke-linecap="round"';
+function lead(a,b){ return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" ${W}/>`; }
+function galleryHTML(){
+  const y=45, L=[15,y], R=[125,y];
+  const cards=[];
+  // Spannungsquelle
+  cards.push(gcard('Spannungsquelle','Batterie / Netzgerät',
+    lead(L,[55,y])+lead([85,y],R)
+    +`<line x1="60" y1="26" x2="60" y2="64" ${W} stroke-width="3"/>`
+    +`<line x1="72" y1="34" x2="72" y2="56" ${W} stroke-width="8"/>`
+    +`<text x="46" y="22" font-size="16" font-weight="700" fill="#28323c">+</text>`
+    +`<text x="76" y="22" font-size="16" font-weight="700" fill="#28323c">&#8722;</text>`,'Quelle'));
+  // Schalter offen
+  cards.push(gcard('Schalter (offen)','unterbricht den Strom',
+    lead(L,[52,y])+lead([88,y],R)
+    +`<circle cx="52" cy="${y}" r="3.5" fill="#28323c"/><circle cx="88" cy="${y}" r="3.5" fill="#28323c"/>`
+    +`<line x1="52" y1="${y}" x2="84" y2="${y-20}" ${W}/>`));
+  // Schalter geschlossen
+  cards.push(gcard('Schalter (zu)','schließt den Strom',
+    lead(L,[52,y])+lead([88,y],R)
+    +`<circle cx="52" cy="${y}" r="3.5" fill="#28323c"/><circle cx="88" cy="${y}" r="3.5" fill="#28323c"/>`
+    +`<line x1="52" y1="${y}" x2="88" y2="${y}" ${W}/>`));
+  // Umschalter
+  cards.push(gcard('Umschalter','wählt zwischen zwei Wegen',
+    lead([15,y],[50,y])+lead([90,28],[125,28])+lead([90,62],[125,62])
+    +`<circle cx="50" cy="${y}" r="3.5" fill="#28323c"/><circle cx="90" cy="28" r="3.5" fill="#28323c"/><circle cx="90" cy="62" r="3.5" fill="#28323c"/>`
+    +`<line x1="50" y1="${y}" x2="88" y2="30" ${W}/>`,'Wechselschalter'));
+  // Taster
+  cards.push(gcard('Taster','schließt nur beim Drücken',
+    lead(L,[52,y])+lead([88,y],R)
+    +`<circle cx="52" cy="${y}" r="3.5" fill="#28323c"/><circle cx="88" cy="${y}" r="3.5" fill="#28323c"/>`
+    +`<line x1="52" y1="${y}" x2="84" y2="${y-18}" ${W}/>`
+    +`<line x1="70" y1="18" x2="70" y2="30" ${W}/><line x1="62" y1="20" x2="78" y2="20" ${W}/>`));
+  // Lampe
+  cards.push(gcard('Lampe','leuchtet bei Stromfluss',
+    lead(L,[48,y])+lead([92,y],R)
+    +`<circle cx="70" cy="${y}" r="22" ${W}/>`
+    +`<line x1="55" y1="30" x2="85" y2="60" ${W}/><line x1="55" y1="60" x2="85" y2="30" ${W}/>`));
+  // Widerstand
+  cards.push(gcard('Widerstand','begrenzt den Strom',
+    lead(L,[42,y])+lead([98,y],R)
+    +`<rect x="42" y="33" width="56" height="24" ${W}/>`));
+  // Motor
+  cards.push(gcard('Motor','wandelt Strom in Bewegung',
+    lead(L,[48,y])+lead([92,y],R)
+    +`<circle cx="70" cy="${y}" r="22" ${W}/><text x="70" y="52" text-anchor="middle" font-size="22" font-weight="700" fill="#28323c">M</text>`));
+  // Amperemeter
+  cards.push(gcard('Amperemeter','misst die Stromstärke',
+    lead(L,[48,y])+lead([92,y],R)
+    +`<circle cx="70" cy="${y}" r="22" ${W}/><text x="70" y="52" text-anchor="middle" font-size="22" font-weight="700" fill="#28323c">A</text>`,'in Reihe'));
+  // Voltmeter
+  cards.push(gcard('Voltmeter','misst die Spannung',
+    lead(L,[48,y])+lead([92,y],R)
+    +`<circle cx="70" cy="${y}" r="22" ${W}/><text x="70" y="52" text-anchor="middle" font-size="22" font-weight="700" fill="#28323c">V</text>`,'parallel'));
+  // LED / Diode
+  cards.push(gcard('Diode / LED','lässt Strom nur in eine Richtung',
+    lead(L,[52,y])+lead([88,y],R)
+    +`<polygon points="52,32 52,58 78,45" ${W} fill="#28323c"/>`
+    +`<line x1="78" y1="30" x2="78" y2="60" ${W}/>`));
+  // Kondensator
+  cards.push(gcard('Kondensator','speichert Ladung',
+    lead(L,[62,y])+lead([78,y],R)
+    +`<line x1="62" y1="28" x2="62" y2="62" ${W}/><line x1="78" y1="28" x2="78" y2="62" ${W}/>`));
+  // Klingel
+  cards.push(gcard('Klingel','erzeugt einen Ton',
+    lead(L,[48,y])+lead([92,y],R)
+    +`<path d="M48 56 A22 22 0 0 1 92 56 Z" ${W}/>`
+    +`<line x1="48" y1="56" x2="92" y2="56" ${W}/>`));
+  // Sicherung
+  cards.push(gcard('Sicherung','unterbricht bei Überlast',
+    lead(L,[42,y])+lead([98,y],R)
+    +`<rect x="42" y="35" width="56" height="20" ${W}/><line x1="42" y1="${y}" x2="98" y2="${y}" ${W} stroke-width="3"/>`));
+  // Kreuzung ohne Verbindung
+  cards.push(gcard('Kreuzung','ohne Verbindung',
+    `<line x1="20" y1="${y}" x2="120" y2="${y}" ${W}/>`
+    +`<path d="M70 25 L70 40 A6 6 0 0 0 70 50 L70 65" ${W}/>`));
+  // Kreuzung mit Knoten
+  cards.push(gcard('Knotenpunkt','mit Verbindung',
+    `<line x1="20" y1="${y}" x2="120" y2="${y}" ${W}/>`
+    +`<line x1="70" y1="22" x2="70" y2="68" ${W}/>`
+    +`<circle cx="70" cy="${y}" r="6" fill="#28323c"/>`));
+  const grid = cards.map((c,i)=>`<div class="card" data-qi="${i}">
+      <svg viewBox="0 0 140 90">${c.inner}</svg>
+      <div class="guess">?</div>
+      <div class="answer"><div class="name">${c.name}</div>${c.tag?`<span class="tag">${c.tag}</span>`:''}<div class="desc">${c.desc}</div></div>
+    </div>`).join('');
+  return `<div class="quizbar">
+      <div class="qtabs">
+        <button class="qbtn ${quizSolve?'':'active'}" data-q="quiz">Quizmodus</button>
+        <button class="qbtn ${quizSolve?'active':''}" data-q="solve">Lösungen</button>
+      </div>
+      <span class="qhint">${quizSolve?'Alle Namen sind eingeblendet.':'Erst raten lassen – dann ein Feld antippen, um die Lösung aufzudecken.'}</span>
+      <button class="btn" id="qreset"${quizSolve?' style="display:none"':''}>Alle wieder verdecken</button>
+    </div>
+    <div class="gallery ${quizSolve?'solve':''}" id="gallery">${grid}</div>`;
+}
+
+/* ============================================================
+   Schaltungs-Definitionen
+   Gemeinsamer Rahmen: Batterie links, Strecke oben, zurück unten.
+   ============================================================ */
+const TOP=95, BOT=300, LX=95, RX=560, BY=200;
+
+function frameLoop(build){
+  // build(c) platziert Bauteile; wir liefern Batterie + Rahmenpunkte.
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  return c;
+}
+
+// 1) Reihenschaltung: Schalter + zwei Lampen in Reihe
+function cReihe(){
+  const c=frameLoop();
+  swi(c,'S1','S1',[210,TOP],'a','b','h',false);
+  lamp(c,'L1','L1',[350,TOP],'b','d','h');
+  lamp(c,'L2','L2',[480,TOP],'d','e','h');
+  wire(c,'P','a',[[LX,TOP]]);
+  wire(c,'e','N',[[RX,TOP],[RX,BOT],[LX,BOT]]);
+  return c;
+}
+// 2) Parallelschaltung: zwei Lampen parallel
+function cParallel2(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  // Rx-Lx so, dass die Zweiglaengen sich um ein Vielfaches des doppelten Punktabstands
+  // (Batteriestrom 2 -> 12 px, also 24) unterscheiden: gleichmaessige Zusammenfuehrung.
+  const Lx=340, Rx=496;
+  swi(c,'S1','S1',[210,TOP],'a','busTL','h',false); // busTL -> auf Lx gesetzt
+  setNode(c,'busTL',[Lx,TOP]); setNode(c,'busTR',[Rx,TOP]);
+  setNode(c,'busBL',[Lx,BOT]); setNode(c,'busBR',[Rx,BOT]);
+  // L1 am linken Ende der Schiene, L2 am rechten Ende – kein ueberstehender Stummel
+  lamp(c,'L1','L1',[Lx,BY],'L1t','L1b','v');
+  lamp(c,'L2','L2',[Rx,BY],'L2t','L2b','v');
+  wire(c,'P','a',[[LX,TOP]]);
+  wire(c,'busTL','busTR');                    // obere Sammelschiene (Lx..Rx)
+  wire(c,'busBL','busBR');                    // untere Sammelschiene
+  wire(c,'busBL','N',[[LX,BOT]]);             // untere Schiene -> Minus
+  wire(c,'busTL','L1t'); wire(c,'L1b','busBL'); // L1 senkrecht am linken Ende
+  wire(c,'busTR','L2t'); wire(c,'L2b','busBR'); // L2 senkrecht am rechten Ende
+  dot(c,'busTL'); dot(c,'busBL');
+  return c;
+}
+// 3) UND-Schaltung: zwei Schalter in Reihe -> Lampe
+function cUnd(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  swi(c,'S1','S1',[210,TOP],'a','b','h',false);
+  swi(c,'S2','S2',[360,TOP],'b','d','h',false);
+  lamp(c,'L1','L1',[490,TOP],'d','e','h');
+  wire(c,'P','a',[[LX,TOP]]);
+  wire(c,'e','N',[[RX,TOP],[RX,BOT],[LX,BOT]]);
+  return c;
+}
+// 4) ODER-Schaltung: zwei Schalter parallel -> Lampe
+function cOderFinal(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');                 // P=[95,170], N=[95,230]
+  const yT=159, yB=255;   // Abstand 96 = 4*FLOW_GAP: gleichmaessige Zusammenfuehrung der Elektronen
+  swi(c,'S1','S1',[330,yT],'At','Bt','h',false);  // At=[288,159], Bt=[372,159]
+  swi(c,'S2','S2',[330,yB],'Ab','Bb','h',false);  // Ab=[288,255], Bb=[372,255]
+  lamp(c,'L1','L1',[470,yT],'Ll','e','h');         // Ll=[442,159], e=[498,159]
+  // Eingang: Pluspol -> linke Sammelschiene
+  wire(c,'P','At',[[LX,yT]]);                 // 95,170 -> 95,159 -> 288,159
+  wire(c,'At','Ab');                          // linke Sammelschiene (senkrecht)
+  wire(c,'Bt','Bb');                          // rechte Sammelschiene (senkrecht)
+  wire(c,'Bt','Ll');                          // obere Klemme -> Lampe (waagerecht)
+  // Rueckweg zur Minusklemme
+  wire(c,'e','N',[[560,yT],[560,BOT],[LX,BOT]]);
+  dot(c,'At'); dot(c,'Bt');
+  return c;
+}
+// 5) Umschaltung: ein Umschalter waehlt Lampe A oder B
+function cUmschalt(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  changeover(c,'U1','Umschalter',[240,BY],'com','w1','w2',0,false); // com=[200,200], w1=[280,174], w2=[280,226]
+  lamp(c,'L1','L1',[430,150],'l1a','e1','h');   // l1a=[402,150], e1=[458,150]
+  lamp(c,'L2','L2',[430,250],'l2a','e2','h');   // l2a=[402,250], e2=[458,250]
+  wire(c,'P','com',[[LX,150],[200,150]]);       // oben um die Batterie herum
+  wire(c,'w1','l1a',[[280,150]]);               // 280,174 -> 280,150 -> 402,150
+  wire(c,'w2','l2a',[[280,250]]);               // 280,226 -> 280,250 -> 402,250
+  wire(c,'e1','N',[[560,150],[560,BOT],[LX,BOT]]);
+  wire(c,'e2','N',[[520,250],[520,BOT],[LX,BOT]]);
+  return c;
+}
+// 6) Wechselschaltung: zwei Wechselschalter, eine Lampe (Treppenhaus)
+function cWechsel(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  changeover(c,'S1','S1',[210,BY],'c1','a1','a2',0,false);
+  changeover(c,'S2','S2',[430,BY],'c2','b1','b2',0,true);
+  lamp(c,'L1','L1',[540,BY],'c2','e','h');
+  wire(c,'P','c1',[[LX,150],[170,150]]);        // oben um die Batterie herum
+  // die beiden Korrespondierenden Adern
+  wire(c,'a1','b1',[[250,150],[390,150]]);
+  wire(c,'a2','b2',[[250,250],[390,250]]);
+  wire(c,'e','N',[[590,BY],[590,BOT],[LX,BOT]]);
+  return c;
+}
+// 7a) Mischschaltung: Hauptschalter -> (L1 parallel L2) -> L3 in Reihe
+function cMisch1(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  swi(c,'S1','Hauptschalter',[200,TOP],'a','busTL','h',false);
+  const Lx=310, Rx=430;
+  setNode(c,'busTL',[Lx,TOP]); setNode(c,'busTR',[Rx,TOP]);
+  setNode(c,'busBL',[Lx,270]); setNode(c,'busBR',[Rx,270]);
+  lamp(c,'L1','L1',[Lx,185],'L1t','L1b','v');
+  lamp(c,'L2','L2',[Rx,185],'L2t','L2b','v');
+  lamp(c,'L3','L3',[520,270],'busBR2','e','h');
+  wire(c,'P','a',[[LX,TOP]]);
+  wire(c,'busTL','busTR');
+  wire(c,'busTL','L1t'); wire(c,'busTR','L2t');
+  wire(c,'L1b','busBL'); wire(c,'L2b','busBR');
+  wire(c,'busBL','busBR');
+  setNode(c,'busBR2',[Rx,270]);
+  wire(c,'busBR','busBR2'); // gleicher Punkt (Knoten) -> L3 abgehen
+  wire(c,'e','N',[[590,270],[590,BOT],[LX,BOT]]);
+  dot(c,'busTL'); dot(c,'busBR');
+  return c;
+}
+// 7b) Echte Mischschaltung: oben L1+L2 in REIHE, unten L3 allein, beide Zweige PARALLEL.
+//     Jeder Zweig enthaelt Lampen -> kein Kurzschluss.
+function cMisch2(){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  const yU=150, yL=255;
+  swi(c,'H','Hauptschalter',[175,TOP],'aH','Ain','h',false); // aH=[133,95], Ain=[217,95]
+  setNode(c,'Atop',[240,yU]); setNode(c,'Abot',[240,yL]);    // linke Verzweigung
+  setNode(c,'Btop',[540,yU]); setNode(c,'Bbot',[540,yL]);    // rechte Verzweigung
+  // Oberer Zweig: Schalter + ZWEI Lampen in Reihe
+  swi(c,'S1','S1',[300,yU],'s1a','s1b','h',false);
+  lamp(c,'L1','L1',[400,yU],'l1a','l1b','h');
+  lamp(c,'L2','L2',[478,yU],'l2a','l2b','h');
+  // Unterer Zweig: Schalter + eine Lampe
+  swi(c,'S2','S2',[330,yL],'s2a','s2b','h',false);
+  lamp(c,'L3','L3',[450,yL],'l3a','l3b','h');
+  wire(c,'P','aH',[[LX,TOP]]);                 // + oben herum zum Hauptschalter
+  wire(c,'Ain','Atop',[[240,TOP]]);            // Hauptschalter -> linke Schiene
+  wire(c,'Atop','Abot');                        // linke Sammelschiene (senkrecht)
+  wire(c,'Btop','Bbot');                        // rechte Sammelschiene (senkrecht)
+  // oberer Zweig (Reihe)
+  wire(c,'Atop','s1a'); wire(c,'s1b','l1a'); wire(c,'l1b','l2a'); wire(c,'l2b','Btop');
+  // unterer Zweig
+  wire(c,'Abot','s2a'); wire(c,'s2b','l3a'); wire(c,'l3b','Bbot');
+  // Rueckweg zur Minusklemme
+  wire(c,'Bbot','N',[[540,330],[LX,330]]);
+  dot(c,'Atop'); dot(c,'Bbot');
+  return c;
+}
+
+/* ============================================================
+   Blackbox-Raetsel: gleicher Rahmen, ein Stueck Schaltung ist verdeckt.
+   Von aussen beobachtbar: Abstand der Elektronen (Stromstaerke),
+   Helligkeit der Kontrolllampe L1, Energiepaket von Elli/Laura vor
+   und hinter der Box. Eingang bi=[250,95], Ausgang bo=[430,95].
+   ============================================================ */
+const BB_L=250, BB_R=430;
+function cBlackbox(inner){
+  const c=makeCircuit('0 0 640 380');
+  battery(c,[LX,BY],'P','N');
+  swi(c,'S1','S1',[175,TOP],'a','s','h',true);          // a=[133,95], s=[217,95], zu Beginn geschlossen
+  setNode(c,'bi',[BB_L,TOP]); setNode(c,'bo',[BB_R,TOP]);
+  lamp(c,'L1','L1',[520,TOP],'l','e','h');              // Kontrolllampe ausserhalb: l=[492,95], e=[548,95]
+  wire(c,'P','a',[[LX,TOP]]);
+  wire(c,'s','bi');
+  inner(c);
+  wire(c,'bo','l');
+  wire(c,'e','N',[[RX,TOP],[RX,BOT],[LX,BOT]]);
+  box(c,BB_L-15,45,BB_R-BB_L+30,220);
+  return c;
+}
+// Inhalt 1: nur ein Draht
+function bbDraht(c){ wire(c,'bi','bo'); }
+// Inhalt 2: eine Lampe
+function bbLampe(c){
+  lamp(c,'L2','L2',[340,TOP],'x1','x2','h');
+  wire(c,'bi','x1'); wire(c,'x2','bo');
+}
+// Inhalt 3: zwei Lampen parallel (unterer Weg 108 px tiefer: Zweiglaengen passen zum Punktabstand)
+function bbParallel(c){
+  const yL=TOP+108;
+  lamp(c,'L2','L2',[340,TOP],'x1','x2','h');
+  lamp(c,'L3','L3',[340,yL],'y1','y2','h');
+  wire(c,'bi','x1'); wire(c,'x2','bo');
+  wire(c,'bi','y1',[[BB_L,yL]]); wire(c,'y2','bo',[[BB_R,yL]]);
+  dot(c,'bi'); dot(c,'bo');
+}
+// Inhalt 4: zwei Lampen in Reihe
+function bbReihe(c){
+  lamp(c,'L2','L2',[300,TOP],'x1','x2','h');
+  lamp(c,'L3','L3',[380,TOP],'y1','y2','h');
+  wire(c,'bi','x1'); wire(c,'x2','y1'); wire(c,'y2','bo');
+}
+// Inhalt 5: Kabelbruch
+function bbBruch(c){
+  setNode(c,'k1',[326,TOP]); setNode(c,'k2',[354,TOP]);
+  wire(c,'bi','k1'); wire(c,'k2','bo');
+}
+// Inhalt 6: Lampe, aber mit einem Draht ueberbrueckt
+function bbBruecke(c){
+  const yL=TOP+80;
+  lamp(c,'L2','L2',[340,TOP],'x1','x2','h');
+  wire(c,'bi','x1'); wire(c,'x2','bo');
+  wire(c,'bi','bo',[[BB_L,yL],[BB_R,yL]]);
+  dot(c,'bi'); dot(c,'bo');
+}
+
+const BB_METHOD = `<ol class="method">
+  <li><b>Beobachten:</b> Wie eng laufen die Elektronen? Wie hell ist L1? Wie voll ist das Energiepaket von ${ELECTRONS[0]} vor der Box und wie voll dahinter?</li>
+  <li><b>Vergleichen:</b> Dieselben Größen bei bekannten Schaltungen ansehen (Reihenschaltung, Parallelschaltung, andere Blackboxen).</li>
+  <li><b>Vermuten:</b> Eine Schaltung für den Inhalt zeichnen, die alle Beobachtungen erklärt.</li>
+  <li><b>Vorhersagen und prüfen:</b> Was müsste bei dieser Schaltung zu sehen sein? Dann die Box antippen. Passt es nicht: Vermutung ändern.</li>
+</ol>`;
+
+/* ============================================================
+   Seiten / Tabs
+   ============================================================ */
+const PAGES=[
+  {id:'zeichen', tab:'Schaltzeichen', kind:'gallery'},
+  {id:'reihe', tab:'Reihenschaltung', kind:'sim', make:cReihe,
+    title:'Reihenschaltung',
+    lead:'Alle Bauteile liegen hintereinander auf einem einzigen Weg. Der Strom fließt nacheinander durch jedes Bauteil.',
+    hint:'Öffne S1: Beide Lampen gehen aus. In der Reihenschaltung unterbricht eine einzige Lücke den ganzen Stromkreis.'},
+  {id:'parallel', tab:'Parallelschaltung', kind:'sim', make:cParallel2,
+    title:'Parallelschaltung',
+    lead:'Der Strom teilt sich auf mehrere Zweige auf. Jede Lampe hat ihren eigenen Weg zwischen den beiden Sammelschienen.',
+    hint:'Beide Lampen leuchten gleich hell. Würde man eine herausdrehen, brennt die andere weiter – jeder Zweig ist unabhängig.'},
+  {id:'und', tab:'UND-Schaltung', kind:'sim', make:cUnd,
+    title:'UND-Schaltung',
+    lead:'Zwei Schalter liegen in Reihe. Die Lampe leuchtet nur, wenn S1 UND S2 geschlossen sind.',
+    hint:'Probiere alle vier Kombinationen. Nur wenn beide Schalter geschlossen sind, fließt Strom.'},
+  {id:'oder', tab:'ODER-Schaltung', kind:'sim', make:cOderFinal,
+    title:'ODER-Schaltung',
+    lead:'Zwei Schalter liegen parallel. Die Lampe leuchtet, wenn S1 ODER S2 (oder beide) geschlossen ist.',
+    hint:'Es genügt ein geschlossener Schalter, damit der Strom einen Weg findet.'},
+  {id:'um', tab:'Umschaltung', kind:'sim', make:cUmschalt,
+    title:'Umschaltung',
+    lead:'Ein Umschalter leitet den Strom entweder zu Lampe L1 oder zu Lampe L2. Immer leuchtet genau eine.',
+    hint:'Tippe den Umschalter an: Der Strom springt von einer Lampe zur anderen.'},
+  {id:'wechsel', tab:'Wechselschaltung', kind:'sim', make:cWechsel,
+    title:'Wechselschaltung (Treppenhaus)',
+    lead:'Zwei Wechselschalter steuern dieselbe Lampe. Von jedem Schalter aus kann man das Licht ein- und ausschalten.',
+    hint:'Schalte an S1 – dann an S2: Beide können das Licht umschalten, egal in welchem Zustand der andere gerade steht.'},
+  {id:'misch1', tab:'Mischschaltung 1', kind:'sim', make:cMisch1,
+    title:'Mischschaltung: parallel + Reihe',
+    lead:'L1 und L2 liegen parallel, dahinter folgt L3 in Reihe. Der Hauptschalter schaltet alles.',
+    hint:'L3 liegt im gemeinsamen Rückweg. Fällt L3 aus, wird der ganze Kreis unterbrochen – L1 und L2 gehen mit aus.'},
+  {id:'misch2', tab:'Mischschaltung 2', kind:'sim', make:cMisch2,
+    title:'Mischschaltung: Reihe und Parallel gemischt',
+    lead:'Zwei parallele Zweige: oben liegen L1 und L2 in Reihe, unten allein L3. Beide Zweige sind parallel geschaltet – eine echte Mischung aus Reihen- und Parallelschaltung.',
+    hint:'Mit S1 schaltest du den Reihen-Zweig (L1 und L2), mit S2 die einzelne L3. Achte auf das Energiepaket: Im oberen Zweig geben die Ladungen Energie an zwei Lampen ab, unten an eine.'},
+  {id:'bb1', tab:'Blackbox 1', kind:'sim', make:()=>cBlackbox(bbDraht), title:'Blackbox 1',
+    lead:'In der schwarzen Box steckt ein Stück Schaltung. Finde heraus, was drin ist, ohne hineinzusehen.',
+    look:'Vergleiche mit einer einzelnen Lampe an der Batterie: Ist L1 genauso hell? Laufen die Elektronen genauso eng? Verändert die Box das Energiepaket überhaupt?',
+    solution:'Nur ein Draht. Elli behält ihre ganze Energie bis L1, L1 ist so hell wie eine einzelne Lampe, und der Strom ist genauso groß. In der Box ist kein Verbraucher.'},
+  {id:'bb2', tab:'Blackbox 2', kind:'sim', make:()=>cBlackbox(bbLampe), title:'Blackbox 2',
+    lead:'Gleicher Aufbau, andere Box. Was ist diesmal drin?',
+    look:'Vergleiche mit Blackbox 1: Wie hell ist L1 jetzt? Wie weit sind die Elektronen auseinander? Wie viel Energie gibt Elli in der Box ab, wie viel bleibt für L1?',
+    solution:'Eine Lampe, in Reihe zu L1. Elli gibt die Hälfte ihrer Energie in der Box ab und die andere Hälfte an L1, deshalb ist L1 nur halb so hell. Der Strom ist halb so groß wie bei einer Lampe allein (doppelter Abstand), genau wie in der Reihenschaltung.'},
+  {id:'bb3', tab:'Blackbox 3', kind:'sim', make:()=>cBlackbox(bbParallel), title:'Blackbox 3',
+    lead:'Die Box ist dick genug für mehr als einen Weg. Was ist drin?',
+    look:'Vergleiche mit Blackbox 1 und 2: Ist L1 heller oder dunkler als dort? Ist der Abstand der Elektronen größer oder kleiner? Verliert Elli in der Box mehr oder weniger Energie als in Blackbox 2?',
+    solution:'Zwei Lampen parallel, beide zusammen in Reihe zu L1. Zwei parallele Lampen lassen den Strom leichter durch als eine: Sie bekommen zusammen nur ein Drittel der Spannung, L1 zwei Drittel. Deshalb verliert Elli in der Box nur ein Drittel, L1 ist recht hell, und der Strom liegt zwischen Blackbox 1 und 2. In der Box teilen sich die Elektronen auf zwei Wege auf.'},
+  {id:'bb4', tab:'Blackbox 4', kind:'sim', make:()=>cBlackbox(bbReihe), title:'Blackbox 4',
+    lead:'Noch eine Box. Beobachte zuerst, dann vermute.',
+    look:'L1 ist noch dunkler als in Blackbox 2 und die Elektronen laufen noch weiter auseinander. Wie viel Energie bleibt Elli nach der Box für L1?',
+    solution:'Zwei Lampen in Reihe, mit L1 also drei Lampen hintereinander. Jede bekommt ein Drittel der Spannung: Elli gibt zwei Drittel in der Box ab, L1 bekommt nur ein Drittel und leuchtet schwach. Der Strom ist ein Drittel so groß wie bei einer Lampe allein.'},
+  {id:'bb5', tab:'Blackbox 5', kind:'sim', make:()=>cBlackbox(bbBruch), title:'Blackbox 5',
+    lead:'Diesmal passiert etwas Merkwürdiges. Was ist mit der Box los?',
+    look:'Kein Elektron bewegt sich und L1 bleibt dunkel, obwohl S1 geschlossen ist. Was muss in der Box passiert sein?',
+    solution:'Das Kabel ist unterbrochen. Ohne geschlossenen Stromkreis fließt nirgends Strom, auch nicht vor der Box. Ein Kabelbruch wirkt wie ein offener Schalter.'},
+  {id:'bb6', tab:'Blackbox 6', kind:'sim', make:()=>cBlackbox(bbBruecke), title:'Blackbox 6',
+    lead:'Die letzte Box. Sei vorsichtig mit deinem Urteil.',
+    look:'Alles sieht aus wie bei Blackbox 1. Kannst du sicher sein, dass nur ein Draht drin ist? Welche anderen Inhalte würden dieselben Beobachtungen ergeben?',
+    solution:'Eine Lampe, aber mit einem Draht überbrückt. Fast alle Elektronen nehmen den Draht, die Lampe bekommt keine Spannung und bleibt dunkel. Von außen ist das von Blackbox 1 nicht zu unterscheiden. Das ist ein wichtiges Ergebnis: Beobachtungen können zu einer Vermutung passen, ohne sie zu beweisen. Erst das Öffnen oder ein neues Experiment entscheidet.'},
+];
+
+let current='zeichen';
+const circuits={}; // gecachte Schaltungs-Objekte (Zustand bleibt erhalten)
+let quizSolve=false;               // Galerie: Quizmodus (false) oder Loesungen (true)
+const quizRevealed=new Set();      // im Quizmodus einzeln aufgedeckte Felder
+
+function getCircuit(page){
+  if(!circuits[page.id]) circuits[page.id]=page.make();
+  return circuits[page.id];
+}
+
+function buildNav(){
+  const nav=document.getElementById('nav');
+  nav.innerHTML=PAGES.map(p=>`<button data-id="${p.id}" class="${p.id===current?'active':''}">${p.tab}</button>`).join('');
+  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{ current=b.dataset.id; render(); });
+  // aktiven Reiter in den Sichtbereich holen
+  const active=nav.querySelector('button.active');
+  if(active) active.scrollIntoView({behavior:'smooth', inline:'nearest', block:'nearest'});
+  // Pfeil-Schaltflächen bedienen den Scrollbereich (zuverlässig per Tipp)
+  const step=()=>Math.max(160, nav.clientWidth*0.6);
+  const L=document.getElementById('nav-left'), R=document.getElementById('nav-right');
+  if(L) L.onclick=()=>nav.scrollBy({left:-step(), behavior:'smooth'});
+  if(R) R.onclick=()=>nav.scrollBy({left: step(), behavior:'smooth'});
+}
+
+function statusText(page,c,r){
+  if(page.kind!=='sim') return '';
+  const lamps=c.parts.filter(p=>p.kind==='lamp');
+  const on=lamps.filter(p=>r.lit[c.parts.indexOf(p)]);
+  if(!lamps.length) return '';
+  let msg, cls='';
+  if(on.length===0){ msg='Kein Strom – keine Lampe leuchtet.'; }
+  else if(on.length===lamps.length){ msg='Strom fließt – alle Lampen leuchten.'; cls='on'; }
+  else { msg='Strom fließt – es leuchtet: '+on.map(p=>p.label).join(', ')+'.'; cls='on'; }
+  return `<div class="status ${cls}">${msg}</div>`;
+}
+
+function render(){
+  buildNav();
+  const page=PAGES.find(p=>p.id===current);
+  const view=document.getElementById('view');
+  if(page.kind==='gallery'){
+    runSim(null);
+    document.body.classList.add('gallery-active');
+    document.getElementById('flowWrap').style.display='none';
+    view.innerHTML=`<div class="panel"><h2>Schaltzeichen – Quiz</h2>${galleryHTML()}</div>`;
+    attachGallery();
+    return;
+  }
+  document.body.classList.remove('gallery-active');
+  document.getElementById('flowWrap').style.display='flex';
+  const c=getCircuit(page);
+  const r=renderCircuit(c);
+  const isBox = !!page.solution;
+  const side = isBox
+    ? `${BB_METHOD}
+       <div class="hint">${page.look}</div>
+       <p style="margin:12px 0 0"><button class="btn" id="boxBtn">${c.boxOpen?'Box schließen':'Box öffnen'}</button>
+         <button class="btn" id="reset">Alle Schalter öffnen</button></p>
+       <div class="solution" id="solution"${c.boxOpen?'':' hidden'}><h3>Auflösung</h3>${page.solution}</div>`
+    : `<p class="info">Tippe die <b>Schalter</b> in der Schaltung an, um sie zu öffnen oder zu schließen.
+          Die Elektronen laufen vom <b>Minuspol zum Pluspol</b>. Alle sind gleich schnell; ihr Abstand zeigt die <b>Stromstärke</b>: An einer Verzweigung teilen sie sich auf.
+          ${ELECTRONS[0]} und ${ELECTRONS[1]} tragen ein <b>Energiepaket</b> (Batterie-Icon), das an jeder Lampe schlagartig kleiner wird und in der Batterie wieder voll.</p>
+       <button class="btn" id="reset">Alle Schalter öffnen</button>
+       <div class="hint">${page.hint}</div>`;
+  view.innerHTML=`<div class="panel">
+    <h2>${page.title}</h2>
+    <p class="lead">${page.lead}</p>
+    <div class="stage">
+      <div class="board" id="board">${r.svg}</div>
+      <div class="side">
+        <div id="status">${statusText(page,c,r)}</div>
+        ${side}
+      </div>
+    </div>
+  </div>`;
+  applyFlowClass();
+  startBoardSim(r);
+  attachBoard(page,c);
+  document.getElementById('reset').onclick=()=>{
+    c.parts.forEach(p=>{ if(p.kind==='switch'||p.kind==='taster') p.state=false; if(p.kind==='changeover') p.state=0; });
+    updateBoard(page,c);
+  };
+  const bb=document.getElementById('boxBtn'); if(bb) bb.onclick=()=>toggleBox(c);
+}
+// Blackbox auf- oder zudecken, ohne die laufende Simulation neu zu starten
+function toggleBox(c){
+  c.boxOpen=!c.boxOpen;
+  document.querySelectorAll('#board .bbox').forEach(g=>g.classList.toggle('open', c.boxOpen));
+  const sol=document.getElementById('solution'); if(sol) sol.hidden=!c.boxOpen;
+  const bb=document.getElementById('boxBtn'); if(bb) bb.textContent=c.boxOpen?'Box schließen':'Box öffnen';
+}
+
+function attachGallery(){
+  const gal=document.getElementById('gallery');
+  gal.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      if(quizSolve) return;
+      const i=+card.dataset.qi;
+      if(quizRevealed.has(i)){ quizRevealed.delete(i); card.classList.remove('reveal'); }
+      else { quizRevealed.add(i); card.classList.add('reveal'); }
+    });
+  });
+  if(!quizSolve) quizRevealed.forEach(i=>{ const el=gal.querySelector('.card[data-qi="'+i+'"]'); if(el) el.classList.add('reveal'); });
+  document.querySelectorAll('.qbtn').forEach(b=>b.onclick=()=>{ quizSolve=(b.dataset.q==='solve'); render(); });
+  const rb=document.getElementById('qreset'); if(rb) rb.onclick=()=>{ quizRevealed.clear(); render(); };
+}
+
+function attachBoard(page,c){
+  const board=document.getElementById('board');
+  board.querySelectorAll('[data-id]').forEach(g=>{
+    const id=g.dataset.id;
+    const part=c.parts.find(p=>p.id===id);
+    if(!part) return;
+    g.addEventListener('click',()=>{
+      if(part.kind==='changeover') part.state=part.state?0:1;
+      else part.state=!part.state;
+      updateBoard(page,c);
+    });
+  });
+  board.querySelectorAll('[data-box]').forEach(g=>g.addEventListener('click',()=>toggleBox(c)));
+}
+function updateBoard(page,c){
+  const r=renderCircuit(c);
+  document.getElementById('board').innerHTML=r.svg;
+  document.getElementById('status').innerHTML=statusText(page,c,r);
+  applyFlowClass();
+  startBoardSim(r);
+  attachBoard(page,c);
+}
+// Teilchen an die gerade gezeichneten SVG-Elemente binden und laufen lassen
+function startBoardSim(r){
+  const svg=document.querySelector('#board svg');
+  if(r.sim && svg){ r.sim.bind(svg); r.sim.draw(); }
+  runSim(r.sim||null);
+}
+
+function applyFlowClass(){
+  const show=document.getElementById('flowToggle').checked;
+  document.querySelectorAll('#board svg, .gallery').forEach(el=>{});
+  const board=document.getElementById('board');
+  if(board){ board.classList.toggle('hideflow', !show); }
+}
+
+document.getElementById('flowToggle').addEventListener('change',applyFlowClass);
+render();
+</script>

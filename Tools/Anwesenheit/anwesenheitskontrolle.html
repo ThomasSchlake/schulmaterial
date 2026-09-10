@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anwesenheitskontrolle</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --ink: #1a2230;
+    --muted: #667085;
+    --line: #d8dee8;
+    --accent: #2563eb;
+    --accent-ink: #ffffff;
+    --present: #16a34a;
+    --present-bg: #e7f6ec;
+    --danger: #dc2626;
+    --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.4;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input, button, select { font-family: inherit; }
+
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  header h1 { font-size: 22px; margin: 0; font-weight: 700; }
+  .today { color: var(--muted); font-size: 17px; }
+  .today strong { color: var(--ink); }
+
+  nav { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .tab {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: .12s;
+  }
+  .tab:hover { border-color: var(--accent); }
+  .tab.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  main { padding: 20px; max-width: 1100px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .panel h2 { margin: 0 0 4px; font-size: 20px; }
+  .panel p.hint { margin: 0 0 16px; color: var(--muted); font-size: 16px; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .classfilter { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  input[type=text], input[type=search], select {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 17px;
+    background: #fff;
+    color: var(--ink);
+    min-width: 0;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search { flex: 1; min-width: 200px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+  }
+  .student {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #fff;
+    cursor: pointer;
+    transition: .1s;
+  }
+  .student:hover { border-color: var(--accent); }
+  .student.present { background: var(--present-bg); border-color: var(--present); }
+  .student .mark {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--line);
+    flex: 0 0 auto;
+    display: grid; place-items: center;
+    font-size: 18px; color: #fff; background: #fff;
+  }
+  .student.present .mark { background: var(--present); border-color: var(--present); }
+  .student .name { display: flex; flex-direction: column; line-height: 1.25; }
+  .student .name b { font-weight: 600; }
+  .student .name small { color: var(--muted); font-size: 14px; }
+
+  .count { font-size: 17px; color: var(--muted); }
+  .count strong { color: var(--present); font-size: 20px; }
+
+  form.reg { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+  form.reg label { display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--muted); }
+  form.reg .full { grid-column: 1 / -1; }
+
+  .btn {
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .1s;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn.secondary { background: #eef1f6; color: var(--ink); }
+  .btn.danger { background: var(--danger); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .msg { padding: 12px 16px; border-radius: 10px; font-size: 16px; margin-top: 14px; }
+  .msg.ok { background: var(--present-bg); color: var(--present); }
+  .msg.warn { background: #fef3c7; color: #92400e; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  th { background: #f3f5f9; position: sticky; top: 0; }
+  .tablewrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+  .empty { color: var(--muted); font-style: italic; padding: 20px 0; }
+
+  .exportgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 14px; }
+  .exportcard { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .exportcard.highlight { border-color: var(--accent); background: #f0f5ff; }
+  .exportcard h3 { margin: 0 0 6px; font-size: 17px; }
+  .exportcard p { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+
+  .stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 30px; }
+  .stat span { color: var(--muted); font-size: 15px; }
+
+  .rowbtn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 15px; padding: 4px 8px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" style="display:inline-block;color:var(--accent);text-decoration:none;font-weight:700;font-size:.85rem;margin-bottom:.3rem">‹ Tools</a>
+  <h1>Anwesenheitskontrolle</h1>
+  <div class="today">Heute: <strong id="todayLabel"></strong></div>
+  <nav>
+    <button class="tab active" data-view="checkin">Heute anmelden</button>
+    <button class="tab" data-view="register">Neu registrieren</button>
+    <button class="tab" data-view="admin">Verwaltung &amp; Export</button>
+  </nav>
+</header>
+
+<main>
+  <!-- CHECK-IN -->
+  <section class="view active" id="checkin">
+    <div class="panel">
+      <h2>Heute anmelden</h2>
+      <p class="hint">Auf den eigenen Namen tippen. Grün = für heute angemeldet. Nochmal tippen macht die Anmeldung wieder rückgängig.</p>
+      <div class="toolbar">
+        <input type="search" class="search" id="searchCheckin" placeholder="Name suchen …">
+        <div class="count">Heute anwesend: <strong id="presentCount">0</strong></div>
+      </div>
+      <div class="classfilter" id="classFilter"></div>
+      <div style="height:12px"></div>
+      <div class="grid" id="studentGrid"></div>
+      <p class="empty" id="noStudents" style="display:none">Noch keine Schüler registriert. Wechsle zu „Neu registrieren“.</p>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section class="view" id="register">
+    <div class="panel">
+      <h2>Neu registrieren</h2>
+      <p class="hint">Einmalig eintragen. Danach reicht das Antippen unter „Heute anmelden“.</p>
+      <form class="reg" id="regForm" autocomplete="off">
+        <label>Vorname
+          <input type="text" id="regVorname" required>
+        </label>
+        <label>Nachname
+          <input type="text" id="regNachname" required>
+        </label>
+        <label class="full">Klasse
+          <input type="text" id="regKlasse" list="klassenList" required placeholder="z. B. 9b">
+          <datalist id="klassenList"></datalist>
+        </label>
+        <div class="full btnrow">
+          <button type="submit" class="btn">Speichern</button>
+          <button type="reset" class="btn secondary">Leeren</button>
+        </div>
+      </form>
+      <div id="regMsg"></div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="view" id="admin">
+    <div class="panel">
+      <h2>Übersicht</h2>
+      <div class="stats">
+        <div class="stat"><b id="statStudents">0</b><span>Registrierte Schüler</span></div>
+        <div class="stat"><b id="statClasses">0</b><span>Klassen</span></div>
+        <div class="stat"><b id="statDays">0</b><span>Erfasste Tage</span></div>
+        <div class="stat"><b id="statPresentToday">0</b><span>Heute anwesend</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Auf den Laptop exportieren</h2>
+      <p class="hint">Empfohlen ohne Excel: die HTML-Übersicht — <strong>eine einzige Datei</strong> für den Stick, öffnet sich per Doppelklick in jedem Browser.</p>
+      <div class="exportcard highlight" style="margin-bottom:14px">
+        <h3>Übersicht als HTML-Datei (kein Excel nötig)</h3>
+        <p>Alle Listen (Namensliste, Matrix, Rohdaten) in einer Datei. Auf den Stick ziehen, auf dem Laptop doppelklicken — öffnet im Browser. Dort auch als PDF druckbar.</p>
+        <button class="btn" onclick="exportReport()">Herunterladen</button>
+      </div>
+      <p class="hint" style="margin:6px 0 12px">Weitere Formate (falls doch gebraucht):</p>
+      <div class="exportgrid">
+        <div class="exportcard">
+          <h3>Alles als Excel (.xlsx)</h3>
+          <p>Eine Datei mit drei Blättern. Nur nützlich, wenn Excel oder LibreOffice installiert ist.</p>
+          <button class="btn secondary" onclick="exportExcel()">Herunterladen</button>
+        </div>
+        <div class="exportcard">
+          <h3>Namensliste (CSV)</h3>
+          <p>Zwei Spalten: <em>Klasse</em> und <em>Nachname, Vorname</em>. Sortiert nach Klasse.</p>
+          <button class="btn" onclick="exportNamensliste()">Herunterladen</button>
+        </div>
+        <div class="exportcard">
+          <h3>Anwesenheits-Matrix (CSV)</h3>
+          <p>Eine Zeile pro Schüler, eine Spalte pro Datum, „X“ wo anwesend. Guter Wochenüberblick.</p>
+          <button class="btn" onclick="exportMatrix()">Herunterladen</button>
+        </div>
+        <div class="exportcard">
+          <h3>Rohdaten / Langformat (CSV)</h3>
+          <p>Eine Zeile pro Anwesenheit: Datum, Klasse, Nachname, Vorname. Ideal zum Filtern.</p>
+          <button class="btn" onclick="exportLang()">Herunterladen</button>
+        </div>
+        <div class="exportcard">
+          <h3>Voll-Backup (JSON)</h3>
+          <p>Sichert alle Daten. Auf der Tafel oder dem Laptop wieder importierbar.</p>
+          <button class="btn secondary" onclick="exportJSON()">Sichern</button>
+        </div>
+        <div class="exportcard">
+          <h3>Backup einlesen (JSON)</h3>
+          <p>Eine zuvor gesicherte JSON-Datei laden. Daten werden zusammengeführt.</p>
+          <button class="btn secondary" onclick="document.getElementById('importFile').click()">Datei wählen</button>
+          <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+        </div>
+      </div>
+      <div id="importMsg"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Anwesenheit pro Tag</h2>
+      <div class="tablewrap">
+        <table id="dayTable">
+          <thead><tr><th>Datum</th><th>Anwesend</th><th>Namen</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Registrierte Schüler</h2>
+      <div class="tablewrap">
+        <table id="studentTable">
+          <thead><tr><th>Klasse</th><th>Nachname, Vorname</th><th>Tage anwesend</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div style="height:14px"></div>
+      <div class="btnrow">
+        <button class="btn danger" onclick="clearAll()">Alle Daten löschen</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "anwesenheit_v1";
+
+/* ---------- Datenmodell ----------
+   state = {
+     students: [{ id, vorname, nachname, klasse }],
+     attendance: { "YYYY-MM-DD": [studentId, ...] }
+   }
+------------------------------------ */
+let state = load();
+let filterClass = "__all__";
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { students: [], attendance: {} };
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+/* ---------- Datum ---------- */
+function todayISO() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+function formatDE(iso) {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}
+const TODAY = todayISO();
+document.getElementById("todayLabel").textContent =
+  new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+
+/* ---------- Hilfen ---------- */
+function uid() {
+  return "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+}
+function byName(a, b) {
+  const k = a.klasse.localeCompare(b.klasse, "de", { numeric: true, sensitivity: "base" });
+  if (k !== 0) return k;
+  const n = a.nachname.localeCompare(b.nachname, "de", { sensitivity: "base" });
+  if (n !== 0) return n;
+  return a.vorname.localeCompare(b.vorname, "de", { sensitivity: "base" });
+}
+function classes() {
+  return [...new Set(state.students.map(s => s.klasse))]
+    .sort((a, b) => a.localeCompare(b, "de", { numeric: true, sensitivity: "base" }));
+}
+function isPresent(id, date = TODAY) {
+  return (state.attendance[date] || []).includes(id);
+}
+function daysPresent(id) {
+  return Object.values(state.attendance).filter(list => list.includes(id)).length;
+}
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.view).classList.add("active");
+    if (tab.dataset.view === "admin") renderAdmin();
+    if (tab.dataset.view === "checkin") renderCheckin();
+  });
+});
+
+/* ---------- Check-in ---------- */
+const searchCheckin = document.getElementById("searchCheckin");
+searchCheckin.addEventListener("input", renderCheckin);
+
+function renderClassFilter() {
+  const wrap = document.getElementById("classFilter");
+  const cls = classes();
+  let html = `<button class="chip ${filterClass === "__all__" ? "active" : ""}" data-c="__all__">Alle</button>`;
+  cls.forEach(c => {
+    html += `<button class="chip ${filterClass === c ? "active" : ""}" data-c="${escapeHtml(c)}">${escapeHtml(c)}</button>`;
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll(".chip").forEach(ch => {
+    ch.addEventListener("click", () => { filterClass = ch.dataset.c; renderCheckin(); });
+  });
+}
+
+function renderCheckin() {
+  renderClassFilter();
+  const grid = document.getElementById("studentGrid");
+  const q = searchCheckin.value.trim().toLowerCase();
+  const none = document.getElementById("noStudents");
+
+  none.style.display = state.students.length === 0 ? "block" : "none";
+
+  let list = [...state.students].sort(byName);
+  if (filterClass !== "__all__") list = list.filter(s => s.klasse === filterClass);
+  if (q) list = list.filter(s =>
+    (s.vorname + " " + s.nachname + " " + s.nachname + " " + s.vorname).toLowerCase().includes(q));
+
+  grid.innerHTML = list.map(s => {
+    const p = isPresent(s.id);
+    return `<div class="student ${p ? "present" : ""}" data-id="${s.id}">
+      <div class="mark">${p ? "✓" : ""}</div>
+      <div class="name"><b>${escapeHtml(s.nachname)}, ${escapeHtml(s.vorname)}</b><small>${escapeHtml(s.klasse)}</small></div>
+    </div>`;
+  }).join("");
+
+  grid.querySelectorAll(".student").forEach(el => {
+    el.addEventListener("click", () => togglePresent(el.dataset.id));
+  });
+
+  document.getElementById("presentCount").textContent = (state.attendance[TODAY] || []).length;
+}
+
+function togglePresent(id) {
+  if (!state.attendance[TODAY]) state.attendance[TODAY] = [];
+  const arr = state.attendance[TODAY];
+  const i = arr.indexOf(id);
+  if (i === -1) arr.push(id);
+  else arr.splice(i, 1);
+  if (arr.length === 0) delete state.attendance[TODAY];
+  save();
+  renderCheckin();
+}
+
+/* ---------- Registrieren ---------- */
+const regForm = document.getElementById("regForm");
+regForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const vorname = document.getElementById("regVorname").value.trim();
+  const nachname = document.getElementById("regNachname").value.trim();
+  const klasse = document.getElementById("regKlasse").value.trim();
+  const msg = document.getElementById("regMsg");
+
+  if (!vorname || !nachname || !klasse) return;
+
+  const dup = state.students.some(s =>
+    s.vorname.toLowerCase() === vorname.toLowerCase() &&
+    s.nachname.toLowerCase() === nachname.toLowerCase() &&
+    s.klasse.toLowerCase() === klasse.toLowerCase());
+
+  if (dup) {
+    msg.innerHTML = `<div class="msg warn">${escapeHtml(nachname)}, ${escapeHtml(vorname)} (${escapeHtml(klasse)}) ist bereits registriert.</div>`;
+    return;
+  }
+
+  state.students.push({ id: uid(), vorname, nachname, klasse });
+  save();
+  regForm.reset();
+  document.getElementById("regVorname").focus();
+  updateKlassenList();
+  msg.innerHTML = `<div class="msg ok">Gespeichert: ${escapeHtml(nachname)}, ${escapeHtml(vorname)} (${escapeHtml(klasse)}).</div>`;
+  setTimeout(() => { if (msg.firstChild) msg.innerHTML = ""; }, 4000);
+});
+
+function updateKlassenList() {
+  document.getElementById("klassenList").innerHTML =
+    classes().map(c => `<option value="${escapeHtml(c)}">`).join("");
+}
+
+/* ---------- Admin ---------- */
+function renderAdmin() {
+  document.getElementById("statStudents").textContent = state.students.length;
+  document.getElementById("statClasses").textContent = classes().length;
+  document.getElementById("statDays").textContent = Object.keys(state.attendance).length;
+  document.getElementById("statPresentToday").textContent = (state.attendance[TODAY] || []).length;
+
+  // Tage
+  const dayBody = document.querySelector("#dayTable tbody");
+  const dates = Object.keys(state.attendance).sort().reverse();
+  if (dates.length === 0) {
+    dayBody.innerHTML = `<tr><td colspan="3" class="empty">Noch keine Anwesenheit erfasst.</td></tr>`;
+  } else {
+    dayBody.innerHTML = dates.map(d => {
+      const ids = state.attendance[d];
+      const names = ids
+        .map(id => state.students.find(s => s.id === id))
+        .filter(Boolean)
+        .sort(byName)
+        .map(s => `${s.nachname}, ${s.vorname} (${s.klasse})`)
+        .join(" · ");
+      return `<tr><td>${formatDE(d)}</td><td>${ids.length}</td><td>${escapeHtml(names)}</td></tr>`;
+    }).join("");
+  }
+
+  // Schüler
+  const sBody = document.querySelector("#studentTable tbody");
+  if (state.students.length === 0) {
+    sBody.innerHTML = `<tr><td colspan="4" class="empty">Noch keine Schüler registriert.</td></tr>`;
+  } else {
+    sBody.innerHTML = [...state.students].sort(byName).map(s =>
+      `<tr>
+        <td>${escapeHtml(s.klasse)}</td>
+        <td>${escapeHtml(s.nachname)}, ${escapeHtml(s.vorname)}</td>
+        <td>${daysPresent(s.id)}</td>
+        <td><button class="rowbtn" onclick="removeStudent('${s.id}')">löschen</button></td>
+      </tr>`).join("");
+  }
+}
+
+function removeStudent(id) {
+  const s = state.students.find(x => x.id === id);
+  if (!s) return;
+  if (!confirm(`${s.nachname}, ${s.vorname} (${s.klasse}) wirklich löschen? Alle Anwesenheiten dieser Person gehen verloren.`)) return;
+  state.students = state.students.filter(x => x.id !== id);
+  for (const d of Object.keys(state.attendance)) {
+    state.attendance[d] = state.attendance[d].filter(x => x !== id);
+    if (state.attendance[d].length === 0) delete state.attendance[d];
+  }
+  save();
+  renderAdmin();
+}
+
+function clearAll() {
+  if (!confirm("Wirklich ALLE Daten löschen (Schüler und Anwesenheiten)? Das lässt sich nicht rückgängig machen.")) return;
+  if (!confirm("Sicher? Vorher am besten ein Backup exportieren.")) return;
+  state = { students: [], attendance: {} };
+  save();
+  renderAdmin();
+  renderCheckin();
+  updateKlassenList();
+}
+
+/* ---------- Export ---------- */
+function download(filename, text, mime = "text/csv") {
+  const blob = new Blob(["﻿" + text], { type: mime + ";charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function csvCell(v) {
+  v = String(v ?? "");
+  if (/[";\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+  return v;
+}
+function csvRow(arr) { return arr.map(csvCell).join(";"); }
+
+function exportNamensliste() {
+  const rows = [csvRow(["Klasse", "Nachname, Vorname"])];
+  [...state.students].sort(byName).forEach(s => {
+    rows.push(csvRow([s.klasse, `${s.nachname}, ${s.vorname}`]));
+  });
+  download("Namensliste.csv", rows.join("\r\n"));
+}
+
+function exportMatrix() {
+  const dates = Object.keys(state.attendance).sort();
+  const header = ["Klasse", "Nachname", "Vorname", ...dates.map(formatDE), "Summe"];
+  const rows = [csvRow(header)];
+  [...state.students].sort(byName).forEach(s => {
+    let sum = 0;
+    const cells = dates.map(d => {
+      const p = isPresent(s.id, d);
+      if (p) sum++;
+      return p ? "X" : "";
+    });
+    rows.push(csvRow([s.klasse, s.nachname, s.vorname, ...cells, sum]));
+  });
+  download("Anwesenheit-Matrix.csv", rows.join("\r\n"));
+}
+
+function exportLang() {
+  const rows = [csvRow(["Datum", "Klasse", "Nachname", "Vorname"])];
+  Object.keys(state.attendance).sort().forEach(d => {
+    state.attendance[d]
+      .map(id => state.students.find(s => s.id === id))
+      .filter(Boolean)
+      .sort(byName)
+      .forEach(s => rows.push(csvRow([formatDE(d), s.klasse, s.nachname, s.vorname])));
+  });
+  download("Anwesenheit-Rohdaten.csv", rows.join("\r\n"));
+}
+
+function exportJSON() {
+  download("Anwesenheit-Backup.json", JSON.stringify(state, null, 2), "application/json");
+}
+
+/* ---------- HTML-Übersicht (öffnet in jedem Browser, kein Excel nötig) ---------- */
+function exportReport() {
+  const sorted = [...state.students].sort(byName);
+  const dates = Object.keys(state.attendance).sort();
+  const esc = escapeHtml;
+
+  // Namensliste
+  const namensRows = sorted.map(s =>
+    `<tr><td>${esc(s.klasse)}</td><td>${esc(s.nachname)}, ${esc(s.vorname)}</td></tr>`).join("");
+
+  // Matrix
+  const matrixHead = `<tr><th>Klasse</th><th>Nachname</th><th>Vorname</th>${
+    dates.map(d => `<th class="d">${esc(formatDE(d))}</th>`).join("")}<th>Summe</th></tr>`;
+  const matrixRows = sorted.map(s => {
+    let sum = 0;
+    const cells = dates.map(d => {
+      const p = isPresent(s.id, d); if (p) sum++;
+      return `<td class="c">${p ? "✓" : ""}</td>`;
+    }).join("");
+    return `<tr><td>${esc(s.klasse)}</td><td>${esc(s.nachname)}</td><td>${esc(s.vorname)}</td>${cells}<td class="c"><b>${sum}</b></td></tr>`;
+  }).join("");
+
+  // Rohdaten
+  let rohRows = "";
+  dates.forEach(d => {
+    state.attendance[d].map(id => state.students.find(s => s.id === id)).filter(Boolean).sort(byName)
+      .forEach(s => { rohRows += `<tr><td>${esc(formatDE(d))}</td><td>${esc(s.klasse)}</td><td>${esc(s.nachname)}</td><td>${esc(s.vorname)}</td></tr>`; });
+  });
+
+  const stamp = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+  const empty = `<tr><td colspan="9" style="color:#888;font-style:italic">Keine Daten.</td></tr>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><title>Anwesenheit – Übersicht</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,sans-serif;color:#1a2230;max-width:1000px;margin:24px auto;padding:0 20px;font-size:15px}
+  h1{font-size:24px;margin:0 0 2px} h2{font-size:19px;margin:32px 0 10px;border-bottom:2px solid #e5e9f0;padding-bottom:4px}
+  .sub{color:#667085;margin:0 0 20px}
+  table{border-collapse:collapse;width:100%;margin-bottom:8px}
+  th,td{border:1px solid #d8dee8;padding:6px 10px;text-align:left}
+  th{background:#f3f5f9} th.d{writing-mode:vertical-rl;text-align:center;white-space:nowrap}
+  td.c,th:last-child{text-align:center}
+  tr:nth-child(even) td{background:#fafbfd}
+  .bar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:1px solid #e5e9f0;margin-bottom:16px}
+  button{background:#2563eb;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:15px;cursor:pointer}
+  @media print{.bar{display:none} body{margin:0}}
+</style></head><body>
+<div class="bar"><button onclick="window.print()">Als PDF drucken / speichern</button></div>
+<h1>Anwesenheitskontrolle – Übersicht</h1>
+<p class="sub">Stand: ${esc(stamp)} · ${sorted.length} Schüler · ${dates.length} erfasste Tage</p>
+
+<h2>Namensliste</h2>
+<table><tr><th>Klasse</th><th>Nachname, Vorname</th></tr>${namensRows || empty}</table>
+
+<h2>Anwesenheit pro Tag (Matrix)</h2>
+<table>${matrixHead}${matrixRows || empty}</table>
+
+<h2>Rohdaten (eine Zeile pro Anwesenheit)</h2>
+<table><tr><th>Datum</th><th>Klasse</th><th>Nachname</th><th>Vorname</th></tr>${rohRows || empty}</table>
+</body></html>`;
+
+  download("Anwesenheit-Uebersicht.html", html, "text/html");
+}
+
+/* ---------- Excel-Export (eine .xlsx-Datei, mehrere Blätter) ---------- */
+const _crcTable = (() => {
+  let c, t = [];
+  for (let n = 0; n < 256; n++) { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function _crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = _crcTable[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function _xmlEsc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+}
+function _colName(n) {
+  let s = "";
+  while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = (n - m - 1) / 26; }
+  return s;
+}
+function _sheetXml(rows) {
+  let body = "";
+  rows.forEach((row, ri) => {
+    let cells = "";
+    row.forEach((cell, ci) => {
+      const ref = _colName(ci + 1) + (ri + 1);
+      if (cell && typeof cell === "object" && "n" in cell) {
+        cells += `<c r="${ref}"><v>${cell.n}</v></c>`;
+      } else {
+        cells += `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${_xmlEsc(cell)}</t></is></c>`;
+      }
+    });
+    body += `<row r="${ri + 1}">${cells}</row>`;
+  });
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${body}</sheetData></worksheet>`;
+}
+function _buildXlsx(sheets) {
+  const enc = new TextEncoder();
+  const files = [];
+  files.push(["[Content_Types].xml",
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+    sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("") + `</Types>`]);
+  files.push(["_rels/.rels",
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`]);
+  files.push(["xl/workbook.xml",
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
+    sheets.map((s, i) => `<sheet name="${_xmlEsc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") + `</sheets></workbook>`]);
+  files.push(["xl/_rels/workbook.xml.rels",
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("") + `</Relationships>`]);
+  sheets.forEach((s, i) => files.push([`xl/worksheets/sheet${i + 1}.xml`, _sheetXml(s.rows)]));
+
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+  const u16 = n => new Uint8Array([n & 255, (n >> 8) & 255]);
+  const u32 = n => new Uint8Array([n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255]);
+  const push = arr => { chunks.push(arr); offset += arr.length; };
+  const dosTime = 0, dosDate = 0x21;
+
+  files.forEach(([name, content]) => {
+    const nameBytes = enc.encode(name);
+    const data = enc.encode(content);
+    const crc = _crc32(data);
+    const localOffset = offset;
+    push(u32(0x04034b50)); push(u16(20)); push(u16(0x0800)); push(u16(0));
+    push(u16(dosTime)); push(u16(dosDate));
+    push(u32(crc)); push(u32(data.length)); push(u32(data.length));
+    push(u16(nameBytes.length)); push(u16(0)); push(nameBytes); push(data);
+    central.push({ name: nameBytes, crc, size: data.length, offset: localOffset });
+  });
+  const cdStart = offset;
+  central.forEach(r => {
+    push(u32(0x02014b50)); push(u16(20)); push(u16(20)); push(u16(0x0800)); push(u16(0));
+    push(u16(dosTime)); push(u16(dosDate));
+    push(u32(r.crc)); push(u32(r.size)); push(u32(r.size));
+    push(u16(r.name.length)); push(u16(0)); push(u16(0));
+    push(u16(0)); push(u16(0)); push(u32(0)); push(u32(r.offset)); push(r.name);
+  });
+  const cdSize = offset - cdStart;
+  push(u32(0x06054b50)); push(u16(0)); push(u16(0));
+  push(u16(central.length)); push(u16(central.length));
+  push(u32(cdSize)); push(u32(cdStart)); push(u16(0));
+
+  let total = 0; chunks.forEach(c => total += c.length);
+  const out = new Uint8Array(total);
+  let p = 0; chunks.forEach(c => { out.set(c, p); p += c.length; });
+  return out;
+}
+function exportExcel() {
+  const sorted = [...state.students].sort(byName);
+  const dates = Object.keys(state.attendance).sort();
+
+  const namens = [["Klasse", "Nachname, Vorname"], ...sorted.map(s => [s.klasse, `${s.nachname}, ${s.vorname}`])];
+
+  const matrix = [["Klasse", "Nachname", "Vorname", ...dates.map(formatDE), "Summe"]];
+  sorted.forEach(s => {
+    let sum = 0;
+    const cells = dates.map(d => { const p = isPresent(s.id, d); if (p) sum++; return p ? "X" : ""; });
+    matrix.push([s.klasse, s.nachname, s.vorname, ...cells, { n: sum }]);
+  });
+
+  const roh = [["Datum", "Klasse", "Nachname", "Vorname"]];
+  dates.forEach(d => {
+    state.attendance[d].map(id => state.students.find(s => s.id === id)).filter(Boolean).sort(byName)
+      .forEach(s => roh.push([formatDE(d), s.klasse, s.nachname, s.vorname]));
+  });
+
+  const bytes = _buildXlsx([
+    { name: "Namensliste", rows: namens },
+    { name: "Matrix", rows: matrix },
+    { name: "Rohdaten", rows: roh },
+  ]);
+  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "Anwesenheit.xlsx";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ---------- Import ---------- */
+document.getElementById("importFile").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const msg = document.getElementById("importMsg");
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.students || !data.attendance) throw new Error("Unbekanntes Format");
+      mergeData(data);
+      save();
+      renderAdmin();
+      renderCheckin();
+      updateKlassenList();
+      msg.innerHTML = `<div class="msg ok">Backup eingelesen und zusammengeführt.</div>`;
+    } catch (err) {
+      msg.innerHTML = `<div class="msg warn">Datei konnte nicht gelesen werden: ${escapeHtml(err.message)}</div>`;
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
+
+function mergeData(data) {
+  // Schüler zusammenführen: gleicher Name+Klasse gilt als identisch.
+  const key = s => (s.vorname + "|" + s.nachname + "|" + s.klasse).toLowerCase();
+  const existing = new Map(state.students.map(s => [key(s), s]));
+  const idMap = {}; // alte ID -> aktuelle ID
+
+  data.students.forEach(s => {
+    const k = key(s);
+    if (existing.has(k)) {
+      idMap[s.id] = existing.get(k).id;
+    } else {
+      const ns = { id: uid(), vorname: s.vorname, nachname: s.nachname, klasse: s.klasse };
+      state.students.push(ns);
+      existing.set(k, ns);
+      idMap[s.id] = ns.id;
+    }
+  });
+
+  for (const [date, ids] of Object.entries(data.attendance)) {
+    if (!state.attendance[date]) state.attendance[date] = [];
+    ids.forEach(oldId => {
+      const newId = idMap[oldId] || oldId;
+      if (!state.attendance[date].includes(newId)) state.attendance[date].push(newId);
+    });
+  }
+}
+
+/* ---------- Utility ---------- */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---------- Start ---------- */
+updateKlassenList();
+renderCheckin();
+</script>
+</body>
+</html>

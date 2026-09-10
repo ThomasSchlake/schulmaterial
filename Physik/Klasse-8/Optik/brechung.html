@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.55rem 1.1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag" id="tag"></span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+// Klasse 8 – Optik: gemeinsame Zeichen-Helfer für die Präsentationen.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr (aus _lesson-engine.html).
+//
+// Am Bildschirm dürfen Farben die Strahlarten kennzeichnen (das ist NICHT das
+// S/W-Arbeitsblatt): Parallelstrahl blau, Brennpunktstrahl rot, Mittelpunktstrahl grün,
+// virtuelle Verlängerung grau gepunktet.
+
+const RAYCOL = { p:'#2f6df6', b:'#e5533c', c:'#1f9e75', obj:'#1b2440', real:'#b23a26', virt:'#8b93a7', axis:'#9aa8c6', lens:'#5a6684' };
+
+// Dünne-Linsen-Rechnung. gpos = Gegenstandsweite (>0), fsig = +f Sammellinse / -f Zerstreuung.
+// Rückgabe: bildweite xi (rechts positiv), Vergrößerung m, Bildhöhe hi.
+function lensImage(gpos, fsig, hobj){
+  const xi = 1/(1/fsig - 1/gpos);   // Bildweite (Cartesisch, Gegenstand bei -g)
+  const m  = xi/(-gpos);            // Vergrößerung (negativ = umgekehrt)
+  return { xi, m, hi:m*hobj, real: xi>0 && isFinite(xi) };
+}
+
+// Zeichnet eine komplette Linsen-Szene mit wählbaren Strahlen.
+// o = { f, g, h, conv, rays:{p,b,c}, image, note }
+//   conv!==false → Sammellinse; sonst Zerstreuungslinse.
+//   rays: welche Konstruktionsstrahlen gezeigt werden (Parallel p, Brennpunkt b, Mitte c).
+function lensScene(ctx, W, H, o){
+  const conv = o.conv !== false;
+  const f = o.f, g = o.g, h = (o.h!=null?o.h:2);
+  const fsig = conv ? f : -f;
+  const R = o.rays || {};
+  const near = isFinite(1/(1/fsig-1/g)) && Math.abs(g-f) > 1e-6;
+  const img = lensImage(g, fsig, h);
+  const xi = img.xi, hi = img.hi;
+
+  // Weltausschnitt bestimmen (x nach rechts, y nach oben; Ursprung = Linsenmitte)
+  const xs = [-g, -2*f, 2*f, f, -f]; if(near && isFinite(xi)) xs.push(xi);
+  const ys = [h, -h]; if(near && isFinite(hi)) { ys.push(hi, -hi); }
+  const xmin = Math.min(...xs) - f*0.6, xmax = Math.max(...xs) + f*0.6;
+  const ymax = Math.max(h, Math.abs(isFinite(hi)?hi:h)) * 1.25 + 0.4;
+  const sx = W*0.92/(xmax-xmin), sy = H*0.42/(2*ymax), s = Math.min(sx, sy);
+  const cx0 = W/2 - ((xmin+xmax)/2)*s, axisY = H*0.54;
+  const X = wx => cx0 + wx*s, Y = wy => axisY - wy*s;
+
+  // Achse
+  ctx.strokeStyle = RAYCOL.axis; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(X(xmin), axisY); ctx.lineTo(X(xmax), axisY); ctx.stroke();
+
+  // Linse (senkrecht, Pfeilspitzen: Sammellinse außen, Zerstreuung innen)
+  const lh = Math.min(ymax*s*1.0, H*0.42);
+  ctx.strokeStyle = RAYCOL.lens; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(X(0), axisY-lh); ctx.lineTo(X(0), axisY+lh); ctx.stroke();
+  const ah = 9; ctx.fillStyle = RAYCOL.lens;
+  const tip = (yy, up) => { ctx.beginPath();
+    if(conv){ ctx.moveTo(X(0), yy); ctx.lineTo(X(0)-ah*0.6, yy+(up?ah:-ah)); ctx.lineTo(X(0)+ah*0.6, yy+(up?ah:-ah)); }
+    else    { ctx.moveTo(X(0), yy+(up?-ah:ah)); ctx.lineTo(X(0)-ah*0.6, yy); ctx.lineTo(X(0)+ah*0.6, yy); }
+    ctx.closePath(); ctx.fill(); };
+  tip(axisY-lh, true); tip(axisY+lh, false);
+
+  // Brennpunkte und doppelte Brennweite markieren
+  const tick = (wx, name) => { ctx.strokeStyle=RAYCOL.lens; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(X(wx), axisY-5); ctx.lineTo(X(wx), axisY+5); ctx.stroke();
+    lbl(ctx, X(wx), axisY+16, name, 12, '#5a6684'); };
+  tick(-f, conv?'F':'F′'); tick(f, conv?'F′':'F'); tick(-2*f, '2F'); tick(2*f, '2F′');
+
+  // Gegenstand (Pfeil nach oben)
+  arrow(ctx, X(-g), axisY, X(-g), Y(h), RAYCOL.obj, 3);
+  lbl(ctx, X(-g), Y(h)-12, 'G', 13, RAYCOL.obj);
+
+  const O = [X(-g), Y(h)];
+  const line = (x1,y1,x2,y2,col,wd,dash) => { ctx.save(); ctx.setLineDash(dash||[]); ctx.strokeStyle=col; ctx.lineWidth=wd||2.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.restore(); };
+
+  // --- Strahl 1: Parallelstrahl → durch F' (Sammellinse) bzw. scheinbar aus F (Zerstreuung)
+  if(R.p){
+    line(O[0], O[1], X(0), Y(h), RAYCOL.p, 2.5);          // parallel bis zur Linse
+    if(conv){
+      // nach der Linse Richtung F'(+f,0)
+      const dx = f-0, dy = 0-h; const t = (xmax-0)/dx;
+      line(X(0), Y(h), X(xmax), Y(h + dy/dx*(xmax-0)), RAYCOL.p, 2.5);
+    } else {
+      // Zerstreuung: bricht so, als käme er aus F(-f,0)
+      const dx = 0-(-f), dy = h-0;                         // Richtung von F weg
+      line(X(0), Y(h), X(xmax), Y(h + dy/dx*(xmax-0)), RAYCOL.p, 2.5);
+      line(X(0), Y(h), X(-f), Y(0), RAYCOL.virt, 2, [3,4]); // Verlängerung nach F
+    }
+  }
+  // --- Strahl 3: Mittelpunktstrahl → ungebrochen
+  if(R.c){
+    const dx = g, dy = -h;                                 // Richtung O→Ursprung
+    line(O[0], O[1], X(xmax), Y(h + dy/dx*(g + (xmax))) , RAYCOL.c, 2.5);
+  }
+  // --- Strahl 2: Brennpunktstrahl → nach der Linse parallel (bei g=f entartet, weglassen)
+  if(R.b && Math.abs(g-f) > 1e-6){
+    if(conv){
+      const yB = -h*f/(g-f);                               // Höhe am Linsenort
+      line(O[0], O[1], X(0), Y(yB), RAYCOL.b, 2.5);        // durch F bis Linse
+      line(X(0), Y(yB), X(xmax), Y(yB), RAYCOL.b, 2.5);    // danach parallel
+    } else {
+      // Zielt auf F'(+f,0), tritt danach parallel aus
+      const dx = f-(-g), dy = 0-h; const yL = h + dy/dx*(0-(-g));
+      line(O[0], O[1], X(0), Y(yL), RAYCOL.b, 2.5);
+      line(X(0), Y(yL), X(xmax), Y(yL), RAYCOL.b, 2.5);
+    }
+  }
+
+  // --- Bild
+  if(o.image && near && isFinite(xi)){
+    if(img.real){
+      arrow(ctx, X(xi), axisY, X(xi), Y(hi), RAYCOL.real, 3);
+      lbl(ctx, X(xi), Y(hi)+(hi<0?16:-14), 'B', 13, RAYCOL.real);
+    } else {
+      // virtuelles Bild: gestrichelter Pfeil + gepunktete Rückverlängerungen der Strahlen
+      ctx.save(); ctx.setLineDash([5,4]);
+      arrow(ctx, X(xi), axisY, X(xi), Y(hi), RAYCOL.virt, 3); ctx.restore();
+      lbl(ctx, X(xi), Y(hi)-14, 'B (virtuell)', 12, RAYCOL.virt);
+      if(R.c) line(O[0], O[1], X(xi), Y(hi), RAYCOL.virt, 1.5, [3,4]);
+    }
+  }
+  return img;
+}
+
+// --- Reflexion am ebenen Spiegel: Reflexionsgesetz (Einfalls- = Ausfallswinkel) ---
+// o = { deg (Einfallswinkel zum Lot, 0..80) }
+function reflexionScene(ctx,W,H,o){
+  const deg=(o&&o.deg!=null?o.deg:40), a=deg*Math.PI/180;
+  const my=H*0.74, px=W*0.5, L=Math.min(W,H)*0.5;
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W*0.1,my); ctx.lineTo(W*0.9,my); ctx.stroke();
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.5;
+  for(let x=W*0.12;x<W*0.9;x+=15){ ctx.beginPath(); ctx.moveTo(x,my); ctx.lineTo(x-10,my+11); ctx.stroke(); }
+  ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(px,my-L); ctx.lineTo(px,my+8); ctx.stroke(); ctx.restore();
+  lbl(ctx, px+12, my-L+6, 'Lot', 12, '#9aa3b5','left');
+  const ix=px-Math.sin(a)*L, iy=my-Math.cos(a)*L, rx=px+Math.sin(a)*L, ry=my-Math.cos(a)*L;
+  arrow(ctx, ix,iy, px,my, '#2f6df6', 2.5);
+  arrow(ctx, px,my, rx,ry, '#e5533c', 2.5);
+  lbl(ctx, ix, iy-10, 'einfallender Strahl', 12, '#2f6df6');
+  lbl(ctx, rx, ry-10, 'reflektierter Strahl', 12, '#e5533c');
+  lbl(ctx, px-Math.sin(a/2)*L*0.4, my-Math.cos(a/2)*L*0.4-4, 'α', 14, '#2f6df6');
+  lbl(ctx, px+Math.sin(a/2)*L*0.4, my-Math.cos(a/2)*L*0.4-4, 'α', 14, '#e5533c');
+  lbl(ctx, px, my+30, 'Einfallswinkel = Ausfallswinkel  (α = '+deg.toFixed(0)+'°)', 13, '#1b2440');
+}
+
+// --- Bild am ebenen Spiegel: virtuell, gleich groß, gleich weit hinter dem Spiegel ---
+// o = { g (Abstand in „Kästchen"), h, eye }
+function mirrorScene(ctx,W,H,o){
+  const g=(o&&o.g!=null?o.g:2.4), h=(o&&o.h!=null?o.h:2);
+  const mx=W*0.5, baseY=H*0.8, s=Math.min(W*0.9/(2*g+1.5), H*0.5/h);
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(mx,H*0.14); ctx.lineTo(mx,H*0.9); ctx.stroke();
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.5;
+  for(let y=H*0.16;y<H*0.9;y+=15){ ctx.beginPath(); ctx.moveTo(mx,y); ctx.lineTo(mx+11,y-10); ctx.stroke(); }
+  const xO=mx-g*s, xI=mx+g*s, top=baseY-h*s;
+  arrow(ctx, xO,baseY, xO,top, '#1b2440', 3); lbl(ctx, xO, top-12, 'Gegenstand', 12, '#1b2440');
+  ctx.save(); ctx.setLineDash([5,4]);
+  arrow(ctx, xI,baseY, xI,top, '#8b93a7', 3); ctx.restore();
+  lbl(ctx, xI, top-12, 'Bild (virtuell)', 12, '#8b93a7');
+  ctx.save(); ctx.setLineDash([3,4]); ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(xO,top); ctx.lineTo(xI,top); ctx.moveTo(xO,baseY); ctx.lineTo(xI,baseY); ctx.stroke(); ctx.restore();
+  lbl(ctx, (xO+mx)/2, baseY+16, 'g', 12, '#5a6684'); lbl(ctx, (mx+xI)/2, baseY+16, 'g', 12, '#5a6684');
+  if(o&&o.eye){ const ex=mx-g*s*1.3, ey=baseY-h*s*0.15;
+    ctx.fillStyle='#1b2440'; ctx.beginPath(); ctx.arc(ex,ey,5,0,7); ctx.fill();
+    // Sehstrahlen: von der Bildspitze (virtuell) durch den Spiegel zum Auge
+    ctx.save(); ctx.setLineDash([4,4]); arrow(ctx, xI,top, ex,ey, '#e5533c', 1.6); ctx.restore();
+    const hitY=top+(ey-top)*(mx-xI)/(ex-xI), hy=hitY;
+    ctx.strokeStyle='#e5533c'; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(xO,top); ctx.lineTo(mx,hy); ctx.lineTo(ex,ey); ctx.stroke(); }
+}
+
+// --- Brechung an einer Grenzfläche (Snellius: n1 sin α1 = n2 sin α2), inkl. Totalreflexion ---
+// o = { deg (Einfallswinkel), n1, n2, reflect }
+function refractScene(ctx,W,H,o){
+  const deg=(o&&o.deg!=null?o.deg:40), n1=(o&&o.n1!=null?o.n1:1), n2=(o&&o.n2!=null?o.n2:1.5);
+  const a1=deg*Math.PI/180, iy=H*0.5, px=W*0.5, L=Math.min(W,H)*0.44;
+  const denseUp=n1>=n2, thin='rgba(127,176,255,0.10)', thick='rgba(47,109,246,0.16)';
+  ctx.fillStyle=denseUp?thick:thin; ctx.fillRect(0,0,W,iy);
+  ctx.fillStyle=denseUp?thin:thick; ctx.fillRect(0,iy,W,H-iy);
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,iy); ctx.lineTo(W,iy); ctx.stroke();
+  const dens=n=>(n1===n2?'':(n<Math.max(n1,n2)?' (optisch dünner)':' (optisch dichter)'));
+  lbl(ctx, W*0.12, iy-14, 'oben:  n₁ = '+n1+dens(n1), 12, denseUp?'#1f4fc4':'#5a6684','left');
+  lbl(ctx, W*0.12, iy+20, 'unten: n₂ = '+n2+dens(n2), 12, denseUp?'#5a6684':'#1f4fc4','left');
+  ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(px,iy-L*1.05); ctx.lineTo(px,iy+L*1.05); ctx.stroke(); ctx.restore();
+  const ix=px-Math.sin(a1)*L, iyy=iy-Math.cos(a1)*L;
+  arrow(ctx, ix,iyy, px,iy, '#2f6df6', 2.5); lbl(ctx, ix, iyy-10, 'einfallender Strahl', 12, '#2f6df6');
+  const sin2=n1*Math.sin(a1)/n2;
+  if(sin2<=1){ const a2=Math.asin(sin2), tx=px+Math.sin(a2)*L, ty=iy+Math.cos(a2)*L;
+    arrow(ctx, px,iy, tx,ty, '#e5533c', 2.5); lbl(ctx, tx, ty+14, 'gebrochener Strahl', 12, '#e5533c');
+    lbl(ctx, px, iy+H*0.4, n2>n1?'Übergang zum dichteren Stoff: zum Lot hin gebrochen':'zum dünneren Stoff: vom Lot weg gebrochen', 13, '#1b2440');
+    if(o&&o.reflect){ const rx=px+Math.sin(a1)*L, ry=iy-Math.cos(a1)*L; ctx.save(); ctx.setLineDash([4,4]); arrow(ctx, px,iy, rx,ry, '#9aa3b5', 1.6); ctx.restore(); }
+  } else { const rx=px+Math.sin(a1)*L, ry=iy-Math.cos(a1)*L;
+    arrow(ctx, px,iy, rx,ry, '#e5533c', 2.5);
+    lbl(ctx, px, iy+H*0.4, 'Totalreflexion – der Strahl tritt nicht aus', 13, '#b23a26'); }
+}
+
+const PAGE={ area:'Optik', slug:'brechung', title:'Brechung', h1:'Brechung des Lichts' };
+
+// B1 – Luft → Glas: Strahl wird zum Lot hin gebrochen (n1=1, n2=1.5)
+function refractIn(root){ const c=root.querySelector('#c-in'); if(!c) return; const sl=root.querySelector('#sl-in');
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const deg = sl ? +sl.value : 40;
+    refractScene(ctx,W,H,{ deg, n1:1, n2:1.5 });
+    const vv=root.querySelector('#val-in'); if(vv) vv.textContent=deg.toFixed(0)+'°';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// B2 – Glas → Luft: vom Lot weg, ab dem Grenzwinkel Totalreflexion (n1=1.5, n2=1)
+function refractOut(root){ const c=root.querySelector('#c-out'); if(!c) return; const sl=root.querySelector('#sl-out');
+  // Grenzwinkel für Glas→Luft: sin αg = n2/n1 = 1/1.5  →  αg ≈ 41.8°
+  const grenz = Math.asin(1/1.5)*180/Math.PI;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const deg = sl ? +sl.value : 30;
+    refractScene(ctx,W,H,{ deg, n1:1.5, n2:1 });
+    const vv=root.querySelector('#val-out'); if(vv) vv.textContent=deg.toFixed(0)+'°';
+    lbl(ctx, W/2, H*0.06, 'Grenzwinkel ≈ '+grenz.toFixed(0)+'°  ·  darüber: Totalreflexion', 13,
+        deg>=grenz ? '#b23a26' : '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// B3 – Alltag: der Strohhalm im Wasserglas sieht geknickt aus
+function strawScene(root){ const c=root.querySelector('#c-straw'); if(!c) return; revealCases(root);
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const gx=W*0.30, gw=W*0.40, gy=H*0.18, gh=H*0.68, wl=gy+gh*0.35;   // Glas und Wasserstand
+    // Glas
+    ctx.strokeStyle='#5a6684'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx,gy+gh); ctx.lineTo(gx+gw,gy+gh); ctx.lineTo(gx+gw,gy); ctx.stroke();
+    // Wasser
+    ctx.fillStyle='rgba(47,109,246,0.14)'; ctx.fillRect(gx,wl,gw,gy+gh-wl);
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(gx,wl); ctx.lineTo(gx+gw,wl); ctx.stroke();
+    lbl(ctx, gx+gw-6, wl-8, 'Wasseroberfläche', 13, '#2f6df6','right');
+    // Strohhalm: oben (Luft) gerade, unter der Wasserlinie geknickt
+    const topX=gx+gw*0.62, topY=gy-H*0.02, surfX=gx+gw*0.44, botX=gx+gw*0.20, botY=gy+gh-6;
+    ctx.strokeStyle='#c98a3a'; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(topX,topY); ctx.lineTo(surfX,wl); ctx.lineTo(botX,botY); ctx.stroke();
+    ctx.lineCap='butt';
+    lbl(ctx, topX+10, topY+16, 'Strohhalm', 13, '#8a5a1e','left');
+    lbl(ctx, W/2, gy+gh+22, 'An der Wasseroberfläche wird das Licht gebrochen – der Halm sieht geknickt aus.', 13, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Licht und Lot', html:
+   `<p>Aus den Grundlagen: Licht ist ein <b>Lichtstrahl</b>, der sich geradlinig ausbreitet. Winkel misst man zum <b>Lot</b> (senkrecht zur Grenzfläche).</p>` },
+
+ { step:'Das Konzept', title:'Brechung an Grenzflächen', init:refractIn, html:
+   `<p>Trifft Licht schräg von einem Stoff in einen anderen, ändert es an der Grenzfläche seine Richtung. Diesen Richtungswechsel nennt man <b>Brechung</b>.</p>
+    <p>Beim Übergang von Luft in Glas wird der Strahl <b>zum Lot hin</b> gebrochen, weil Glas optisch dichter ist als Luft. Verändere den Einfallswinkel und beobachte den gebrochenen Strahl.</p>
+    <canvas class="viz" id="c-in"></canvas>
+    <div class="ctrl"><label for="sl-in">Einfallswinkel</label><input type="range" id="sl-in" min="0" max="80" value="40"><span class="val" id="val-in">40°</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0">Vom optisch dünneren in den dichteren Stoff (Luft → Glas): Brechung <b>zum Lot hin</b>.</p>
+      <p style="margin:.15rem 0">Alle Winkel werden zum Lot gemessen, der Senkrechten auf der Grenzfläche.</p></div>` },
+
+ { step:'Vom dichten ins dünne', title:'Totalreflexion', init:refractOut, html:
+   `<p>Jetzt läuft das Licht andersherum: von Glas (oben) hinaus in die Luft (unten). Jetzt wird der Strahl <b>vom Lot weg</b> gebrochen.</p>
+    <p>Vergrößerst du den Einfallswinkel, wird der gebrochene Strahl immer flacher. Ab einem bestimmten Wert, dem <b>Grenzwinkel</b>, kann kein Licht mehr austreten – es wird vollständig zurückgeworfen. Das ist die <b>Totalreflexion</b>.</p>
+    <canvas class="viz" id="c-out"></canvas>
+    <div class="ctrl"><label for="sl-out">Einfallswinkel</label><input type="range" id="sl-out" min="0" max="80" value="30"><span class="val" id="val-out">30°</span></div>
+    <div class="box frage"><span class="lbl">Denk nach</span>Warum tritt die Totalreflexion nur beim Übergang vom dichteren in den dünneren Stoff auf – und nie umgekehrt?</div>` },
+
+ { step:'Im Alltag', title:'Brechung sehen wir jeden Tag', init:strawScene, html:
+   `<p>Weil Licht an der Wasseroberfläche gebrochen wird, sehen wir Dinge unter Wasser verschoben. Überlege erst selbst, dann tippe auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Der geknickte Strohhalm</h3><p>Ein Strohhalm im Wasserglas sieht an der Wasseroberfläche geknickt aus. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Licht vom unteren Teil des Halms wird beim Austritt aus dem Wasser gebrochen. Unser Auge verlängert die Strahlen aber gerade nach hinten – der untere Teil erscheint dadurch versetzt, der Halm wirkt geknickt.</div></div>
+      <div class="case"><h3>Scheinbare Tiefe</h3><p>Ein See oder ein Schwimmbecken wirkt flacher, als es wirklich ist. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Licht vom Grund wird an der Oberfläche vom Lot weg gebrochen. Für das Auge scheinen die Strahlen aus geringerer Tiefe zu kommen – der Grund erscheint höher, das Wasser flacher.</div></div>
+      <div class="case"><h3>Die Münze taucht auf</h3><p>Eine Münze liegt so am Boden einer leeren Tasse, dass der Rand sie gerade verdeckt. Gießt du Wasser ein, wird sie plötzlich sichtbar. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Licht von der Münze wird beim Austritt aus dem Wasser an der Oberfläche gebrochen. Dadurch gelangt es nun ins Auge, obwohl der Tassenrand den geraden Weg vorher versperrt hat.</div></div>
+      <div class="case"><h3>Nach dem Fisch greifen</h3><p>Willst du einen Fisch im Wasser mit dem Finger treffen, musst du anders zielen, als du ihn siehst. Warum?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Licht vom Fisch wird an der Wasseroberfläche gebrochen. Der Fisch erscheint dadurch an einer etwas anderen Stelle, als er in Wirklichkeit ist.</div></div>
+    </div>
+    <canvas class="viz" id="c-straw"></canvas>
+    <div class="box merke"><span class="lbl">Weiter geht es</span>Eine Linse ist nichts anderes als geschickt geformtes Glas: An ihren gekrümmten Flächen wird jeder Strahl gebrochen. So bündelt die Sammellinse das Licht – das ist das nächste Thema.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Licht geht von <b>Luft in Glas</b>. Wie wird es gebrochen?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">zum Lot hin</button>
+       <button class="choice" data-ok="0">vom Lot weg</button>
+       <button class="choice" data-ok="0">gar nicht, es läuft gerade weiter</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Vom dünneren in den dichteren Stoff wird zum Lot hin gebrochen. Glas ist optisch dichter als Luft.</div></div></div>
+    <div class="q"><p>Wann kann <b>Totalreflexion</b> auftreten?</p>
+     <div class="choices">
+       <button class="choice" data-ok="0">beim Übergang vom dünneren in den dichteren Stoff</button>
+       <button class="choice" data-ok="1">beim Übergang vom dichteren in den dünneren Stoff, oberhalb des Grenzwinkels</button>
+       <button class="choice" data-ok="0">bei jedem Einfallswinkel</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Nur vom dichteren ins dünnere Medium (z. B. Glas → Luft) und erst oberhalb des Grenzwinkels wird das Licht vollständig zurückgeworfen.</div></div></div>
+    <div class="q"><p>Warum sieht der Strohhalm im Wasserglas <b>geknickt</b> aus?</p>
+     <div class="choices">
+       <button class="choice" data-ok="0">Das Wasser biegt den Halm wirklich.</button>
+       <button class="choice" data-ok="1">Das Licht wird an der Wasseroberfläche gebrochen.</button>
+       <button class="choice" data-ok="0">Der Halm spiegelt sich im Glas.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Der Halm ist gerade. Nur das Licht aus dem Wasser wird gebrochen, deshalb erscheint der untere Teil versetzt.</div></div></div>
+    <div class="q"><p>Licht geht von <b>Glas in Luft</b> und bleibt unterhalb des Grenzwinkels. Wie wird es gebrochen?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">vom Lot weg</button>
+       <button class="choice" data-ok="0">zum Lot hin</button>
+       <button class="choice" data-ok="0">gar nicht, es läuft gerade weiter</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Vom optisch dichteren in den dünneren Stoff (Glas → Luft) wird der Strahl vom Lot weg gebrochen. Erst oberhalb des Grenzwinkels tritt Totalreflexion auf.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#tag').textContent=PAGE.area||'Physik'; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:4ch; text-align:right}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font-size:1rem; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag">Wärmelehre</span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+const PAGE={ slug:'aggregat-teilchen', title:'Zustände im Teilchenmodell', h1:'Aggregatzustände im Teilchenmodell' };
+
+// Ein Behälter, per Temperatur-Regler live fest -> flüssig -> gasförmig (Anordnung je Zustand)
+function animStates(root){ const c=root.querySelector('#c-st'); if(!c) return; let S=parts(20,5,0.4), last=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+    const sl=root.querySelector('#sl-temp'), v=sl?+sl.value:15, state=v<34?0:v<67?1:2;
+    const vl=root.querySelector('#val-temp'); if(vl) vl.textContent=state===0?'fest':state===1?'flüssig':'gasförmig';
+    const bw=W*0.62, bh=H*0.6, x=(W-bw)/2, y=H*0.16, r=Math.min(bw,bh)*0.05, mx=r/bw, my=r/bh;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,x,y,bw,bh,10); ctx.stroke();
+    let sub;
+    if(state===0){ const cols=5,rows=4,amp=r*0.28;
+      for(let a=0;a<rows;a++)for(let b=0;b<cols;b++){ const gx=x+bw*(0.16+0.68*b/(cols-1)), gy=y+bh*(0.28+0.6*a/(rows-1));
+        ball(ctx, gx+Math.sin(ts/140+a+b)*amp, gy+Math.cos(ts/150+b)*amp, r, '#8496b6'); }
+      sub='fest: dicht im Gitter, Teilchen zittern nur';
+    } else {
+      const sp=state===1?0.26:0.72; S.forEach(p=>{ const m=Math.hypot(p.vx,p.vy)||1; p.vx=p.vx/m*sp; p.vy=p.vy/m*sp; });
+      move(S,dt,mx,my);
+      if(state===1){ S.forEach(p=>{ if(p.y<0.4){ p.y=0.4; p.vy=Math.abs(p.vy); } }); sub='flüssig: dicht, aber die Teilchen gleiten aneinander vorbei'; }
+      else sub='gasförmig: Teilchen fliegen frei und weit auseinander';
+      S.forEach(p=>ball(ctx, x+p.x*bw, y+p.y*bh, r, '#8496b6'));
+    }
+    lbl(ctx, W/2, y-16, state===0?'fest':state===1?'flüssig':'gasförmig', 18, '#1b2440');
+    lbl(ctx, W/2, y+bh+22, sub, 13, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Übergänge: die Verbindungen (das Gitter) brechen beim Erwärmen auf
+function bondsLab(root){ const c=root.querySelector('#c-bonds'); if(!c) return; const cols=5, rows=4;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const sl=root.querySelector('#sl-melt'), f=(sl?+sl.value:0)/100;
+    const bw=W*0.6, bh=H*0.56, x=(W-bw)/2, y=H*0.18, r=Math.min(bw,bh)*0.045;
+    ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,x,y,bw,bh,10); ctx.stroke();
+    const gx=b=>x+bw*(0.2+0.6*b/(cols-1)), gy=a=>y+bh*(0.28+0.5*a/(rows-1)), pts=[];
+    for(let a=0;a<rows;a++)for(let b=0;b<cols;b++){ const i=a*cols+b; let px,py;
+      if(f<0.45){ const amp=1+f*4; px=gx(b)+Math.sin(ts/160+i)*amp; py=gy(a)+Math.cos(ts/170+i)*amp; }
+      else if(f<0.75){ const t=(f-0.45)/0.3, amp=4+t*9; px=gx(b)+Math.sin(ts/120+i*1.3)*amp; py=y+bh*(0.5+0.45*(a/(rows-1)))+Math.cos(ts/130+i)*amp; }
+      else { const t=(f-0.75)/0.25, amp=8+t*10; px=x+bw*(0.12+0.76*((i*0.37)%1)); py=y+bh*(0.12+0.76*((i*0.61+0.2)%1)); px+=Math.sin(ts/70+i)*amp; py+=Math.cos(ts/75+i)*amp; }
+      px=Math.max(x+r,Math.min(x+bw-r,px)); py=Math.max(y+r,Math.min(y+bh-r,py)); pts.push({px,py}); }
+    if(f<0.6){ const al=(1-f/0.6).toFixed(2); ctx.strokeStyle='rgba(122,140,182,'+al+')'; ctx.lineWidth=2;
+      for(let a=0;a<rows;a++)for(let b=0;b<cols;b++){ const i=a*cols+b;
+        if(b<cols-1){ const j=i+1; ctx.beginPath(); ctx.moveTo(pts[i].px,pts[i].py); ctx.lineTo(pts[j].px,pts[j].py); ctx.stroke(); }
+        if(a<rows-1){ const j=i+cols; ctx.beginPath(); ctx.moveTo(pts[i].px,pts[i].py); ctx.lineTo(pts[j].px,pts[j].py); ctx.stroke(); } } }
+    pts.forEach(p=>ball(ctx,p.px,p.py,r,'#8496b6'));
+    const vl=root.querySelector('#val-melt'); if(vl) vl.textContent=f<0.45?'fest':f<0.75?'flüssig':'gasförmig';
+    lbl(ctx, W/2, y-14, f<0.45?'fest':f<0.75?'flüssig':'gasförmig', 18, '#1b2440');
+    lbl(ctx, W/2, y+bh+22, f<0.45?'feste Verbindungen halten die Teilchen im Gitter':f<0.75?'die Verbindungen brechen auf – Teilchen gleiten':'keine Verbindungen mehr – die Teilchen fliegen frei', 13, '#5a6684');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Temperatur-Zeit-Kurve beim Erwärmen: zwei Haltepunkte (Schmelzen, Sieden)
+function drawHeatCurve(root){ const c=root.querySelector('#c-curve'); if(!c) return;
+  stopRAF(); RAF=requestAnimationFrame(()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const ox=W*0.14, oy=H*0.86, rx=W*0.95, topA=H*0.1;
+    const yT=T=>oy-(oy-topA)*T, xF=f=>ox+(rx-ox)*f, Tm=0.28, Tb=0.8;
+    ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(ox,topA); ctx.lineTo(ox,oy); ctx.lineTo(rx,oy); ctx.stroke();
+    lbl(ctx, (ox+rx)/2, oy+18, 'Zeit / zugeführte Wärme →', 13, '#5a6684');
+    ctx.save(); ctx.translate(ox-24, (topA+oy)/2); ctx.rotate(-Math.PI/2); lbl(ctx,0,0,'Temperatur →',13,'#5a6684'); ctx.restore();
+    [[Tm,'0 °C – Schmelzen','#2f6df6'],[Tb,'100 °C – Sieden','#b23a26']].forEach(m=>{
+      ctx.setLineDash([4,4]); ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox,yT(m[0])); ctx.lineTo(rx,yT(m[0])); ctx.stroke(); ctx.setLineDash([]);
+      lbl(ctx, rx, yT(m[0])-9, m[1], 12, m[2], 'right'); });
+    const P=[[0,0.05],[0.16,Tm],[0.34,Tm],[0.5,Tb],[0.68,Tb],[0.85,0.95]];
+    ctx.strokeStyle='#e5533c'; ctx.lineWidth=3; ctx.beginPath();
+    P.forEach((p,k)=>{ const X=xF(p[0]), Y=yT(p[1]); k?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke();
+    lbl(ctx, xF(0.08), oy-10, 'fest', 12, '#4a5878');
+    lbl(ctx, xF(0.25), yT(Tm)+14, 'schmelzen', 13, '#4a5878');
+    lbl(ctx, xF(0.42), yT((Tm+Tb)/2), 'flüssig', 12, '#4a5878');
+    lbl(ctx, xF(0.59), yT(Tb)+14, 'sieden', 13, '#4a5878');
+    lbl(ctx, xF(0.8), yT(0.9)+14, 'gasförmig', 12, '#4a5878');
+    lbl(ctx, W/2, topA-2, 'An den Haltepunkten bleibt die Temperatur gleich, obwohl weiter Wärme zugeführt wird.', 13, '#5a6684');
+  }); }
+
+// Plasma in 4 Stufen
+function animPlasma(root){ const c=root.querySelector('#c-pl'); if(!c) return; let t0=0, manual=false, mStage=0, curAuto=0;
+  const rnd=i=>{ const x=Math.sin(i*127.1+0.5)*43758.5453; return x-Math.floor(x); };
+  const drawAtom=(ctx,x,y,ph,r)=>{ ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.stroke();
+    ball(ctx,x,y,8,'#e5533c'); lbl(ctx,x,y,'+',12,'#fff');
+    for(let k=0;k<2;k++){ const a=ph+k*Math.PI, ex=x+Math.cos(a)*r, ey=y+Math.sin(a)*r; ball(ctx,ex,ey,4,'#2f6df6'); lbl(ctx,ex,ey,'−',9,'#fff'); } };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); if(!t0)t0=ts; const T=(ts-t0)/1000, dur=4.5; curAuto=Math.floor(T/dur)%4; const stage=manual?mStage:curAuto, sp=(T%dur)/dur;
+    ctx.clearRect(0,0,W,H);
+    const bx=W*0.06, by=H*0.08, bw=W*0.88, bh=H*0.66; ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,bx,by,bw,bh,10); ctx.stroke();
+    const inx=u=>bx+22+u*(bw-44), iny=v=>by+22+v*(bh-44);
+    const U=(i,s,v)=>0.5+0.42*Math.sin(T*v*(0.6+rnd(i+s))+i*1.7), V=(i,s,v)=>0.5+0.42*Math.cos(T*v*(0.55+rnd(i+s+2))+i*2.1);
+    let title='';
+    if(stage===0){ const v=0.6+sp*2.2;
+      for(let i=0;i<11;i++) ball(ctx, inx(U(i,0,v)), iny(V(i,0,v)), 7, '#8496b6');
+      title='1. Gasteilchen bewegen sich immer schneller'; }
+    else if(stage===1){ const v=0.6+sp*1.6;
+      for(let i=0;i<5;i++) drawAtom(ctx, inx(U(i,10,v)), iny(V(i,10,v)), T*(3+v*4)+i, 18);
+      title='2. Bohr-Atome: die Elektronen kreisen, das ganze Atom wird schneller'; }
+    else if(stage===2){ const orbit=18+sp*sp*90;
+      for(let i=0;i<5;i++){ const nx=inx(rnd(i+10)), ny=iny(rnd(i+17));
+        ball(ctx,nx,ny,8,'#e5533c'); lbl(ctx,nx,ny,'+',12,'#fff');
+        for(let k=0;k<2;k++){ const a=T*5+i+k*Math.PI, ex=nx+Math.cos(a)*orbit, ey=ny+Math.sin(a)*orbit; ball(ctx,ex,ey,4,'#2f6df6'); lbl(ctx,ex,ey,'−',9,'#fff'); } }
+      title='3. Bei heftigen Stößen werden die Elektronen herausgerissen'; }
+    else { for(let i=0;i<6;i++){ const x=inx(U(i,20,1.4)), y=iny(V(i,20,1.4)); ball(ctx,x,y,8,'#e5533c'); lbl(ctx,x,y,'+',12,'#fff'); }
+      for(let i=0;i<12;i++){ const x=inx(U(i,40,2.4)), y=iny(V(i,40,2.4)); ball(ctx,x,y,4.5,'#2f6df6'); lbl(ctx,x,y,'−',9,'#fff'); }
+      title='4. Plasma: Atomkerne (+) und Elektronen (−) fliegen frei'; }
+    lbl(ctx, W/2, by+bh+22, title, Math.max(13,Math.round(W*0.023)), '#1b2440');
+    for(let s=0;s<4;s++){ ctx.fillStyle=s===stage?'#2f6df6':'#c4cbdb'; ctx.beginPath(); ctx.arc(W/2-30+s*20, by+bh+42, 5,0,7); ctx.fill(); }
+    RAF=requestAnimationFrame(loop); };
+  const step=root.querySelector('#pl-step'); if(step) step.onclick=()=>{ if(!manual){ manual=true; mStage=curAuto; } else mStage=(mStage+1)%4; };
+  const auto=root.querySelector('#pl-auto'); if(auto) auto.onclick=()=>{ manual=false; t0=0; };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const CTRL=`<div class="ctrl"><label>Temperatur</label><input type="range" id="sl-temp" min="0" max="100" value="15"><span class="val" id="val-temp">fest</span></div>`;
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Zustände und Teilchen-Tempo', html:
+   `<p>Das brauchst du aus den letzten Stunden:</p>
+    <ul>
+      <li>Es gibt drei Aggregatzustände – <b>fest, flüssig, gasförmig</b> – und die Übergänge (Schmelzen, Verdampfen, …).</li>
+      <li>Ein Stoff besteht aus <b>Teilchen</b>; die <b>Temperatur</b> sagt, wie schnell sie sich bewegen.</li>
+    </ul>
+    <p>Jetzt bringen wir beides zusammen: Wie sind die Teilchen in den drei Zuständen <b>angeordnet</b>, und was passiert bei den Übergängen?</p>` },
+
+ { step:'Das Konzept', title:'Drei Zustände – drei Anordnungen', init:animStates, html:
+   `<p>Die Teilchen sind immer dieselben, nur anders angeordnet. Schieb die Temperatur nach oben und beobachte, wie sich die Anordnung ändert.</p>
+    <canvas class="viz" id="c-st"></canvas>`+CTRL+
+   `<div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0"><b>fest:</b> dicht in einem festen Gitter, die Teilchen zittern nur.</p>
+      <p style="margin:.15rem 0"><b>flüssig:</b> noch dicht, aber die Teilchen gleiten aneinander vorbei.</p>
+      <p style="margin:.15rem 0"><b>gasförmig:</b> weit auseinander, die Teilchen fliegen frei umher.</p></div>` },
+
+ { step:'Die Übergänge', title:'Beim Erwärmen brechen die Verbindungen', init:bondsLab, html:
+   `<p>Im festen Stoff halten <b>Verbindungen</b> die Teilchen im Gitter. Führt man Wärme zu, werden die Teilchen schneller und rütteln so stark, dass diese Verbindungen <b>aufbrechen</b>. Schieb den Regler langsam nach oben.</p>
+    <canvas class="viz" id="c-bonds"></canvas>
+    <div class="ctrl"><label>Wärme zuführen</label><input type="range" id="sl-melt" min="0" max="100" value="0"><span class="val" id="val-melt">fest</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0"><b>Schmelzen:</b> die festen Verbindungen des Gitters brechen auf – die Teilchen können sich verschieben.</p>
+      <p style="margin:.15rem 0"><b>Verdampfen:</b> die Teilchen lösen sich ganz voneinander und fliegen frei.</p>
+      <p style="margin:.15rem 0">Beim <b>Abkühlen</b> läuft es rückwärts: die Teilchen rücken zusammen und bilden wieder Verbindungen.</p></div>` },
+
+ { step:'Temperatur-Zeit-Kurve', title:'Warum bleibt die Temperatur stehen?', init:drawHeatCurve, html:
+   `<p>Erwärmt man Eis gleichmäßig, steigt die Temperatur zunächst an. Beim <b>Schmelzen</b> und beim <b>Sieden</b> bleibt sie aber eine Weile stehen – das sind die <b>Haltepunkte</b>.</p>
+    <canvas class="viz" id="c-curve"></canvas>
+    <p class="lead">An diesen Stellen steckt die zugeführte Wärme ganz ins <b>Aufbrechen der Verbindungen</b>, nicht ins Tempo der Teilchen. Deshalb wird es nicht wärmer, bis alles geschmolzen (oder verdampft) ist. Erst dann steigt die Temperatur weiter.</p>` },
+
+ { step:'Mehr Beispiele', title:'Was machen die Teilchen?', init:revealCases, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Eis am Stiel schmilzt</h3><p>Das Eis am Stiel tropft in der Sonne. Was passiert mit den Teilchen?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Sonne führt Wärme zu, die Teilchen zittern stärker und lösen sich aus dem festen Gitter – das feste Eis wird flüssig.</div></div>
+      <div class="case"><h3>Wasser kocht</h3><p>Im Topf blubbert kochendes Wasser und wird zu Dampf. Was tun die Teilchen?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Teilchen sind so schnell, dass sie sich ganz voneinander lösen und als Gas davonfliegen – Verdampfen.</div></div>
+      <div class="case"><h3>Wasser gefriert</h3><p>Im Gefrierfach wird Wasser zu Eis. Was passiert im Teilchenmodell?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Es wird Wärme entzogen, die Teilchen werden langsamer und rücken zusammen. Sie bilden wieder ein festes Gitter – das Wasser erstarrt.</div></div>
+      <div class="case"><h3>Warum der Haltepunkt?</h3><p>Warum wird schmelzendes Eiswasser nicht wärmer, obwohl die Herdplatte an ist?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die ganze zugeführte Wärme geht ins Aufbrechen der Verbindungen (Schmelzen). Erst wenn alles Eis geschmolzen ist, steigt die Temperatur wieder.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Was wir jetzt erklären können', html:
+   `<div class="cases">
+      <div class="case"><h3>Das kannst du jetzt</h3><p>Du erklärst die drei Zustände und ihre Übergänge mit der Anordnung und dem Tempo der Teilchen.</p></div>
+      <div class="case"><h3>Das kommt als Nächstes</h3><p>Das Teilchen-Tempo ist unsichtbar. Wie macht man die Temperatur als Zahl sichtbar?</p></div>
+    </div>
+    <div class="box merke"><span class="lbl">Ausblick</span>Ein <b>Thermometer</b> übersetzt das Teilchen-Tempo in eine ablesbare Zahl. Wie das genau funktioniert, ist die nächste Stunde.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Wie sind die Teilchen im <b>festen</b> Stoff angeordnet?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">dicht in einem Gitter, sie zittern nur</button>
+       <button class="choice" data-ok="0">weit auseinander, sie fliegen frei</button>
+       <button class="choice" data-ok="0">gar nicht, sie stehen völlig still</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Im Festkörper sitzen die Teilchen dicht im Gitter und zittern um ihre Plätze.</div></div></div>
+    <div class="q"><p>Was passiert beim <b>Schmelzen</b> im Teilchenmodell?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Die festen Verbindungen brechen auf, die Teilchen können sich verschieben.</button>
+       <button class="choice" data-ok="0">Die Teilchen werden kleiner.</button>
+       <button class="choice" data-ok="0">Die Teilchen verschwinden.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Beim Schmelzen lösen sich die Teilchen aus dem festen Gitter – fest wird flüssig.</div></div></div>
+    <div class="q"><p>Warum bleibt beim Schmelzen die Temperatur eine Weile <b>gleich</b>?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Die Wärme steckt ins Aufbrechen der Verbindungen, nicht ins Tempo.</button>
+       <button class="choice" data-ok="0">Weil das Thermometer kaputt ist.</button>
+       <button class="choice" data-ok="0">Weil keine Wärme mehr zugeführt wird.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Am Haltepunkt geht die Wärme ganz in den Zustandswechsel. Erst wenn alles geschmolzen ist, wird es wieder wärmer.</div></div></div>
+    <div class="q"><p>Du kühlst einen Stoff ab. <b>Was passiert mit den Teilchen?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Sie werden langsamer und rücken zusammen.</button>
+       <button class="choice" data-ok="0">Sie werden schneller und lösen sich.</button>
+       <button class="choice" data-ok="0">Sie verschwinden.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Abkühlen entzieht Wärme: die Teilchen werden langsamer, rücken enger zusammen und bilden wieder Verbindungen.</div></div></div>` },
+
+ { step:'Exkurs', title:'Plasma – der „vierte" Zustand', init:animPlasma, html:
+   `<p>Führt man einem Gas immer weiter Energie zu, laufen die Schritte in der Animation ab: Die Teilchen werden erst immer schneller. Schaut man genauer hin, sind es Atome mit kreisenden Elektronen (Bohr-Modell), die als Ganzes immer schneller werden.</p>
+    <p>Bei den heftigen Zusammenstößen werden schließlich die Elektronen aus der Hülle herausgerissen. Übrig bleibt ein Gemisch aus freien Atomkernen (positiv) und freien Elektronen (negativ) – dieser Zustand heißt <b>Plasma</b>.</p>
+    <canvas class="viz" id="c-pl"></canvas>
+    <div class="nav"><button class="btn ghost" id="pl-step">Weiter ›</button><button class="btn ghost" id="pl-auto">Auto ▶</button></div>
+    <p class="lead">„Weiter" steppt die vier Stufen von Hand durch, „Auto" lässt sie wieder von allein ablaufen.</p>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0">Plasma entsteht aus einem Gas, wenn dessen Atome in Kerne und Elektronen zerlegt werden.</p>
+      <p style="margin:.15rem 0">Beispiele: die Sonne und alle Sterne, ein Blitz, das Polarlicht, eine Leuchtstoffröhre.</p>
+      <p style="margin:.15rem 0">Fast die gesamte sichtbare Materie im Weltall ist Plasma – nicht fest, flüssig oder gasförmig.</p></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

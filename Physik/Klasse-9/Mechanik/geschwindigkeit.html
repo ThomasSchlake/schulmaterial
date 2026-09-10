@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<title>Wärmelehre</title>
+<style>
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+    padding:clamp(.55rem,1.3vw,.9rem) clamp(.8rem,1.8vw,1.2rem); margin-bottom:.6rem}
+  .tag{font-weight:800; color:var(--blue-d); font-size:.82em; letter-spacing:.3px}
+  .top h1{margin:.1rem 0 .5rem; font-size:clamp(1.2rem,2.5vw,1.75rem)}
+  .steps{display:flex; flex-wrap:wrap; gap:.35rem}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*34); max-height:320px; min-height:150px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.55rem 1.1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active{transform:translateY(1px)}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+
+  .nav{display:flex; gap:.7rem; align-items:center; margin-top:.8rem}
+  .btn{border:none; border-radius:12px; padding:.7rem 1.25rem; font-size:1.05rem; font-weight:700;
+    cursor:pointer; background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .btn.ghost{background:#eef2fb; color:var(--ink)}
+  .btn:disabled{opacity:.45; cursor:default}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="../index.html" style="display:inline-block;color:var(--blue-d);text-decoration:none;font-weight:700;font-size:.9rem;margin-bottom:.35rem">‹ Übersicht</a>
+    <span class="tag" id="tag"></span>
+    <h1 id="h1"></h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev">‹ Zurück</button>
+    <div class="spacer"></div>
+    <button class="btn" id="next">Weiter ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Auswahlfrage: markiert richtig/falsch und zeigt die Loesung
+function quiz(root){ root.querySelectorAll('.choices').forEach(q=>{ q.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  q.querySelectorAll('.choice').forEach(x=>x.classList.remove('right','wrong'));
+  b.classList.add(b.dataset.ok==='1'?'right':'wrong');
+  const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false; })); }); }
+
+// Klasse 9 – Mechanik: gemeinsame Zeichen-Helfer für Bewegungsdiagramme.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr. Farben am Bildschirm erlaubt.
+
+// Zeichnet einen Diagrammrahmen (Ursprung unten links) mit beschrifteten Achsen.
+// box = {x,y,w,h}. Gibt Mapper X(wert), Y(wert) und die Achsdaten zurück.
+function chartFrame(ctx, box, xMax, yMax, xlab, ylab){
+  const {x,y,w,h}=box, ox=x+40, oy=y+h-28, pw=w-52, ph=h-42;
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox, y+6); ctx.lineTo(ox, oy); ctx.lineTo(ox+pw, oy); ctx.stroke();
+  arrow(ctx, ox, oy+0.1, ox, y+4, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy+16, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+2, y+2, ylab, 13, '#5a6684', 'left');
+  const X = v => ox + (v/xMax)*pw, Y = v => oy - (v/yMax)*ph;
+  // Achsen-Zahlen (damit man Werte und Steigung ablesen kann)
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (Number.isInteger(r)?r:r.toFixed(1).replace('.',',')); };
+  const xs=nice(xMax), ys=nice(yMax);
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  for(let v=xs; v<=xMax+1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#8a94a8', 'right');
+  return { X, Y, ox, oy, pw, ph };
+}
+
+// Kleine Bewegungs-Bahn: Kugel bei Bruchteil p (0..1) auf einer waagerechten Strecke,
+// optional mit Zeitmarken an den übergebenen Positionen (Bruchteile 0..1).
+function track(ctx, x, y, w, ball_col, p, marks){
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y); ctx.stroke();
+  if(marks) marks.forEach(m=>{ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+m*w, y-7); ctx.lineTo(x+m*w, y+7); ctx.stroke(); });
+  ball(ctx, x + Math.max(0,Math.min(1,p))*w, y, 9, ball_col);
+}
+
+// Kariertes Koordinatensystem, das ±R Kästchen in box zeigt (Ursprung mittig).
+// Gibt Mapper X(u),Y(v) (v nach oben positiv) und die Zellgröße zurück.
+function coordGrid(ctx, box, R){
+  const {x,y,w,h}=box, cell=Math.min(w,h)/(2*R+1), ox=x+w/2, oy=y+h/2;
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  ctx.strokeStyle='#e6ebf5'; ctx.lineWidth=1;
+  for(let k=-R;k<=R;k++){
+    ctx.beginPath(); ctx.moveTo(ox+k*cell,y); ctx.lineTo(ox+k*cell,y+h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,oy+k*cell); ctx.lineTo(x+w,oy+k*cell); ctx.stroke();
+  }
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x,oy); ctx.lineTo(x+w,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,y); ctx.lineTo(ox,y+h); ctx.stroke();
+  // Einheitszahlen an den Achsen (jede zweite Marke, damit es nicht überläuft)
+  for(let k=-R;k<=R;k++){ if(k===0 || k%2!==0) continue;
+    lbl(ctx, ox+k*cell, oy+13, String(k), 11, '#9aa3b5');
+    lbl(ctx, ox-8, oy-k*cell, String(k), 11, '#9aa3b5', 'right'); }
+  ctx.restore();
+  return { X:u=>ox+u*cell, Y:v=>oy-v*cell, ox, oy, cell };
+}
+
+const PAGE={ area:'Mechanik', slug:'geschwindigkeit', title:'Geschwindigkeit', h1:'Wie schnell ist etwas?' };
+
+// „Das brauchst du" – Wiederholung: zwei bekannte Größen, Strecke und Zeit
+function hookLab(root){ const c=root.querySelector('#c-hook'); if(!c) return; let last=0, t=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%4; ctx.clearRect(0,0,W,H);
+    const x0=W*0.08, tw=W*0.84, p=t/4, y1=H*0.34, y2=H*0.6;
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0+tw,y1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,y2); ctx.lineTo(x0+tw,y2); ctx.stroke();
+    ctx.save(); ctx.setLineDash([4,4]); ctx.lineWidth=1.4;
+    ctx.strokeStyle='#7fb0ff'; ctx.beginPath(); ctx.moveTo(x0+p*tw*0.5, y1-14); ctx.lineTo(x0+p*tw*0.5, y2+16); ctx.stroke();
+    ctx.strokeStyle='#f0997b'; ctx.beginPath(); ctx.moveTo(x0+p*tw, y1-14); ctx.lineTo(x0+p*tw, y2+16); ctx.stroke(); ctx.restore();
+    ball(ctx, x0+p*tw*0.5, y1, 11, '#2f6df6');
+    ball(ctx, x0+p*tw, y2, 11, '#e5533c');
+    lbl(ctx, x0, y1-14, 'Körper A', 13, '#1f4fc4', 'left');
+    lbl(ctx, x0, y2-14, 'Körper B', 13, '#b23a26', 'left');
+    lbl(ctx, W*0.5, H*0.86, 'gleiche Zeit t – B legt die größere Strecke s zurück', 14, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Beispiel: viele Arten von „Geschwindigkeit" = irgendeine Größe pro Zeit
+function artenLab(root){ const c=root.querySelector('#c-arten'); if(!c) return; let mode='weg', last=0, t=0;
+  const btns=root.querySelectorAll('[data-art]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.art; t=0; btns.forEach(x=>x.classList.toggle('on', x.dataset.art===mode)); }));
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%5; ctx.clearRect(0,0,W,H);
+    const cx=W*0.5, cy=H*0.36, f=t/5; let caption='', unit='', val='';
+    if(mode==='weg'){ const x0=W*0.1, tw=W*0.8, y=cy;
+      ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+tw,y); ctx.stroke();
+      ball(ctx, x0+f*tw, y, 11, '#2f6df6');
+      caption='zurückgelegte Strecke pro Zeit'; unit='m/s'; val=(30*f).toFixed(0)+' m'; }
+    else if(mode==='dreh'){ const r=H*0.26, ang=-Math.PI/2 + f*4*Math.PI;
+      ctx.strokeStyle='#5a6684'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+      ctx.strokeStyle='#e5533c'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(ang)*r, cy+Math.sin(ang)*r); ctx.stroke();
+      ball(ctx, cx+Math.cos(ang)*r, cy+Math.sin(ang)*r, 7, '#e5533c');
+      caption='überstrichener Winkel pro Zeit (Winkelgeschwindigkeit)'; unit='°/s'; val=(f*720%360).toFixed(0)+' °'; }
+    else if(mode==='schnee'){ const bw=W*0.28, base=cy+H*0.24, bh=H*0.42*(1-f);
+      ctx.fillStyle='#dbe6f5'; ctx.beginPath(); ctx.moveTo(cx-bw, base); ctx.quadraticCurveTo(cx, base-bh*2, cx+bw, base); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-bw*1.2, base); ctx.lineTo(cx+bw*1.2, base); ctx.stroke();
+      caption='geschmolzene Schneehöhe pro Zeit (Schmelzgeschwindigkeit)'; unit='cm/Tag'; val=(20*f).toFixed(0)+' cm'; }
+    else { const n=Math.floor(f*8);
+      for(let i=0;i<n;i++){ const yy=cy+H*0.2-i*11; ctx.fillStyle='#f5d000'; ctx.strokeStyle='#c9a100'; ctx.lineWidth=2; rr(ctx, cx-34, yy, 68, 9, 4); ctx.fill(); ctx.stroke(); }
+      caption='eingenommenes Geld pro Zeit (Einnahmegeschwindigkeit)'; unit='€/h'; val=(180*f).toFixed(0)+' €'; }
+    const RATE={weg:'6 m/s', dreh:'144 °/s', schnee:'20 cm pro Tag', geld:'180 € pro Stunde'};
+    lbl(ctx, cx, H*0.72, caption, 14, '#1b2440');
+    lbl(ctx, cx, H*0.82, 'schon '+val+' ('+unit+')', 13, '#5a6684');
+    lbl(ctx, cx, H*0.93, 'Rate = '+RATE[mode], 15, '#1f7a34');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Konzept: gleichförmige Bewegung, v = s/t
+function animConst(root){ const c=root.querySelector('#c-const'); if(!c) return; let last=0, t=0; const v=6;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%5; ctx.clearRect(0,0,W,H);
+    const x0=W*0.08, tw=W*0.84, y=H*0.4, p=t/5;
+    track(ctx,x0,y,tw,'#2f6df6',p,[0,0.2,0.4,0.6,0.8,1]);
+    for(let k=0;k<5;k++){ lbl(ctx, x0+(k*0.2+0.1)*tw, y+24, '1 s', 14, '#8a94a8'); lbl(ctx, x0+(k*0.2+0.1)*tw, y-18, '6 m', 14, '#8a94a8'); }
+    lbl(ctx, W*0.5, H*0.64, 't = '+t.toFixed(1)+' s      s = '+(v*t).toFixed(1)+' m', 16, '#1b2440');
+    lbl(ctx, W*0.5, H*0.8, 'jede Sekunde 6 m → gleiche Strecke in gleicher Zeit → v = s / t = '+v.toFixed(0)+' m/s', 14, '#1f7a34');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Formel anwenden: Formeldreieck + v=s/t-Rechner
+function formelLab(root){ const c=root.querySelector('#c-formel'); if(!c) return; const ss=root.querySelector('#sl-s'), stt=root.querySelector('#sl-t');
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const s=ss?+ss.value:60, t=stt?+stt.value:5, v=s/t;
+    const cx=W*0.26, cy=H*0.44, r=Math.min(W*0.2,H*0.3);
+    ctx.strokeStyle='#5a6684'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy-r); ctx.lineTo(cx-r, cy+r*0.75); ctx.lineTo(cx+r, cy+r*0.75); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-r*0.62, cy+r*0.02); ctx.lineTo(cx+r*0.62, cy+r*0.02); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy+r*0.02); ctx.lineTo(cx, cy+r*0.75); ctx.stroke();
+    lbl(ctx, cx, cy-r*0.42, 's', 22, '#1b2440');
+    lbl(ctx, cx-r*0.34, cy+r*0.42, 'v', 20, '#2f6df6');
+    lbl(ctx, cx+r*0.34, cy+r*0.42, 't', 20, '#5a6684');
+    lbl(ctx, cx, cy+r*1.02, 'decke die gesuchte Größe zu', 12, '#9aa3b5');
+    lbl(ctx, W*0.68, H*0.3, 'v = s / t', 18, '#1b2440');
+    lbl(ctx, W*0.68, H*0.48, '= '+s+' m / '+t+' s', 16, '#5a6684');
+    lbl(ctx, W*0.68, H*0.66, '= '+v.toFixed(1)+' m/s', 20, '#1f7a34');
+    const vs=root.querySelector('#val-s'), vt=root.querySelector('#val-t'); if(vs)vs.textContent=s+' m'; if(vt)vt.textContent=t+' s';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Strecke und Zeit', init:hookLab, html:
+   `<p>Für die Geschwindigkeit brauchst du zwei Größen, die du schon kennst: die zurückgelegte <b>Strecke s</b> (in Metern) und die dafür benötigte <b>Zeit t</b> (in Sekunden).</p>
+    <canvas class="viz" id="c-hook"></canvas>
+    <p>Beide Körper sind gleich lange unterwegs. Wer in dieser Zeit weiter kommt, ist schneller.</p>` },
+
+ { step:'Beispiel', title:'Es gibt viele „Geschwindigkeiten"', init:artenLab, html:
+   `<p>Das Wort „Geschwindigkeit" benutzt man nicht nur für Strecken. Immer geht es darum, <b>wie viel sich eine Größe pro Zeit ändert</b>. Schau dir verschiedene Beispiele an.</p>
+    <canvas class="viz" id="c-arten"></canvas>
+    <div class="modes">
+      <button data-art="weg" class="on">Weg</button>
+      <button data-art="dreh">Drehwinkel</button>
+      <button data-art="schnee">Schneeschmelze</button>
+      <button data-art="geld">Geldeinnahme</button>
+    </div>
+    <div class="box merke"><span class="lbl">Die gemeinsame Idee</span>Eine <b>Geschwindigkeit</b> ist immer eine <b>Größe geteilt durch die Zeit</b> (eine „Änderungsrate"): Weg pro Zeit, Winkel pro Zeit, Menge pro Zeit, Geld pro Zeit …</div>` },
+
+ { step:'Das Konzept', title:'Die Geschwindigkeit einer Bewegung', init:animConst, html:
+   `<p>In der Physik meint „Geschwindigkeit" ohne Zusatz die <b>Bahngeschwindigkeit</b>: den <b>zurückgelegten Weg pro Zeit</b>. Legt ein Körper in gleichen Zeiten immer gleiche Strecken zurück, heißt die Bewegung <b>gleichförmig</b>.</p>
+    <canvas class="viz" id="c-const"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span><b>v = s / t</b>. Einheit: Meter pro Sekunde (m/s). Neben m/s benutzt man auch km/h – das Umrechnen üben wir in einer eigenen Stunde.</div>` },
+
+ { step:'Formel anwenden', title:'Das Formeldreieck', init:formelLab, html:
+   `<p>Mit dem <b>Formeldreieck</b> bekommst du aus <b>v = s / t</b> auch die anderen Größen: Decke die gesuchte zu, dann steht die Rechnung da. Stell s und t ein und sieh, wie sich v ergibt.</p>
+    <canvas class="viz" id="c-formel"></canvas>
+    <div class="ctrl"><label>Strecke s</label><input type="range" id="sl-s" min="10" max="120" step="5" value="60"><span class="val" id="val-s">60 m</span></div>
+    <div class="ctrl"><label>Zeit t</label><input type="range" id="sl-t" min="1" max="20" step="1" value="5"><span class="val" id="val-t">5 s</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>Aus dem Dreieck: <b>v = s/t</b>, <b>s = v · t</b>, <b>t = s/v</b>.</div>` },
+
+ { step:'Mehr Beispiele', title:'Rechnen und Größenordnungen', init:revealCases, html:
+   `<p>Erst selbst überlegen, dann aufdecken.</p>
+    <div class="cases">
+      <div class="case"><h3>Fußgänger</h3><p>150 m in 100 s – wie schnell?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>v = s / t = 150 m / 100 s = 1,5 m/s.</div></div>
+      <div class="case"><h3>Strecke gesucht</h3><p>Ein Radfahrer fährt 8 m/s. Wie weit in 12 s?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>s = v · t = 8 m/s · 12 s = 96 m.</div></div>
+      <div class="case"><h3>Zeit gesucht</h3><p>Ein Zug fährt 20 m/s. Wie lange für 600 m?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>t = s / v = 600 m / 20 m/s = 30 s.</div></div>
+      <div class="case"><h3>Sprinter</h3><p>100 m in 10 s. Wie schnell ist das?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>v = s / t = 100 m / 10 s = 10 m/s. Ein Spitzensprinter erreicht kurz sogar über 11 m/s.</div></div>
+      <div class="case"><h3>Schwimmer</h3><p>Eine Schwimmerin schafft 1,25 m/s. Wie lange braucht sie für 50 m?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>t = s / v = 50 m / 1,25 m/s = 40 s.</div></div>
+      <div class="case"><h3>Schnecke gegen Rad</h3><p>Eine Schnecke (0,001 m/s) und ein Rad (6 m/s) fahren 60 s. Wer kommt wie weit?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Schnecke: s = 0,001 · 60 = 0,06 m (6 cm). Rad: s = 6 · 60 = 360 m. Bei gleicher Zeit entscheidet v über die Strecke.</div></div>
+      <div class="case"><h3>Ein Lichtjahr</h3><p>Licht fährt mit rund 300 000 000 m/s (3·10⁸ m/s). Wie weit kommt es in einem Jahr?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Ein Jahr hat 365 · 24 · 3600 s ≈ 3,15·10⁷ s.<br>s = v · t = 3·10⁸ m/s · 3,15·10⁷ s ≈ <b>9,5·10¹⁵ m</b> = rund <b>9,5 Billionen km</b>. Diese Strecke nennt man <b>ein Lichtjahr</b>.</div></div>
+    </div>
+    <p class="lead">Typische Geschwindigkeiten zum Vergleich:</p>
+    <table class="cmp"><thead><tr><th>Was</th><th>ungefähr</th></tr></thead><tbody>
+      <tr><td>Schnecke</td><td>0,001 m/s</td></tr>
+      <tr><td>Fußgänger</td><td>1,5 m/s</td></tr>
+      <tr><td>Radfahrer</td><td>6 m/s</td></tr>
+      <tr><td>Auto (Stadt)</td><td>14 m/s</td></tr>
+      <tr><td>ICE</td><td>80 m/s</td></tr>
+    </tbody></table>` },
+
+ { step:'Einordnung', title:'Was wir jetzt können', html:
+   `<div class="box merke"><span class="lbl">Geschafft</span>Geschwindigkeit ist eine <b>Größe pro Zeit</b>. Für Bewegungen gilt <b>v = s/t</b> (gleichförmige Bewegung). Mit dem Formeldreieck bekommst du auch s und t.</div>
+    <p>Als Nächstes: dieselbe Bewegung im <b>Diagramm</b> darstellen (s-t) und die Einheiten <b>m/s ↔ km/h</b> umrechnen. Und danach: die Geschwindigkeit bekommt eine <b>Richtung</b> (Vektor).</p>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Was ist allen „Geschwindigkeiten" (Weg, Drehwinkel, Schmelze, Geld) gemeinsam?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">eine Größe geteilt durch die Zeit</button>
+       <button class="choice" data-ok="0">sie werden alle in m/s gemessen</button>
+       <button class="choice" data-ok="0">es geht immer um Strecken</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Immer „Größe pro Zeit" – nur die Größe ist verschieden.</div></div></div>
+    <div class="q"><p>Ein Läufer schafft 100 m in 20 s. <b>Wie schnell ist er?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">5 m/s</button>
+       <button class="choice" data-ok="0">20 m/s</button>
+       <button class="choice" data-ok="0">2000 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>v = s / t = 100 m / 20 s = 5 m/s.</div></div></div>
+    <div class="q"><p>Ein Auto fährt 15 m/s. <b>Welche Strecke in 4 s?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">60 m</button>
+       <button class="choice" data-ok="0">3,75 m</button>
+       <button class="choice" data-ok="0">19 m</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>s = v · t = 15 m/s · 4 s = 60 m.</div></div></div>
+    <div class="q"><p>Ein Radfahrer fährt 6 m/s. <b>Wie lange braucht er für 90 m?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">15 s</button>
+       <button class="choice" data-ok="0">540 s</button>
+       <button class="choice" data-ok="0">96 s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>t = s / v = 90 m / 6 m/s = 15 s.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); }); }
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i]; $('#stage').innerHTML='<h2>'+s.title+'</h2>'+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#tag').textContent=PAGE.area||'Physik'; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>
