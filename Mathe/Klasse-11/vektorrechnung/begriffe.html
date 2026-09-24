@@ -1,0 +1,117 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Mathe/Klasse-11/vektorrechnung/_begriffe.html. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Begriffe der Vektorrechnung</title>
+<style>
+  .legal{display:inline-flex; gap:.8rem; margin:0 0 .35rem 1rem}
+  .legal a{color:var(--muted); text-decoration:none; font-size:.75rem}
+  .legal a:hover{text-decoration:underline; color:var(--blue-d)}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.2vw,19px); line-height:1.45; -webkit-text-size-adjust:100%}
+  header.top{background:var(--panel); border-bottom:1px solid var(--line); padding:.7rem clamp(.8rem,2vw,1.6rem)}
+  header.top a.back{color:var(--blue-d); text-decoration:none; font-weight:700; font-size:.9rem}
+  header.top h1{font-size:clamp(1.2rem,2.2vw,1.7rem); margin:.3rem 0 .2rem}
+  header.top p{margin:0 0 .5rem; color:var(--muted); max-width:80ch}
+  .suche{width:min(100%,420px); font:inherit; padding:.5rem .8rem; border:1px solid var(--line); border-radius:10px}
+  main{max-width:1100px; margin:0 auto; padding:clamp(.7rem,1.6vw,1.4rem)}
+  .einheit{margin:0 0 1.2rem}
+  .einheit h2{font-size:1.05rem; margin:.2rem 0 .5rem; color:var(--blue-d)}
+  .einheit h2 a{color:inherit; text-decoration:none}
+  .einheit h2 a:hover{text-decoration:underline}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:.7rem}
+  .begriff{background:var(--panel); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:.75rem .95rem}
+  .begriff h3{margin:0 0 .25rem; font-size:1.02rem}
+  .begriff p{margin:.2rem 0}
+  .begriff .bsp{color:var(--muted); font-size:.93em}
+  .leer{color:var(--muted); font-style:italic}
+  /* Vektorpfeil wie in den Stunden (Abstand für Groß- bzw. Kleinbuchstaben voreingestellt) */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="../index.html">‹ Übersicht</a>
+  <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+  <h1>Begriffe der Vektorrechnung</h1>
+  <p>Alle Fachbegriffe der Reihe mit einer kurzen Erklärung, einem Beispiel und dem Link zur Stunde, in der sie
+    eingeführt werden. Zum Nachschlagen und zum Wiederholen vor der Klassenarbeit.</p>
+  <input class="suche" id="suche" type="search" placeholder="Begriff suchen, z. B. Betrag" aria-label="Begriff suchen">
+</header>
+<main id="liste"></main>
+<script>
+"use strict";
+// Vektorname mit Pfeil: v('AB'), v('a')
+const v=t=>'<span class="ov" style="--ovg:'+(/[A-ZÄÖÜbdfhklt]/.test(t)?'.38':'.58')+'em">'+t+'</span>';
+const EINHEITEN=[
+ {nr:1, t:'Punkte im Raum', s:'punkte-im-raum', b:[
+   ['Punkt im Raum', 'Ein Punkt hat drei Koordinaten: x₁ nach vorn, x₂ nach rechts, x₃ nach oben.', 'P(2 | 3 | 1)'],
+   ['Schrägbild', 'Zeichnung des Raums auf Papier: Eine Einheit in x₂- und x₃-Richtung sind 2 Kästchen, in x₁-Richtung ein Kästchen schräg nach links unten.', 'Der Punkt (1 | 2 | 0) liegt 1 Kästchen schräg und 4 Kästchen nach rechts.'],
+   ['Koordinatenebene', 'Ebene, in der eine Koordinate 0 ist. Der Boden ist die x₁x₂-Ebene (x₃ = 0).', 'Q(3 | 4 | 0) liegt am Boden.']]},
+ {nr:3, t:'Würfel und Quader', s:'koerper', b:[
+   ['Günstig legen', 'Einen Körper mit einer Ecke in den Ursprung und den Kanten auf die Achsen legen. Dann lassen sich alle Ecken direkt angeben.', 'Quader 4 × 3 × 2: Ecken wie (4 | 3 | 0) oder (0 | 3 | 2).']]},
+ {nr:4, t:'Der Vektor als Verschiebung', s:'vektor', b:[
+   ['Vektor', 'Eine Verschiebung, die jeden Punkt um dieselben Schritte in x₁-, x₂- und x₃-Richtung verschiebt. Man schreibt ihn als Spaltenvektor mit drei Komponenten.', v('v')+' = (2; −1; 3): 2 nach vorn, 1 nach links, 3 nach oben.'],
+   ['Repräsentant', 'Ein Pfeil, der den Vektor darstellt. Alle gleich langen, parallelen und gleich orientierten Pfeile stehen für denselben Vektor.', 'Derselbe Vektor kann an vielen Stellen angesetzt werden.'],
+   ['Ortsvektor', 'Der Vektor vom Ursprung zum Punkt P. Er hat dieselben Zahlen wie der Punkt.', 'P(2 | 3 | 1) hat den Ortsvektor '+v('p')+' = (2; 3; 1).'],
+   ['Gegenvektor', 'Der Vektor −'+v('v')+' hat dieselbe Länge wie '+v('v')+' und die umgekehrte Orientierung.', '−(2; −1; 3) = (−2; 1; −3)']]},
+ {nr:5, t:'Der Verbindungsvektor', s:'verbindungsvektor', b:[
+   ['Verbindungsvektor', v('AB')+' führt von A nach B: Spitze minus Fuß, also je Komponente b − a. Umgekehrt ist B = A + '+v('AB')+'.', 'A(1 | 2 | 3), B(4 | 0 | 5): '+v('AB')+' = (3; −2; 2).']]},
+ {nr:6, t:'Addieren und Subtrahieren', s:'addieren-subtrahieren', b:[
+   ['Summe', 'Vektoren addiert man komponentenweise. Geometrisch hängt man die Pfeile aneinander (oder bildet ein Parallelogramm).', '(1; 2; 0) + (3; −1; 2) = (4; 1; 2)'],
+   ['Differenz', v('a')+' − '+v('b')+' = '+v('a')+' + (−'+v('b')+'). Mit Ortsvektoren gilt '+v('AB')+' = '+v('b')+' − '+v('a')+'.', '(4; 1; 2) − (1; 2; 0) = (3; −1; 2)']]},
+ {nr:7, t:'Vielfache eines Vektors', s:'vielfache', b:[
+   ['Vielfaches', 'k · '+v('a')+' multipliziert jede Komponente mit k. Das Ergebnis ist parallel zu '+v('a')+': gestreckt, gestaucht oder bei k < 0 umgekehrt orientiert.', '−2 · (1; 0; 3) = (−2; 0; −6)'],
+   ['Nullvektor', 'Der Vektor (0; 0; 0), er verschiebt nichts. Er entsteht zum Beispiel als 0 · '+v('a')+'.', '0 · (4; 1; 2) = (0; 0; 0)']]},
+ {nr:8, t:'Vektorketten in Figuren', s:'vektorketten', b:[
+   ['Vektorkette', 'Einen gesuchten Punkt erreicht man über bekannte Punkte und Verschiebungen. Welchen Weg man wählt, ist egal.', 'Vierte Ecke eines Parallelogramms: '+v('d')+' = '+v('a')+' + '+v('BC')+'.'],
+   ['Mittelpunkt', 'Der Mittelpunkt M der Strecke AB: '+v('m')+' = '+v('a')+' + ½ · '+v('AB')+'. Koordinatenweise ist das der Mittelwert.', 'A(2 | 0 | 4), B(4 | 6 | 2): M(3 | 3 | 3)']]},
+ {nr:9, t:'Geschwindigkeit als Vektor', s:'geschwindigkeit', b:[
+   ['Geschwindigkeitsvektor', 'Die Verschiebung pro Sekunde. Startet ein Körper in '+v('p')+'₀, ist er nach t Sekunden bei '+v('p')+'(t) = '+v('p')+'₀ + t · '+v('v')+'.', 'Start (1 | 0 | 2), '+v('v')+' = (0; 2; 1): nach 3 s bei (1 | 6 | 5).']]},
+ {nr:10, t:'Betrag und Abstand', s:'betrag', b:[
+   ['Betrag', 'Die Länge eines Vektors: |'+v('v')+'| = √(v₁² + v₂² + v₃²). Das ist zweimal der Satz des Pythagoras.', '|(2; 3; 6)| = √49 = 7'],
+   ['Abstand zweier Punkte', 'Der Abstand von A und B ist der Betrag des Verbindungsvektors: d(A, B) = |'+v('AB')+'|.', 'A(0 | 1 | 1), B(2 | 3 | 2): '+v('AB')+' = (2; 2; 1), Abstand 3.']]},
+ {nr:11, t:'Mit Längen argumentieren', s:'laengen', b:[
+   ['Exakt vergleichen', 'Längen vergleicht man über ihre Quadrate, dann braucht man keine Wurzel. Gerundete Werte können täuschen.', '√48 ≈ 6,9 und √47 ≈ 6,9, aber 48 ≠ 47.'],
+   ['Gleichschenklig, gleichseitig', 'Ein Dreieck ist gleichschenklig, wenn zwei Seiten gleich lang sind, und gleichseitig, wenn alle drei gleich lang sind.', 'Seitenquadrate 11, 11, 8: gleichschenklig.'],
+   ['Raute, Rechteck, Quadrat über Längen', 'Für ein Parallelogramm ABCD: gleich lange benachbarte Seiten ergeben eine Raute, gleich lange Diagonalen ein Rechteck, beides ein Quadrat.', 'Ein Schreiner prüft einen Rahmen, indem er die Diagonalen misst.']]},
+ {nr:12, t:'Kollinear oder nicht', s:'kollinear', b:[
+   ['Kollinear', 'Zwei Vektoren sind kollinear (parallel), wenn '+v('b')+' = k · '+v('a')+' mit einem k für alle drei Komponenten gilt.', '(2; −4; 6) und (−3; 6; −9): überall k = −1,5.'],
+   ['Punkte auf einer Geraden', 'A, B und C liegen auf einer Geraden, wenn '+v('AB')+' und '+v('AC')+' kollinear sind.', v('AC')+' = 3 · '+v('AB')+': C liegt auf der Geraden durch A und B.']]},
+ {nr:13, t:'Parallelogramm und Trapez nachweisen', s:'parallelogramm-trapez', b:[
+   ['Parallelogramm-Nachweis', 'Das Viereck ABCD ist ein Parallelogramm, wenn '+v('AB')+' = '+v('DC')+' gilt. Das zweite Seitenpaar folgt dann von selbst.', 'Reihenfolge beachten: '+v('AB')+' mit '+v('DC')+' vergleichen, nicht mit '+v('CD')+'.'],
+   ['Trapez', 'Ein Viereck mit mindestens einem Paar paralleler Seiten. Nachweis: '+v('AB')+' = k · '+v('DC')+'. Für k = 1 ist es ein Parallelogramm.', v('AB')+' = 2 · '+v('DC')+': Trapez, aber kein Parallelogramm.']]},
+ {nr:14, t:'Rechter Winkel über Pythagoras', s:'pythagoras-winkel', b:[
+   ['Umkehrung des Satzes des Pythagoras', 'Ist das größte der drei Seitenquadrate eines Dreiecks die Summe der beiden anderen, ist das Dreieck rechtwinklig. Der rechte Winkel liegt gegenüber der längsten Seite.', 'Quadrate 9, 16, 25: 9 + 16 = 25, rechtwinklig.']]},
+ {nr:15, t:'Skalarprodukt', s:'skalarprodukt', b:[
+   ['Skalarprodukt', v('a')+' · '+v('b')+' = a₁b₁ + a₂b₂ + a₃b₃. Das Ergebnis ist eine Zahl, kein Vektor.', '(2; −1; 3) · (1; 4; 2) = 2 − 4 + 6 = 4'],
+   ['Orthogonal', 'Zwei Vektoren (nicht der Nullvektor) sind orthogonal (senkrecht) zueinander, wenn ihr Skalarprodukt 0 ist.', '(3; 1; −2) · (2; −4; 1) = 0: orthogonal.']]},
+];
+function zeige(filter){ const f=(filter||'').trim().toLowerCase(), box=document.getElementById('liste'); let html='', treffer=0;
+  EINHEITEN.forEach(e=>{ const bs=e.b.filter(b=>!f||(b[0]+' '+b[1]).replace(/<[^>]+>/g,'').toLowerCase().includes(f));
+    if(!bs.length) return; treffer+=bs.length;
+    html+='<section class="einheit"><h2><a href="'+e.s+'.html">Einheit '+e.nr+': '+e.t+'</a></h2><div class="grid">'
+      +bs.map(b=>'<div class="begriff"><h3>'+b[0]+'</h3><p>'+b[1]+'</p><p class="bsp">Beispiel: '+b[2]+'</p></div>').join('')+'</div></section>'; });
+  box.innerHTML=treffer?html:'<p class="leer">Kein Begriff gefunden.</p>'; }
+document.getElementById('suche').addEventListener('input',e=>zeige(e.target.value));
+zeige('');
+</script>
+</body>
+</html>

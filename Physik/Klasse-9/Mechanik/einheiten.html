@@ -1,0 +1,619 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-9/Mechanik/_common.js + Physik/Klasse-9/Mechanik/topics/02-einheiten.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 9 – Mechanik: gemeinsame Zeichen-Helfer für Bewegungsdiagramme.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr. Farben am Bildschirm erlaubt.
+
+// Beschriftungen wachsen mit Leinwand und Bildschirm: auf der Tafel größer (bis 1,4-fach),
+// auf kleinen Bildschirmen wie gehabt. Gilt für alle Mechanik-Stunden.
+const LBL_BASIS=lbl;
+lbl=function(ctx,x,y,t,size,col,align){
+  const w=(ctx && ctx.canvas && ctx.canvas.clientWidth)||0, sw=(typeof window!=='undefined' && window.innerWidth)||0;
+  const k=Math.min(1.4, Math.max(1, w/520, sw/1350));
+  return LBL_BASIS(ctx,x,y,t,size*k,col,align); };
+
+// Aufteilung für „Bahn + Diagramm“: auf breiten Leinwänden nebeneinander, auf hohen
+// (Tafel im Hochformat-Bereich) die Bahn oben und das Diagramm darunter.
+// tr = Bahn {x,y,w}, txt = Anker für Erklärtext {x,y}, step = Zeilenabstand, ch = Diagrammbox
+function splitLayout(W,H){
+  if(H > W*0.9) return { tr:{x:W*0.08, y:H*0.09, w:W*0.84}, txt:{x:W*0.5, y:H*0.16}, step:H*0.042, ch:{x:W*0.04, y:H*0.3, w:W*0.92, h:H*0.68} };
+  return { tr:{x:W*0.06, y:H*0.24, w:W*0.4}, txt:{x:W*0.28, y:H*0.62}, step:H*0.1, ch:{x:W*0.52, y:H*0.05, w:W*0.44, h:H*0.82} };
+}
+
+// Zeichnet einen Diagrammrahmen (Ursprung unten links) mit beschrifteten Achsen.
+// box = {x,y,w,h}. Gibt Mapper X(wert), Y(wert) und die Achsdaten zurück.
+function chartFrame(ctx, box, xMax, yMax, xlab, ylab){
+  const {x,y,w,h}=box, ox=x+40, oy=y+h-28, pw=w-52, ph=h-42;
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox, y+6); ctx.lineTo(ox, oy); ctx.lineTo(ox+pw, oy); ctx.stroke();
+  arrow(ctx, ox, oy+0.1, ox, y+4, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy+16, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+2, y+2, ylab, 13, '#5a6684', 'left');
+  const X = v => ox + (v/xMax)*pw, Y = v => oy - (v/yMax)*ph;
+  // Achsen-Zahlen (damit man Werte und Steigung ablesen kann)
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (Number.isInteger(r)?r:r.toFixed(1).replace('.',',')); };
+  const xs=nice(xMax), ys=nice(yMax);
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  // letzte Zahl am Achsenende weglassen, dort steht die Achsenbeschriftung
+  for(let v=xs; v<=xMax+1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); if(v<xMax-1e-6) lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#8a94a8', 'right');
+  return { X, Y, ox, oy, pw, ph };
+}
+
+// Wie chartFrame, aber auch mit negativem Bereich: Die Zeitachse liegt bei 0, darunter negative Werte.
+function chartFrame2(ctx, box, xMax, yMin, yMax, xlab, ylab, yStep){
+  const {x,y,w,h}=box, ox=x+40, top=y+14, bot=y+h-6, pw=w-52;
+  const X=v=>ox+(v/xMax)*pw, Y=v=>top+(yMax-v)/(yMax-yMin)*(bot-top), oy=Y(0);
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox,bot); ctx.lineTo(ox,top); ctx.moveTo(ox,oy); ctx.lineTo(ox+pw,oy); ctx.stroke();
+  arrow(ctx, ox, top+0.1, ox, top-8, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy-12, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+6, top-6, ylab, 13, '#5a6684', 'left');
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (r<0?'−':'')+String(Math.abs(r)).replace('.',','); };
+  const ys=yStep||1; ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  for(let v=Math.ceil(yMin/ys)*ys; v<=yMax+1e-6; v+=ys){ if(Math.abs(v)<1e-9) continue; const py=Y(v);
+    ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy, '0', 12, '#8a94a8', 'right');
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const xs=nice(xMax);
+  for(let v=xs; v<xMax-1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  return { X, Y, ox, oy, pw };
+}
+
+// Feines Hilfsgitter zum Ablesen und Einzeichnen: nach chartFrame, vor den Linien zeichnen.
+// Senkrecht jede Einheit, waagerecht ein Viertel der Achsen-Schrittweite.
+function chartGrid(ctx, F, xMax, yMax){
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const ys=nice(yMax)/4; ctx.save(); ctx.strokeStyle='#e6eaf3'; ctx.lineWidth=1;
+  for(let v=1; v<=xMax+1e-6; v+=1){ ctx.beginPath(); ctx.moveTo(F.X(v),F.Y(0)); ctx.lineTo(F.X(v),F.Y(yMax)); ctx.stroke(); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(v)); ctx.lineTo(F.X(xMax),F.Y(v)); ctx.stroke(); }
+  ctx.restore(); }
+
+// Kleine Bewegungs-Bahn: Kugel bei Bruchteil p (0..1) auf einer waagerechten Strecke,
+// optional mit Zeitmarken an den übergebenen Positionen (Bruchteile 0..1).
+function track(ctx, x, y, w, ball_col, p, marks){
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y); ctx.stroke();
+  if(marks) marks.forEach(m=>{ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+m*w, y-7); ctx.lineTo(x+m*w, y+7); ctx.stroke(); });
+  ball(ctx, x + Math.max(0,Math.min(1,p))*w, y, 9, ball_col);
+}
+
+// Kariertes Koordinatensystem, das ±R Kästchen in box zeigt (Ursprung mittig).
+// Gibt Mapper X(u),Y(v) (v nach oben positiv) und die Zellgröße zurück.
+function coordGrid(ctx, box, R){
+  const {x,y,w,h}=box, cell=Math.min(w,h)/(2*R+1), ox=x+w/2, oy=y+h/2;
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  ctx.strokeStyle='#e6ebf5'; ctx.lineWidth=1;
+  for(let k=-R;k<=R;k++){
+    ctx.beginPath(); ctx.moveTo(ox+k*cell,y); ctx.lineTo(ox+k*cell,y+h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,oy+k*cell); ctx.lineTo(x+w,oy+k*cell); ctx.stroke();
+  }
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x,oy); ctx.lineTo(x+w,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,y); ctx.lineTo(ox,y+h); ctx.stroke();
+  // Einheitszahlen an den Achsen (jede zweite Marke, damit es nicht überläuft)
+  for(let k=-R;k<=R;k++){ if(k===0 || k%2!==0) continue;
+    lbl(ctx, ox+k*cell, oy+13, String(k), 11, '#9aa3b5');
+    lbl(ctx, ox-8, oy-k*cell, String(k), 11, '#9aa3b5', 'right'); }
+  ctx.restore();
+  return { X:u=>ox+u*cell, Y:v=>oy-v*cell, ox, oy, cell };
+}
+
+const PAGE={ area:'Mechanik', slug:'einheiten', title:'m/s und km/h', h1:'Geschwindigkeit umrechnen' };
+
+// Das Konzept – Umrechner: beide Richtungen + fahrendes Auto
+function convertLab(root){ const c=root.querySelector('#c-conv'); if(!c) return; const sl=root.querySelector('#sl-conv'); let last=0, x=0;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    const val = sl? +sl.value : 10, kmh = val*3.6;
+    lbl(ctx, W*0.5, H*0.2, val.toFixed(0)+' m/s   · 3,6   =   '+kmh.toFixed(1)+' km/h', 20, '#1b2440');
+    const x0=W*0.1, tw=W*0.8, y=H*0.52; ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+tw,y); ctx.stroke();
+    x=(x + val*dt*tw/60)%tw; ball(ctx, x0+x, y, 11, '#2f6df6');
+    lbl(ctx, W*0.5, H*0.86, kmh.toFixed(1)+' km/h   ÷ 3,6   =   '+val.toFixed(0)+' m/s', 20, '#1b2440');
+    const vv=root.querySelector('#val-conv'); if(vv) vv.textContent=val.toFixed(0)+' m/s';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Übungen: Parallel-Differenzierung. Alle drei Stufen stehen gleichzeitig nebeneinander,
+// je drei Aufgaben: leicht (ganze Zahlen), mittel (Kommazahlen), schwer (cm/s, mm/s, m/min, mm/min, km/min)
+function genLab(root){ const box=root.querySelector('#gen-cols'); if(!box) return;
+  // die drei Spalten brauchen die volle Breite, nicht die schmale Lesespalte
+  const spalte=box.closest?box.closest('.col-single'):null; if(spalte) spalte.style.maxWidth='none';
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const fmt=n=>{ const r=Math.round(n*100)/100; return (Number.isInteger(r)?String(r):r.toFixed(2).replace(/0$/,'').replace(/\.?0$/,'')).replace('.',','); };
+  const mkLeicht=()=>{ if(Math.random()<0.5){ const v=pick([5,10,15,20,25,30,35,40]); return {q:v+' m/s', z:'km/h', op:'· 3,6', a:fmt(v*3.6)+' km/h'}; }
+    const k=pick([18,36,54,72,90,108]); return {q:k+' km/h', z:'m/s', op:'÷ 3,6', a:fmt(k/3.6)+' m/s'}; };
+  const mkMittel=()=>{ if(Math.random()<0.5){ const v=pick([7,8,11,12,22,2.5,4.5,7.5]); return {q:fmt(v)+' m/s', z:'km/h', op:'· 3,6', a:fmt(v*3.6)+' km/h'}; }
+    const k=pick([9,27,45,63,81,50]); return {q:k+' km/h', z:'m/s', op:'÷ 3,6', a:fmt(k/3.6)+' m/s'}; };
+  // schwer: weitere Längen- und Zeiteinheiten. Je Eintrag: Ausgangseinheit, Zieleinheit, Rechenweg, Faktor, mögliche Werte
+  const SCHWER=[
+    ['m/s','cm/s','· 100 (1 m = 100 cm)',100,[1.5,2,3,4,5.4,7]],
+    ['cm/s','m/s','÷ 100',0.01,[80,150,240,300,540,720]],
+    ['m/s','mm/s','· 1000 (1 m = 1000 mm)',1000,[0.2,0.5,1.5,2]],
+    ['mm/s','m/s','÷ 1000',0.001,[250,500,1200,4000]],
+    ['m/min','m/s','÷ 60 (1 min = 60 s)',1/60,[30,90,120,300]],
+    ['m/s','m/min','· 60 (in 1 min 60-mal so weit)',60,[0.5,1.5,2,3]],
+    ['mm/min','mm/s','÷ 60',1/60,[60,120,300,900]],
+    ['mm/min','m/s','÷ 1000 (mm → m), dann ÷ 60 (min → s)',0.001/60,[3000,6000,12000,30000]],
+    ['km/min','km/h','· 60 (1 h = 60 min)',60,[1,1.5,2,3]],
+    ['m/min','km/h','· 60 (min → h), dann ÷ 1000 (m → km)',0.06,[500,1000,1500,2000]],
+    ['km/h','cm/s','÷ 3,6, dann · 100',100/3.6,[18,36,72,90]]];
+  const mkSchwer=()=>{ const [von,nach,op,f,werte]=pick(SCHWER), v=pick(werte); return {q:fmt(v)+' '+von, z:nach, op, a:fmt(v*f)+' '+nach}; };
+  const STUFEN=[['leicht','ganze Zahlen',mkLeicht],['mittel','Kommazahlen',mkMittel],['schwer','auch cm/s, mm/s, m/min, mm/min',mkSchwer]];
+  const drei=fn=>{ const out=[], seen=new Set(); for(let n=0;n<60 && out.length<3;n++){ const t=fn(); if(!seen.has(t.q+t.z)){ seen.add(t.q+t.z); out.push(t); } } return out; };
+  const build=()=>{ box.innerHTML=STUFEN.map(([name,info,fn])=>'<div class="gen-col"><h3>'+name+'</h3><p class="gen-info">'+info+'</p><ol>'
+      +drei(fn).map(t=>'<li><span class="gen-q">'+t.q+' = ? '+t.z+'</span><span class="gen-a" hidden>'+t.op+' → '+t.a+'</span></li>').join('')
+      +'</ol><button class="reveal gen-los">Lösungen zeigen</button></div>').join('');
+    box.querySelectorAll('.gen-los').forEach(b=>b.addEventListener('click',()=>{ b.closest('.gen-col').querySelectorAll('.gen-a').forEach(x=>x.hidden=false); b.style.display='none'; })); };
+  const nb=root.querySelector('[data-gen="new"]'); if(nb) nb.addEventListener('click', build);
+  build(); }
+
+const SECTIONS=[
+ { step:'Transferfrage', title:'Die Fragen der Stunde', html:
+   `<div class="box frage"><span class="lbl">Transferfrage 1</span>Warum rechnet man zwischen m/s und km/h ausgerechnet mit 3,6? Leite den Faktor mathematisch her, ohne ihn auswendig zu kennen. Zusatz: Mit welcher Zahl rechnet man von m/min in km/h um?</div>
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Schnecke kriecht mit 3 mm/s. Ein Alpengletscher fließt ungefähr 180 m pro Jahr talwärts. Wer ist schneller, und ungefähr um welchen Faktor?</div>
+    <p>Am Ende der Stunde kannst du beide beantworten. Notiere zwischendurch, was dir hilft.</p>` },
+
+ { step:'Das brauchst du', title:'Zwei Einheiten für dasselbe Tempo', html:
+   `<p>Das brauchst du aus den letzten Stunden:</p>
+    <ul>
+      <li>Geschwindigkeit ist Weg pro Zeit: v = s/t, gemessen in Metern pro Sekunde (m/s).</li>
+      <li>Im Alltag steht auf dem Tacho aber km/h (Kilometer pro Stunde).</li>
+    </ul>
+    <p>Beides ist dasselbe Tempo. In dieser Stunde lernst du, sicher zwischen beiden umzurechnen.</p>` },
+
+ { step:'Das Konzept', title:'· 3,6 und ÷ 3,6', init:convertLab, html:
+   `<p>Oben wird von m/s nach km/h umgerechnet, unten zurück. Die Kugel fährt mit dem eingestellten Tempo.</p>
+    <canvas class="viz" id="c-conv"></canvas>
+    <div class="ctrl"><label>Tempo</label><input type="range" id="sl-conv" min="0" max="40" step="1" value="10"><span class="val" id="val-conv">10 m/s</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>Von <b>m/s → km/h</b>: <b>· 3,6</b>. &nbsp; Von <b>km/h → m/s</b>: <b>÷ 3,6</b>.</div>` },
+
+ { step:'Warum 3,6?', title:'Woher der Faktor kommt', html:
+   `<p>1 m/s heißt: in 1 Sekunde genau 1 Meter. In einer Stunde (3600 s) sind das 3600 m, also 3,6 km. Darum ist 1 m/s = 3,6 km/h.</p>
+    <div class="box merke"><span class="lbl">Woher die 3,6 kommt</span>3600 (Sekunden je Stunde) ÷ 1000 (Meter je Kilometer) = <b>3,6</b>.</div>
+    <p class="lead">Ein paar Werte zum Merken:</p>
+    <table class="cmp"><thead><tr><th>m/s</th><th>km/h</th></tr></thead><tbody>
+      <tr><td>1</td><td>3,6</td></tr>
+      <tr><td>5</td><td>18</td></tr>
+      <tr><td>10</td><td>36</td></tr>
+      <tr><td>15</td><td>54</td></tr>
+      <tr><td>25</td><td>90</td></tr>
+      <tr><td>30</td><td>108</td></tr>
+    </tbody></table>` },
+
+ { step:'Schritt für Schritt', title:'So rechnest du', init:revealCases, html:
+   `<p>Zuerst die Richtung überlegen, dann · 3,6 oder ÷ 3,6.</p>
+    <div class="cases">
+      <div class="case"><h3>m/s → km/h</h3><p>Wie viel sind 15 m/s in km/h?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>m/s → km/h, also · 3,6:<br>15 · 3,6 = <b>54 km/h</b>.</div></div>
+      <div class="case"><h3>km/h → m/s</h3><p>Wie viel sind 90 km/h in m/s?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>km/h → m/s, also ÷ 3,6:<br>90 ÷ 3,6 = <b>25 m/s</b>.</div></div>
+      <div class="case"><h3>Tempo-30-Zone</h3><p>In einer Tempo-30-Zone darf man höchstens 30 km/h fahren. Wie viel ist das in m/s?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>30 ÷ 3,6 ≈ <b>8,3 m/s</b>.</div></div>
+      <div class="case"><h3>ICE</h3><p>Ein ICE fährt 80 m/s. Wie viel km/h zeigt der Tacho?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>80 · 3,6 = <b>288 km/h</b>.</div></div>
+      <div class="case"><h3>Schnecke</h3><p>Eine Schnecke kriecht 60 mm/min. Wie viel sind das in mm/s?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>In 1 min = 60 s schafft sie 60 mm, in 1 s also 60 mm ÷ 60 = 1 mm. Das sind 1 mm/s.</div></div>
+      <div class="case"><h3>Erst rechnen, dann umrechnen</h3><p>Ein Läufer schafft 200 m in 25 s. Wie schnell ist er in km/h?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>v = s/t = 200 m / 25 s = 8 m/s.<br>8 · 3,6 = <b>28,8 km/h</b>.</div></div>
+    </div>` },
+
+ { step:'Übungen', title:'Drei Stufen gleichzeitig', init:genLab, html:
+   `<style>
+      .gen-cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(13rem,1fr)); gap:1rem; margin:.4rem 0}
+      .gen-col{border:2px solid var(--line); border-radius:14px; padding:.7rem 1rem; background:#f8faff}
+      .gen-col h3{margin:.1rem 0 0; font-size:1.25em}
+      .gen-info{margin:.1rem 0 .4rem; color:#5a6684; font-size:.9em}
+      .gen-col ol{margin:.2rem 0 .6rem; padding-left:1.5em}
+      .gen-col li{margin:.55rem 0; font-size:clamp(1.05rem,1.3vw,1.45rem); font-weight:700}
+      .gen-a{display:block; color:#1f7a34; font-weight:700; font-size:.9em}
+      .gen-a[hidden]{display:none}
+    </style>
+    <p>Jede Stufe hat drei Aufgaben. Wähle deine Stufe selbst.</p>
+    <div class="gen-cols" id="gen-cols"></div>
+    <div class="modes">
+      <button data-gen="new">neue Aufgaben</button>
+    </div>` },
+
+ { step:'Tipps & Fallen', title:'Nicht verwechseln, Ergebnis prüfen', init:quiz, html:
+   `<div class="box warn"><span class="lbl">Typischer Fehler</span>· 3,6 und ÷ 3,6 werden leicht vertauscht. <b>Merkhilfe:</b> die <b>km/h-Zahl ist immer größer</b> als die m/s-Zahl. Rechnest du <b>nach km/h</b> um, muss die Zahl also <b>größer</b> werden → <b>· 3,6</b>.</div>
+    <div class="q"><p>Größenordnung schätzen: 100 km/h sind ungefähr …</p>
+     <div class="choices">
+       <button class="choice" data-ok="0">2,8 m/s</button>
+       <button class="choice" data-ok="1">28 m/s</button>
+       <button class="choice" data-ok="0">280 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>100 ÷ 3,6 ≈ 28 m/s. (2,8 wäre Schritttempo, 280 wäre fast Schallgeschwindigkeit.)</div></div></div>` },
+
+ { step:'Ins Heft', title:'Das schreibst du ab', html:
+   `<div class="heft">
+      <h3>Geschwindigkeit umrechnen</h3>
+      <p class="f">m/s → km/h: · 3,6 &nbsp;&nbsp;&nbsp; km/h → m/s: ÷ 3,6</p>
+      <ul>
+        <li>Grund: 1 m/s heißt 3600 m in einer Stunde, also 3,6 km/h.</li>
+        <li>Die km/h-Zahl ist immer größer als die m/s-Zahl.</li>
+        <li>1 m/s = 100 cm/s = 1000 mm/s.</li>
+        <li>Pro Minute statt pro Sekunde: ÷ 60, denn in 1 s schafft man nur ein Sechzigstel.</li>
+      </ul>
+      <p class="bsp">Beispiele: 72 km/h ÷ 3,6 = 20 m/s. &nbsp; 15 m/s · 3,6 = 54 km/h.</p>
+    </div>
+    <p class="ueben-links">Zum Üben: <a href="blaetter/geschwindigkeit/geschwindigkeit.pdf">Arbeitsblatt Geschwindigkeit (PDF)</a> · <a href="training.html">Fit für die Arbeit</a></p>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Von m/s nach km/h rechnet man …</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">· 3,6</button>
+       <button class="choice" data-ok="0">÷ 3,6</button>
+       <button class="choice" data-ok="0">· 1000</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>m/s → km/h: mal 3,6.</div></div></div>
+    <div class="q"><p>72 km/h sind wie viele m/s?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">20 m/s</button>
+       <button class="choice" data-ok="0">259 m/s</button>
+       <button class="choice" data-ok="0">72 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>72 ÷ 3,6 = 20 m/s.</div></div></div>
+    <div class="q"><p>25 m/s sind wie viele km/h?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">90 km/h</button>
+       <button class="choice" data-ok="0">7 km/h</button>
+       <button class="choice" data-ok="0">250 km/h</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>25 · 3,6 = 90 km/h.</div></div></div>
+    <div class="q"><p>Ein Auto fährt auf der Autobahn 50 m/s. Wie viel km/h zeigt der Tacho?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">180 km/h</button>
+       <button class="choice" data-ok="0">14 km/h</button>
+       <button class="choice" data-ok="0">50 km/h</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>50 · 3,6 = 180 km/h.</div></div></div>
+    <div class="q"><p>Ein Radfahrer fährt 18 km/h. Wie viel m/s?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">5 m/s</button>
+       <button class="choice" data-ok="0">65 m/s</button>
+       <button class="choice" data-ok="0">18 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>18 ÷ 3,6 = 5 m/s.</div></div></div>` },
+
+ { step:'Lösung', title:'Die Transferfragen gelöst', init:transferTabs, html:
+   `<div class="modes">
+      <button data-tf="1" class="on">Transferfrage 1</button>
+      <button data-tf="2">Transferfrage 2</button>
+    </div>
+    <div data-tf-tab="1">
+    <div class="box frage"><span class="lbl">Transferfrage 1</span>Warum rechnet man zwischen m/s und km/h ausgerechnet mit 3,6? Leite den Faktor mathematisch her, ohne ihn auswendig zu kennen. Zusatz: Mit welcher Zahl rechnet man von m/min in km/h um?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Einheiten zerlegen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>1 m/s heißt 1 m geteilt durch 1 s. Beides wird in km und h umgeschrieben: 1 m = 1/1000 km und 1 s = 1/3600 h.</div></div>
+      <div class="case"><h3>Schritt 2: Durch einen Bruch teilen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>1 m/s = (1/1000 km) : (1/3600 h). Durch einen Bruch teilt man, indem man mit dem Kehrwert malnimmt: 1/1000 · 3600/1 km/h = 3600/1000 km/h.</div></div>
+      <div class="case"><h3>Schritt 3: Ergebnis</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>3600/1000 = 3,6, also 1 m/s = 3,6 km/h. Die 3,6 entsteht, weil eine Stunde 3600-mal so lang ist wie eine Sekunde, ein Kilometer aber nur 1000-mal so lang wie ein Meter.</div></div>
+      <div class="case"><h3>Schritt 4: Zusatz: m/min</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>1 m/min = (1/1000 km) : (1/60 h) = 60/1000 km/h = 0,06 km/h. Von m/min nach km/h rechnet man also mal 0,06.</div></div>
+    </div>
+    </div>
+    <div data-tf-tab="2" style="display:none">
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Schnecke kriecht mit 3 mm/s. Ein Alpengletscher fließt ungefähr 180 m pro Jahr talwärts. Wer ist schneller, und ungefähr um welchen Faktor?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Gleiche Einheit wählen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Am einfachsten rechnet man beides in mm/s. Der Gletscher schafft 180 m = 180 000 mm in einem Jahr.</div></div>
+      <div class="case"><h3>Schritt 2: Ein Jahr in Sekunden</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>365 Tage · 24 h · 3600 s = 31 536 000 s, also rund 31,5 Millionen Sekunden.</div></div>
+      <div class="case"><h3>Schritt 3: Gletscher in mm/s</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>v = 180 000 mm ÷ 31 536 000 s ≈ 0,0057 mm/s.</div></div>
+      <div class="case"><h3>Schritt 4: Vergleich</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>3 mm/s ÷ 0,0057 mm/s ≈ 526. Die Schnecke ist gut 500-mal so schnell wie der Gletscher.</div></div>
+    </div>
+    </div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

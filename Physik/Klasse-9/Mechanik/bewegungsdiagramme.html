@@ -1,0 +1,1180 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-9/Mechanik/_common.js + Physik/Klasse-9/Mechanik/topics/03-bewegungsdiagramme.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 9 – Mechanik: gemeinsame Zeichen-Helfer für Bewegungsdiagramme.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr. Farben am Bildschirm erlaubt.
+
+// Beschriftungen wachsen mit Leinwand und Bildschirm: auf der Tafel größer (bis 1,4-fach),
+// auf kleinen Bildschirmen wie gehabt. Gilt für alle Mechanik-Stunden.
+const LBL_BASIS=lbl;
+lbl=function(ctx,x,y,t,size,col,align){
+  const w=(ctx && ctx.canvas && ctx.canvas.clientWidth)||0, sw=(typeof window!=='undefined' && window.innerWidth)||0;
+  const k=Math.min(1.4, Math.max(1, w/520, sw/1350));
+  return LBL_BASIS(ctx,x,y,t,size*k,col,align); };
+
+// Aufteilung für „Bahn + Diagramm“: auf breiten Leinwänden nebeneinander, auf hohen
+// (Tafel im Hochformat-Bereich) die Bahn oben und das Diagramm darunter.
+// tr = Bahn {x,y,w}, txt = Anker für Erklärtext {x,y}, step = Zeilenabstand, ch = Diagrammbox
+function splitLayout(W,H){
+  if(H > W*0.9) return { tr:{x:W*0.08, y:H*0.09, w:W*0.84}, txt:{x:W*0.5, y:H*0.16}, step:H*0.042, ch:{x:W*0.04, y:H*0.3, w:W*0.92, h:H*0.68} };
+  return { tr:{x:W*0.06, y:H*0.24, w:W*0.4}, txt:{x:W*0.28, y:H*0.62}, step:H*0.1, ch:{x:W*0.52, y:H*0.05, w:W*0.44, h:H*0.82} };
+}
+
+// Zeichnet einen Diagrammrahmen (Ursprung unten links) mit beschrifteten Achsen.
+// box = {x,y,w,h}. Gibt Mapper X(wert), Y(wert) und die Achsdaten zurück.
+function chartFrame(ctx, box, xMax, yMax, xlab, ylab){
+  const {x,y,w,h}=box, ox=x+40, oy=y+h-28, pw=w-52, ph=h-42;
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox, y+6); ctx.lineTo(ox, oy); ctx.lineTo(ox+pw, oy); ctx.stroke();
+  arrow(ctx, ox, oy+0.1, ox, y+4, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy+16, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+2, y+2, ylab, 13, '#5a6684', 'left');
+  const X = v => ox + (v/xMax)*pw, Y = v => oy - (v/yMax)*ph;
+  // Achsen-Zahlen (damit man Werte und Steigung ablesen kann)
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (Number.isInteger(r)?r:r.toFixed(1).replace('.',',')); };
+  const xs=nice(xMax), ys=nice(yMax);
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  // letzte Zahl am Achsenende weglassen, dort steht die Achsenbeschriftung
+  for(let v=xs; v<=xMax+1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); if(v<xMax-1e-6) lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#8a94a8', 'right');
+  return { X, Y, ox, oy, pw, ph };
+}
+
+// Wie chartFrame, aber auch mit negativem Bereich: Die Zeitachse liegt bei 0, darunter negative Werte.
+function chartFrame2(ctx, box, xMax, yMin, yMax, xlab, ylab, yStep){
+  const {x,y,w,h}=box, ox=x+40, top=y+14, bot=y+h-6, pw=w-52;
+  const X=v=>ox+(v/xMax)*pw, Y=v=>top+(yMax-v)/(yMax-yMin)*(bot-top), oy=Y(0);
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox,bot); ctx.lineTo(ox,top); ctx.moveTo(ox,oy); ctx.lineTo(ox+pw,oy); ctx.stroke();
+  arrow(ctx, ox, top+0.1, ox, top-8, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy-12, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+6, top-6, ylab, 13, '#5a6684', 'left');
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (r<0?'−':'')+String(Math.abs(r)).replace('.',','); };
+  const ys=yStep||1; ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  for(let v=Math.ceil(yMin/ys)*ys; v<=yMax+1e-6; v+=ys){ if(Math.abs(v)<1e-9) continue; const py=Y(v);
+    ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy, '0', 12, '#8a94a8', 'right');
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const xs=nice(xMax);
+  for(let v=xs; v<xMax-1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  return { X, Y, ox, oy, pw };
+}
+
+// Feines Hilfsgitter zum Ablesen und Einzeichnen: nach chartFrame, vor den Linien zeichnen.
+// Senkrecht jede Einheit, waagerecht ein Viertel der Achsen-Schrittweite.
+function chartGrid(ctx, F, xMax, yMax){
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const ys=nice(yMax)/4; ctx.save(); ctx.strokeStyle='#e6eaf3'; ctx.lineWidth=1;
+  for(let v=1; v<=xMax+1e-6; v+=1){ ctx.beginPath(); ctx.moveTo(F.X(v),F.Y(0)); ctx.lineTo(F.X(v),F.Y(yMax)); ctx.stroke(); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(v)); ctx.lineTo(F.X(xMax),F.Y(v)); ctx.stroke(); }
+  ctx.restore(); }
+
+// Kleine Bewegungs-Bahn: Kugel bei Bruchteil p (0..1) auf einer waagerechten Strecke,
+// optional mit Zeitmarken an den übergebenen Positionen (Bruchteile 0..1).
+function track(ctx, x, y, w, ball_col, p, marks){
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y); ctx.stroke();
+  if(marks) marks.forEach(m=>{ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+m*w, y-7); ctx.lineTo(x+m*w, y+7); ctx.stroke(); });
+  ball(ctx, x + Math.max(0,Math.min(1,p))*w, y, 9, ball_col);
+}
+
+// Kariertes Koordinatensystem, das ±R Kästchen in box zeigt (Ursprung mittig).
+// Gibt Mapper X(u),Y(v) (v nach oben positiv) und die Zellgröße zurück.
+function coordGrid(ctx, box, R){
+  const {x,y,w,h}=box, cell=Math.min(w,h)/(2*R+1), ox=x+w/2, oy=y+h/2;
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  ctx.strokeStyle='#e6ebf5'; ctx.lineWidth=1;
+  for(let k=-R;k<=R;k++){
+    ctx.beginPath(); ctx.moveTo(ox+k*cell,y); ctx.lineTo(ox+k*cell,y+h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,oy+k*cell); ctx.lineTo(x+w,oy+k*cell); ctx.stroke();
+  }
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x,oy); ctx.lineTo(x+w,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,y); ctx.lineTo(ox,y+h); ctx.stroke();
+  // Einheitszahlen an den Achsen (jede zweite Marke, damit es nicht überläuft)
+  for(let k=-R;k<=R;k++){ if(k===0 || k%2!==0) continue;
+    lbl(ctx, ox+k*cell, oy+13, String(k), 11, '#9aa3b5');
+    lbl(ctx, ox-8, oy-k*cell, String(k), 11, '#9aa3b5', 'right'); }
+  ctx.restore();
+  return { X:u=>ox+u*cell, Y:v=>oy-v*cell, ox, oy, cell };
+}
+
+const PAGE={ area:'Mechanik', slug:'bewegungsdiagramme', title:'s-t-Diagramme', h1:'Bewegung im s-t-Diagramm' };
+
+// Ort zur Zeit t auf einer Fahrt aus geraden Stücken pts=[[t,s],...]
+function stAt(pts,t){ for(let i=1;i<pts.length;i++){ const [t0,s0]=pts[i-1],[t1,s1]=pts[i]; if(t<=t1+1e-9) return s0+(s1-s0)*(t-t0)/(t1-t0); } return pts[pts.length-1][1]; }
+// Ablesehilfe: gestrichelt vom Punkt zu beiden Achsen
+function stAblesen(ctx,F,t,s){ ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=1.8; ctx.beginPath();
+  ctx.moveTo(F.X(t),F.Y(0)); ctx.lineTo(F.X(t),F.Y(s)); ctx.lineTo(F.ox,F.Y(s)); ctx.stroke(); ctx.restore(); }
+
+// Das Konzept: jeder Moment der Bewegung wird ein Punkt. Vier Fahrten, der Graph entsteht beim Fahren.
+const ST_PLOT={ gleich:{pts:[[0,0],[6,24]], txt:'gleichförmig vom Start weg'},
+  pause:{pts:[[0,0],[2,12],[4,12],[6,24]], txt:'fahren, Pause, weiterfahren'},
+  zurueck:{pts:[[0,0],[3,18],[6,0]], txt:'hin und wieder zurück'},
+  zickzack:{pts:[[0,0],[1.5,12],[3,4],[4.5,20],[6,8]], txt:'Zickzack: hin, zurück, hin, zurück'} };
+function stPlot(root){ const c=root.querySelector('#c-plot'); if(!c) return; let mode='gleich', last=0, t=0; const T=6, S=24;
+  const btns=root.querySelectorAll('[data-pm]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.pm; t=0; btns.forEach(x=>x.classList.toggle('on',x===b)); }));
+  const z=n=>n.toFixed(1).replace('.',',');
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt*0.8)%(T+1.2); ctx.clearRect(0,0,W,H);
+    const P=ST_PLOT[mode].pts, tt=Math.min(t,T), s=stAt(P,tt);
+    const L=splitLayout(W,H), x0=L.tr.x, tw=L.tr.w, ty=L.tr.y; track(ctx,x0,ty,tw,'#2f6df6', s/S);
+    lbl(ctx, x0, ty-18, '0 m', 11, '#8a94a8', 'left'); lbl(ctx, x0+tw, ty-18, S+' m', 11, '#8a94a8', 'right');
+    const F=chartFrame(ctx, L.ch, T, S, 't in s', 's in m'); chartGrid(ctx, F, T, S);
+    // Graph bis jetzt, dazu ein Punkt für jede volle Sekunde
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.8; ctx.lineJoin='round'; ctx.beginPath();
+    for(let x=0;x<=tt+1e-9;x+=T/240){ const X=F.X(x), Y=F.Y(stAt(P,x)); x===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y); } ctx.stroke();
+    for(let k=1;k<=Math.floor(tt+1e-9);k++) ball(ctx, F.X(k), F.Y(stAt(P,k)), 3.5, '#1b2440');
+    stAblesen(ctx,F,tt,s); ball(ctx, F.X(tt), F.Y(s), 6, '#2f6df6');
+    lbl(ctx, L.txt.x, L.txt.y, ST_PLOT[mode].txt, 13, '#5a6684');
+    lbl(ctx, L.txt.x, L.txt.y+L.step, 't = '+z(tt)+' s     s = '+z(s)+' m', 16, '#c06a00');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Linien lesen: Form der Linie → Art der Bewegung
+const ST_CASES={ steht:{pts:[[0,18],[6,18]], a:'waagerecht', b:'Der Ort ändert sich nicht: Der Körper steht.'},
+  langsam:{pts:[[0,0],[6,12]], a:'flach ansteigend', b:'Langsam vom Start weg.'},
+  schnell:{pts:[[0,0],[6,36]], a:'steil ansteigend', b:'Schnell vom Start weg.'},
+  zurueck:{pts:[[0,36],[6,0]], a:'fallend', b:'Der Körper fährt zum Start zurück.'},
+  pause:{pts:[[0,0],[2,16],[4,16],[6,32]], a:'steigen, waagerecht, steigen', b:'Fahren, Pause, weiterfahren.'},
+  zickzack:{pts:[[0,0],[1.5,18],[3,6],[4.5,24],[6,12]], a:'Zickzack', b:'Hin, zurück, hin, zurück.'} };
+function stCases(root){ const c=root.querySelector('#c-cases'); if(!c) return; let mode='schnell', last=0, t=0; const T=6, S=36;
+  const btns=root.querySelectorAll('[data-mv]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mv; t=0; btns.forEach(x=>x.classList.toggle('on', x.dataset.mv===mode)); }));
+  const z=n=>n.toFixed(1).replace('.',',');
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt*0.8)%(T+1); ctx.clearRect(0,0,W,H);
+    const m=ST_CASES[mode], tt=Math.min(t,T), s=stAt(m.pts,tt);
+    const L=splitLayout(W,H), x0=L.tr.x, tw=L.tr.w, ty=L.tr.y; track(ctx,x0,ty,tw,'#2f6df6', s/S);
+    lbl(ctx, x0, ty-18, '0 m', 11, '#8a94a8', 'left'); lbl(ctx, x0+tw, ty-18, S+' m', 11, '#8a94a8', 'right');
+    const F=chartFrame(ctx, L.ch, T, S, 't in s', 's in m'); chartGrid(ctx, F, T, S);
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.8; ctx.lineJoin='round'; ctx.beginPath();
+    m.pts.forEach((p,i)=>i?ctx.lineTo(F.X(p[0]),F.Y(p[1])):ctx.moveTo(F.X(p[0]),F.Y(p[1]))); ctx.stroke();
+    stAblesen(ctx,F,tt,s); ball(ctx, F.X(tt), F.Y(s), 6, '#2f6df6');
+    lbl(ctx, L.txt.x, L.txt.y, m.a, 15, '#1b2440');
+    lbl(ctx, L.txt.x, L.txt.y+L.step*0.9, m.b, 13, '#1b2440');
+    lbl(ctx, L.txt.x, L.txt.y+L.step*2, 't = '+z(tt)+' s     s = '+z(s)+' m', 14, '#c06a00');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Steigung = Geschwindigkeit (Steigungsdreieck)
+function slopeLab(root){ const c=root.querySelector('#c-slope'); if(!c) return;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); const v=4;
+    const F=chartFrame(ctx,{x:W*0.08,y:H*0.05,w:W*0.84,h:H*0.74}, 6, 30, 't in s', 's in m');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(0)); ctx.lineTo(F.X(6),F.Y(v*6)); ctx.stroke();
+    const t1=2, t2=5;
+    ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(F.X(t1),F.Y(v*t1)); ctx.lineTo(F.X(t2),F.Y(v*t1)); ctx.lineTo(F.X(t2),F.Y(v*t2)); ctx.stroke();
+    lbl(ctx, F.X((t1+t2)/2), F.Y(v*t1)+14, 'Δt = 3 s', 13, '#c06a00');
+    lbl(ctx, F.X(t2)+8, F.Y(v*(t1+t2)/2), 'Δs = 12 m', 13, '#c06a00', 'left');
+    lbl(ctx, W*0.5, H*0.92, 'Steigung = Δs / Δt = 12 m / 3 s = 4 m/s = die Geschwindigkeit', 14, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Nicht gleichförmig: die s-t-Linie ist gekrümmt
+function curveLab(root){ const c=root.querySelector('#c-curve'); if(!c) return; let mode='schneller', last=0, t=0; const T=6, sMax=34;
+  const btns=root.querySelectorAll('[data-cv]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.cv; btns.forEach(x=>x.classList.toggle('on', x.dataset.cv===mode)); }));
+  const sFn=tt=> mode==='schneller' ? sMax*(tt/T)*(tt/T) : sMax*(1-(1-tt/T)*(1-tt/T));
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%T; ctx.clearRect(0,0,W,H);
+    const L=splitLayout(W,H), x0=L.tr.x, tw=L.tr.w, ty=L.tr.y; track(ctx,x0,ty,tw,'#2f6df6', Math.min(1,sFn(t)/sMax));
+    const F=chartFrame(ctx, L.ch, T, sMax, 't in s', 's in m');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.6; ctx.beginPath();
+    for(let tt=0;tt<=T+1e-6;tt+=T/60){ const X=F.X(tt), Y=F.Y(sFn(tt)); tt===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y); } ctx.stroke();
+    // Tangente: berührt die Kurve im aktuellen Punkt, ihre Steigung ist die Momentangeschwindigkeit
+    const v = mode==='schneller' ? 2*sMax*t/(T*T) : 2*sMax*(1-t/T)/T, s0=sFn(t), d=1.4;
+    const t1=Math.max(0,t-d), t2=Math.min(T,t+d), cl=s=>Math.max(0,Math.min(sMax,s));
+    ctx.save(); ctx.setLineDash([7,5]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2.4; ctx.beginPath();
+    ctx.moveTo(F.X(t1),F.Y(cl(s0+v*(t1-t)))); ctx.lineTo(F.X(t2),F.Y(cl(s0+v*(t2-t)))); ctx.stroke(); ctx.restore();
+    ball(ctx, F.X(t), F.Y(s0), 6, '#1f4fc4');
+    lbl(ctx, L.txt.x, L.txt.y, mode==='schneller' ? 'Kurve wird steiler:' : 'Kurve wird flacher:', 13, '#1b2440');
+    lbl(ctx, L.txt.x, L.txt.y+L.step*0.9, mode==='schneller' ? 'der Körper wird schneller' : 'der Körper wird langsamer', 13, '#1b2440');
+    lbl(ctx, L.txt.x, L.txt.y+L.step*2.1, 'Steigung der Tangente: v = '+v.toFixed(1).replace('.',',')+' m/s', 14, '#c06a00');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Ganze Fahrt: hin, Pause, zurück
+function journeyLab(root){ const c=root.querySelector('#c-journey'); if(!c) return; let last=0, t=0; const T=7;
+  const pts=[[0,0],[2,10],[3,10],[6,0],[7,0]];
+  const sAt=tt=>{ for(let i=0;i<pts.length-1;i++){ const [t0,s0]=pts[i],[t1,s1]=pts[i+1]; if(tt<=t1){ return s0+(s1-s0)*(tt-t0)/(t1-t0||1); } } return 0; };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%T; ctx.clearRect(0,0,W,H);
+    const L=splitLayout(W,H), x0=L.tr.x, tw=L.tr.w, ty=L.tr.y, s=sAt(t);
+    ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x0,ty); ctx.lineTo(x0+tw,ty); ctx.stroke();
+    ball(ctx, x0+(s/10)*tw, ty, 10, '#2f6df6');
+    lbl(ctx, x0, ty-16, 'Ort auf der Strecke', 13, '#5a6684', 'left');
+    const F=chartFrame(ctx, L.ch, T, 12, 't in s', 's in m');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.6; ctx.beginPath();
+    pts.forEach((p,i)=>{ const X=F.X(p[0]),Y=F.Y(p[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke();
+    ctx.strokeStyle='#f29a1f'; ctx.lineWidth=3.2; ctx.beginPath(); ctx.moveTo(F.X(3),F.Y(10)); ctx.lineTo(F.X(6),F.Y(0)); ctx.stroke();
+    ball(ctx, F.X(t), F.Y(s), 6, '#1f4fc4');
+    lbl(ctx, F.X(1), F.Y(11), 'hin', 13, '#1f7a34'); lbl(ctx, F.X(2.5), F.Y(11), 'Pause', 13, '#5a6684'); lbl(ctx, F.X(4.6), F.Y(6.5), 'zurück (s wird kleiner)', 12, '#c06a00');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Messversuch: Kugel auf ebener oder schiefer Bahn, Lichtschranken alle 20 cm, Messtabelle, dann s-t-Diagramm
+function messLab(root){ const c=root.querySelector('#c-mess'); if(!c) return; let mode='eben', last=0, t=0, show=false, times=[];
+  const S=[0.2,0.4,0.6,0.8,1.0,1.2], V=0.4, A=0.3, L=1.3;
+  const tExact=s=> mode==='eben' ? s/V : Math.sqrt(2*s/A);
+  const sAt=x=> mode==='eben' ? V*x : 0.5*A*x*x;
+  const cells=[...root.querySelectorAll('[data-mt]')], f2=n=>n.toFixed(2).replace('.',',');
+  const neu=()=>{ times=S.map(s=>Math.round((tExact(s)+(Math.random()-0.5)*0.03)*100)/100); t=0; show=false; cells.forEach(td=>td.textContent='–'); };
+  root.querySelectorAll('[data-mm]').forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mm;
+    root.querySelectorAll('[data-mm]').forEach(x=>x.classList.toggle('on',x===b)); neu(); }));
+  const nb=root.querySelector('[data-mess="neu"]'); if(nb) nb.addEventListener('click',neu);
+  const pb=root.querySelector('[data-mess="plot"]'); if(pb) pb.addEventListener('click',()=>{ show=true; });
+  neu();
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    if(t<tExact(L)) t+=dt;                                    // rollt bis zum Ende der Bahn und bleibt dort
+    const s=Math.min(L,sAt(t));
+    S.forEach((si,i)=>{ if(t>=times[i] && cells[i] && cells[i].textContent==='–') cells[i].textContent=f2(times[i]); });
+    // Bahn mit Lichtschranken
+    const x0=W*0.06, tw=W*0.88, top=Math.max(52,H*0.14), tilt=mode==='eben'?0:H*0.12;
+    const X=m=>x0+m/L*tw, Y=m=>top+(m/L)*tilt;
+    if(tilt){ ctx.fillStyle='#e6eaf3'; ctx.beginPath(); ctx.moveTo(X(0),Y(0)+4); ctx.lineTo(X(0),Y(L)+4); ctx.lineTo(X(L),Y(L)+4); ctx.closePath(); ctx.fill(); }
+    ctx.strokeStyle='#8a94a8'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(L),Y(L)); ctx.stroke();
+    lbl(ctx, X(0), Y(0)+16, 'Start', 11, '#5a6684', 'left');
+    S.forEach((si,i)=>{ const x=X(si), y=Y(si), passed=t>=times[i];
+      ctx.strokeStyle='#5a6684'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x,y-24); ctx.lineTo(x,y-3); ctx.stroke();
+      ctx.fillStyle=passed?'#1b2440':'#dfe4ee'; rr(ctx,x-25,y-46,50,20,5); ctx.fill();
+      lbl(ctx, x, y-36, passed?f2(times[i])+' s':'– s', 11, passed?'#7df29b':'#8a94a8');
+      lbl(ctx, x, y+14, String(si).replace('.',',')+' m', 11, '#8a94a8'); });
+    ball(ctx, X(s), Y(s)-7, 7, '#2f6df6');
+    // s-t-Diagramm: leere Achsen zum Einzeichnen, auf Knopfdruck Punkte und Linie
+    const xMax=mode==='eben'?3.5:3, cy0=top+tilt+34;
+    const F=chartFrame(ctx,{x:W*0.06,y:cy0,w:W*0.88,h:H-cy0-4}, xMax, 1.4, 't in s', 's in m');
+    chartGrid(ctx, F, xMax, 1.4);
+    if(show){ ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.5; ctx.beginPath();
+      for(let x=0;x<=tExact(L)+1e-9;x+=tExact(L)/50){ const Xp=F.X(x), Yp=F.Y(sAt(x)); x===0?ctx.moveTo(Xp,Yp):ctx.lineTo(Xp,Yp); } ctx.stroke();
+      S.forEach((si,i)=>ball(ctx, F.X(times[i]), F.Y(si), 5, '#1b2440')); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+function messEx(root){ messLab(root); revealCases(root); }
+
+// Eigene Messung: Wertepaare eintippen, Punkte im s-t-Diagramm, Ausgleichsgerade durch den Ursprung
+// (Werte bleiben erhalten, solange die Seite offen ist, auch beim Blättern)
+let EIGEN=[['',''],['',''],['',''],['',''],['',''],['','']];
+function eigenLab(root){ const c=root.querySelector('#c-eigen'), tb=root.querySelector('#eigen-rows'), out=root.querySelector('#eigen-v'); if(!c||!tb) return;
+  let fitOn=true;
+  const num=x=>{ const n=parseFloat(String(x).replace(',','.').trim()); return isFinite(n)?n:null; };
+  const fmt=(n,d)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toString().replace('.',',');
+  const rows=()=>{ tb.innerHTML=EIGEN.map((r,i)=>'<tr><td style="color:#8a94a8">'+(i+1)+'</td>'
+      +'<td><input class="eig" data-i="'+i+'" data-j="0" inputmode="decimal" value="'+r[0]+'"></td>'
+      +'<td><input class="eig" data-i="'+i+'" data-j="1" inputmode="decimal" value="'+r[1]+'"></td></tr>').join('');
+    tb.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{ EIGEN[+inp.dataset.i][+inp.dataset.j]=inp.value; })); };
+  const on=(k,fn)=>{ const b=root.querySelector('[data-eig="'+k+'"]'); if(b) b.addEventListener('click',fn); };
+  on('plus',()=>{ EIGEN.push(['','']); rows(); });
+  on('leer',()=>{ EIGEN=EIGEN.map(()=>['','']); rows(); });
+  on('bsp',()=>{ EIGEN=[['0,9','1'],['2,1','2'],['2,9','3'],['4,2','4'],['5,0','5'],['6,1','6']]; rows(); });
+  const fb=root.querySelector('[data-eig="fit"]'); if(fb) fb.addEventListener('click',()=>{ fitOn=!fitOn; fb.classList.toggle('on',fitOn); });
+  rows();
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const P=EIGEN.map(r=>[num(r[0]),num(r[1])]).filter(p=>p[0]!==null&&p[1]!==null&&p[0]>=0&&p[1]>=0);
+    // Achsen passend zu den Werten, mit etwas Luft nach oben
+    const nice=m=>{ if(m<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(m))); for(const k of [1,1.2,1.5,2,2.5,3,4,5,6,8,10]){ if(k*p>=m) return k*p; } return 10*p; };
+    const tMax=nice(Math.max(1,...P.map(p=>p[0]))*1.1), sMax=nice(Math.max(1,...P.map(p=>p[1]))*1.1);
+    const F=chartFrame(ctx,{x:W*0.04,y:H*0.05,w:W*0.92,h:H*0.9}, tMax, sMax, 't in s', 's in m'); chartGrid(ctx, F, Math.min(tMax,40), sMax);
+    let v=null;
+    if(P.length>=2){ const st=P.reduce((a,p)=>a+p[0]*p[1],0), tt=P.reduce((a,p)=>a+p[0]*p[0],0); if(tt>0) v=st/tt; }
+    if(fitOn && v!==null){ const tEnd=Math.min(tMax, sMax/v);
+      ctx.save(); ctx.setLineDash([8,6]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2.4; ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(0)); ctx.lineTo(F.X(tEnd),F.Y(v*tEnd)); ctx.stroke(); ctx.restore(); }
+    P.forEach(p=>ball(ctx, F.X(p[0]), F.Y(p[1]), 6, '#2f6df6'));
+    if(out) out.textContent = P.length<2 ? 'Mindestens zwei Wertepaare eintragen.'
+      : (fitOn && v!==null ? 'Steigung der Ausgleichsgeraden: v ≈ '+fmt(v, v<1?2:1)+' m/s ≈ '+fmt(v*3.6,1)+' km/h' : P.length+' Messpunkte');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Kleines Auto, Front in Fahrtrichtung (dir = 1 nach rechts, −1 nach links)
+function carSide(ctx,x,y,dir){ ctx.save(); ctx.translate(x,y); ctx.scale(dir,1);
+  ctx.fillStyle='#2f6df6'; rr(ctx,-20,-13,40,13,4); ctx.fill(); ctx.fillStyle='#1f4fc4'; rr(ctx,-12,-22,20,10,3); ctx.fill();
+  ctx.fillStyle='#cfe0ff'; rr(ctx,-2,-20,8,6,2); ctx.fill();
+  ctx.fillStyle='#1b2440'; ctx.beginPath(); ctx.arc(-11,1,5,0,7); ctx.arc(11,1,5,0,7); ctx.fill(); ctx.restore(); }
+
+// Fehlvorstellung „Graph als Bild“: ebene Straße, aber das s-t-Diagramm sieht aus wie ein Berg
+function bildLab(root){ const c=root.querySelector('#c-bild'); if(!c) return; let last=0, t=0; const T=8, S=40;
+  const sAt=x=>S*Math.sin(Math.PI*x/T);
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%(T+1.5); ctx.clearRect(0,0,W,H);
+    const tt=Math.min(t,T), s=sAt(tt), dir=Math.cos(Math.PI*tt/T)>=0?1:-1;
+    const L=splitLayout(W,H), x0=L.tr.x+W*0.03, rw=L.tr.w-W*0.06, ry=L.tr.y+(H>W*0.9?30:H*0.26), X=m=>x0+m/S*rw;
+    ctx.fillStyle='#5a6684'; ctx.fillRect(x0-22,ry+6,rw+44,16);
+    ctx.save(); ctx.setLineDash([10,8]); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x0-22,ry+14); ctx.lineTo(x0+rw+22,ry+14); ctx.stroke(); ctx.restore();
+    carSide(ctx, X(s), ry, dir);
+    lbl(ctx, x0+rw/2, ry-44, 'ebene, gerade Straße', 13, '#5a6684');
+    lbl(ctx, x0+rw/2, ry+42, tt>=T ? 'wieder am Start' : (dir>0?'fährt hin':'fährt zurück'), 14, '#1b2440');
+    const F=chartFrame(ctx, L.ch, T, 45, 't in s', 's in m');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3; ctx.beginPath();
+    for(let x=0;x<=tt+1e-9;x+=T/80){ const Xp=F.X(x), Yp=F.Y(sAt(x)); x===0?ctx.moveTo(Xp,Yp):ctx.lineTo(Xp,Yp); } ctx.stroke();
+    ball(ctx, F.X(tt), F.Y(s), 6, '#1f4fc4');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+function bildEx(root){ bildLab(root); revealCases(root); }
+
+// Selbst zeichnen: s-t-Diagramm mit dem Finger, danach fährt die Kugel genau diese Bewegung
+function zeichnenLab(root){ const c=root.querySelector('#c-zeich'); if(!c) return;
+  let pts=[], drawing=false, play=false, tp=0, last=0, warn=0, F=null; const T=8, S=40;
+  const toData=e=>{ if(!F) return null; const r=c.getBoundingClientRect();
+    const t=(e.clientX-r.left-F.ox)/F.pw*T, s=(F.oy-(e.clientY-r.top))/F.ph*S;
+    return [Math.max(0,Math.min(T,t)), Math.max(0,Math.min(S,s))]; };
+  const add=p=>{ if(!pts.length){ if(p[0]>0.05) pts.push([0,p[1]]); pts.push(p); return; }
+    const lt=pts[pts.length-1][0]; if(p[0]>lt+0.02) pts.push(p); else if(p[0]<lt-0.2) warn=1.8; };
+  c.style.touchAction='none';
+  c.addEventListener('pointerdown',e=>{ const p=toData(e); if(!p) return; pts=[]; play=false; drawing=true; add(p); try{ c.setPointerCapture(e.pointerId); }catch(_){} });
+  c.addEventListener('pointermove',e=>{ if(!drawing) return; const p=toData(e); if(p) add(p); });
+  const stop=()=>{ drawing=false; }; c.addEventListener('pointerup',stop); c.addEventListener('pointercancel',stop);
+  const on=(sel,fn)=>{ const b=root.querySelector(sel); if(b) b.addEventListener('click',fn); };
+  on('[data-zeich="play"]',()=>{ if(pts.length>1){ play=true; tp=0; } });
+  on('[data-zeich="clear"]',()=>{ pts=[]; play=false; });
+  const sAt=x=>{ if(!pts.length) return 0; if(x<=pts[0][0]) return pts[0][1];
+    for(let i=1;i<pts.length;i++){ if(x<=pts[i][0]){ const [t0,s0]=pts[i-1],[t1,s1]=pts[i]; return s0+(s1-s0)*(x-t0)/((t1-t0)||1); } }
+    return pts[pts.length-1][1]; };
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; ctx.clearRect(0,0,W,H);
+    if(warn>0) warn-=dt;
+    const tEnd=pts.length?pts[pts.length-1][0]:0; if(play){ tp+=dt; if(tp>tEnd+1.2) tp=0; }
+    const tt=Math.min(tp,tEnd);
+    const x0=W*0.08, tw=W*0.84, ty=Math.max(34,H*0.1);
+    track(ctx, x0, ty, tw, '#2f6df6', pts.length ? sAt(play?tt:0)/S : 0);
+    lbl(ctx, x0, ty+18, '0 m', 11, '#8a94a8', 'left'); lbl(ctx, x0+tw, ty+18, '40 m', 11, '#8a94a8', 'right');
+    F=chartFrame(ctx,{x:W*0.04,y:ty+48,w:W*0.92,h:H-ty-52}, T, S, 't in s', 's in m'); chartGrid(ctx, F, T, S);
+    if(pts.length>1){ ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.beginPath();
+      pts.forEach((p,i)=>{ const X=F.X(p[0]), Y=F.Y(p[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke(); }
+    if(play && pts.length>1){ ball(ctx, F.X(tt), F.Y(sAt(tt)), 6, '#1f4fc4');
+      const v=(sAt(Math.min(tEnd,tt+0.1))-sAt(Math.max(0,tt-0.1)))/0.2;
+      const txt = Math.abs(v)<0.3 ? 'steht' : (v>0 ? 'fährt hin, v ≈ ' : 'fährt zurück, v ≈ ')+(Math.abs(v)<0.3?'':Math.abs(v).toFixed(1).replace('.',',')+' m/s');
+      lbl(ctx, W*0.5, ty-18, txt, 14, '#1b2440'); }
+    if(warn>0) lbl(ctx, W*0.5, F.Y(S*0.8), 'Die Zeit läuft nur vorwärts.', 16, '#b23a26');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Echte Daten: Usain Bolts 100-m-Weltrekord, WM Berlin 2009 (Zwischenzeiten ab Startschuss)
+const BOLT_S=[0,10,20,30,40,50,60,70,80,90,100], BOLT_T=[0,1.89,2.88,3.78,4.64,5.47,6.29,7.10,7.92,8.75,9.58];
+function boltLab(root){ const c=root.querySelector('#c-bolt'); if(!c) return; let mode='st';
+  const btns=root.querySelectorAll('[data-bolt]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.bolt; btns.forEach(x=>x.classList.toggle('on',x===b)); }));
+  const f1=n=>n.toFixed(1).replace('.',',');
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    if(mode==='st'){ const F=chartFrame(ctx,{x:W*0.04,y:H*0.05,w:W*0.92,h:H*0.9}, 10, 100, 't in s', 's in m'); chartGrid(ctx, F, 10, 100);
+      ctx.save(); ctx.setLineDash([7,5]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(0)); ctx.lineTo(F.X(9.58),F.Y(100)); ctx.stroke(); ctx.restore();
+      ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3; ctx.beginPath(); BOLT_T.forEach((t,i)=>{ const X=F.X(t), Y=F.Y(BOLT_S[i]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke();
+      BOLT_T.forEach((t,i)=>ball(ctx, F.X(t), F.Y(BOLT_S[i]), 4.5, '#1b2440'));
+      lbl(ctx, F.X(6.6), F.Y(52), 'Durchschnitt', 12, '#c06a00', 'left'); }
+    else { const F=chartFrame(ctx,{x:W*0.04,y:H*0.05,w:W*0.92,h:H*0.9}, 100, 14, 's in m', 'v in m/s');
+      for(let i=1;i<BOLT_S.length;i++){ const v=10/(BOLT_T[i]-BOLT_T[i-1]), x1=F.X(BOLT_S[i-1])+3, x2=F.X(BOLT_S[i])-3;
+        ctx.fillStyle='rgba(229,83,60,.75)'; ctx.fillRect(x1, F.Y(v), x2-x1, F.Y(0)-F.Y(v));
+        lbl(ctx, (x1+x2)/2, F.Y(v)-10, f1(v), 11, '#b23a26'); } }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+function boltEx(root){ boltLab(root); revealCases(root); }
+
+// Treffpunkt: Einholen (B startet später am selben Ort) oder Gegenverkehr (B kommt von 60 m entgegen).
+// Der Schnittpunkt der beiden s-t-Linien ist der Ort und die Zeit des Treffens.
+function treffLab(root){ const c=root.querySelector('#c-treff'); if(!c) return; let mode='einholen', last=0, t=0;
+  const vA=4, t0=3, D=60, T=12, sl=root.querySelector('#treff-v'), sv=root.querySelector('#treff-vv');
+  const btns=root.querySelectorAll('[data-tr]');
+  btns.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.tr; btns.forEach(x=>x.classList.toggle('on',x===b));
+    if(sl){ sl.value = mode==='einholen' ? 8 : 6; } t=0; }));
+  const f1=n=>(Math.round(n*10)/10).toString().replace('.',',');
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%(T+1.5); ctx.clearRect(0,0,W,H);
+    const vB=sl?+sl.value:8; if(sv) sv.textContent=vB+' m/s';
+    const sA=x=>vA*x, sB = mode==='einholen' ? (x=>Math.max(0,vB*(x-t0))) : (x=>Math.max(0,D-vB*x));
+    const tM = mode==='einholen' ? vB*t0/(vB-vA) : D/(vA+vB), sM=sA(tM), drin = vB>vA || mode!=='einholen';
+    const tt=Math.min(t,T), L=splitLayout(W,H), x0=L.tr.x, tw=L.tr.w, X=m=>x0+Math.min(1,m/D)*tw, yA=L.tr.y-14, yB=L.tr.y+16;
+    [yA,yB].forEach(y=>{ ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+tw,y); ctx.stroke(); });
+    lbl(ctx, x0, yA-18, '0 m', 11, '#8a94a8', 'left'); lbl(ctx, x0+tw, yA-18, D+' m', 11, '#8a94a8', 'right');
+    ball(ctx, X(sA(tt)), yA, 9, '#2f6df6'); lbl(ctx, X(sA(tt)), yA, 'A', 10, '#fff');
+    const bDa = mode==='gegen' || tt>=t0; if(bDa){ ball(ctx, X(sB(tt)), yB, 9, '#1b2440'); lbl(ctx, X(sB(tt)), yB, 'B', 10, '#fff'); }
+    lbl(ctx, L.txt.x, L.txt.y, 'A: Radfahrerin, '+vA+' m/s', 13, '#1f4fc4');
+    lbl(ctx, L.txt.x, L.txt.y+L.step*0.9, mode==='einholen' ? 'B: Mofa, '+vB+' m/s, startet '+t0+' s später' : 'B: kommt von '+D+' m entgegen, '+vB+' m/s', 13, '#1b2440');
+    const F=chartFrame(ctx, L.ch, T, D, 't in s', 's in m'); chartGrid(ctx, F, T, D);
+    const line=(fn,from,col,dash)=>{ ctx.save(); if(dash) ctx.setLineDash(dash); ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
+      let first=true; for(let x=from;x<=tt+1e-9;x+=T/120){ const y=fn(x); if(y>D) break; const P=[F.X(x),F.Y(y)]; first?ctx.moveTo(...P):ctx.lineTo(...P); first=false; } ctx.stroke(); ctx.restore(); };
+    line(sA,0,'#2f6df6'); line(sB, mode==='einholen'?t0:0, '#1b2440', [9,6]);
+    if(drin && tM<=T && sM<=D && tt>=tM){
+      ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=1.8; ctx.beginPath();
+      ctx.moveTo(F.X(tM),F.Y(0)); ctx.lineTo(F.X(tM),F.Y(sM)); ctx.lineTo(F.X(0),F.Y(sM)); ctx.stroke(); ctx.restore();
+      ball(ctx, F.X(tM), F.Y(sM), 7, '#f29a1f'); }
+    const res = !drin ? 'B ist nicht schneller als A: B holt A nie ein.'
+      : (tM>T ? 'Treffpunkt erst nach '+f1(tM)+' s, außerhalb des Diagramms'
+      : (tt>=tM ? 'Treffpunkt: t = '+f1(tM)+' s, s = '+f1(sM)+' m' : ''));
+    if(res) lbl(ctx, L.txt.x, L.txt.y+L.step*2.1, res, 14, '#c06a00');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// „Mehr Beispiele" – Animation plus Aufdeck-Aufgaben
+function journeyEx(root){ journeyLab(root); revealCases(root); }
+
+// Übungsgenerator: s-t-Diagramme lesen und aus einer Messtabelle zeichnen
+function stUebung(root){ const c=root.querySelector('#c-stu'); if(!c) return; let task=null, show=false, lv='leicht';
+  const ARTEN={ leicht:['v','v','tabelle','steht'], mittel:['zwei','pause','zurueck','start'], schwer:['treffen','treffen','vkomma','zurueck'] };
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const qEl=root.querySelector('#stu-q'), aEl=root.querySelector('#stu-a');
+  const render=()=>{ if(qEl) qEl.innerHTML=task.q; if(aEl){ aEl.innerHTML=task.a; aEl.hidden=!show; } };
+  const mk=()=>{ const kind=pick(ARTEN[lv]); let d, q, a;
+    if(kind==='vkomma'||kind==='start'){ const f2=n=>String(Math.round(n*100)/100).replace('.',',');
+      if(kind==='vkomma'){ const [s,T]=pick([[10,4],[15,4],[25,4],[30,8],[35,8],[45,6],[20,8]]); d={kind:'v', pts:[[0,0],[T,s]], ymax:50};
+        q='Bestimme die Geschwindigkeit aus der Steigung.'; a='v = Δs / Δt = '+s+' m / '+T+' s = '+f2(s/T)+' m/s'; }
+      else { const s0=pick([10,15,20]), v=pick([2,3,4]), T=pick([4,5,6]), s1=s0+v*T; d={kind:'v', pts:[[0,s0],[T,s1]], ymax:50};
+        q='Der Körper startet nicht bei 0 m. Bestimme seine Geschwindigkeit.'; a='Δs = '+s1+' m − '+s0+' m = '+(v*T)+' m. v = Δs / Δt = '+(v*T)+' m / '+T+' s = '+v+' m/s'; }
+      task={d,q,a}; show=false; render(); return; }
+    if(kind==='treffen'){
+      if(Math.random()<0.5){ const vA=pick([2,3]), t0=pick([1,2,3]), vB=2*vA, tM=2*t0, sM=vA*tM;   // Einholen: B doppelt so schnell
+        d={kind, polys:[[[0,0],[8,8*vA]], [[t0,0],[8,vB*(8-t0)]]], ymax:50, meet:[tM,sM]};
+        q='A startet bei 0 m. B startet '+t0+' s später am selben Ort (gestrichelt). Bestimme, wann und wo B den Körper A einholt. Prüfe mit einer Rechnung.';
+        a='Schnittpunkt bei t = '+tM+' s und s = '+sM+' m. A: '+vA+' m/s · '+tM+' s = '+sM+' m. B fährt '+(tM-t0)+' s lang: '+vB+' m/s · '+(tM-t0)+' s = '+sM+' m'; }
+      else { const [D,vA,vB]=pick([[40,3,5],[40,4,6],[48,4,8],[30,2,3],[30,4,6],[36,2,4],[42,3,4]]), tM=D/(vA+vB), sM=vA*tM;   // Gegenverkehr
+        d={kind, polys:[[[0,0],[8,8*vA]], [[0,D],[Math.min(8,D/vB),Math.max(0,D-vB*8)]]], ymax:50, meet:[tM,sM]};
+        q='A startet bei 0 m, B kommt ihm von '+D+' m aus entgegen (gestrichelt). Bestimme, wann und wo sie sich treffen. Prüfe mit einer Rechnung.';
+        a='Schnittpunkt bei t = '+tM+' s und s = '+sM+' m. A: '+vA+' m/s · '+tM+' s = '+sM+' m. B: '+D+' m − '+vB+' m/s · '+tM+' s = '+sM+' m'; }
+      task={d,q,a}; show=false; render(); return; }
+    if(kind==='v'){ const v=pick([2,3,4,5,6]), T=pick([4,5,6,8]), s=v*T;
+      d={kind, pts:[[0,0],[T,s]], ymax:50}; q='Bestimme die Geschwindigkeit aus der Steigung.';
+      a='v = Δs / Δt = '+s+' m / '+T+' s = '+v+' m/s'; }
+    else if(kind==='tabelle'){ const v=pick([2,3,4,5,6]), ts=[0,2,4,6,8], ss=ts.map(x=>v*x);
+      d={kind, pts:[[0,0],[8,8*v]], ymax:50, dots:ts.map((x,i)=>[x,ss[i]])};
+      q='<table class="cmp" style="margin:.1rem 0 .4rem"><tr><th>t in s</th>'+ts.map(x=>'<td>'+x+'</td>').join('')+'</tr><tr><th>s in m</th>'+ss.map(x=>'<td>'+x+'</td>').join('')+'</tr></table>Zeichne das s-t-Diagramm und bestimme die Geschwindigkeit.';
+      a='Die Punkte liegen auf einer Geraden durch den Ursprung: gleichförmig. v = Δs / Δt = '+(8*v)+' m / 8 s = '+v+' m/s'; }
+    else if(kind==='zwei'){ const vA=pick([2,3,4,5,6]); let vB; do{ vB=pick([2,3,4,5,6]); }while(vB===vA);
+      d={kind, lines:[{v:vA,n:'A'},{v:vB,n:'B'}], ymax:50};
+      q='Zwei Körper starten gleichzeitig. Welcher ist schneller? Bestimme beide Geschwindigkeiten.';
+      a='Die steilere Gerade gehört zum schnelleren Körper: '+(vA>vB?'A':'B')+'. A: '+(8*vA)+' m / 8 s = '+vA+' m/s, B: '+(8*vB)+' m / 8 s = '+vB+' m/s'; }
+    else if(kind==='zurueck'){ const t1=pick([2,3,4]), t2=pick([2,3,4]);
+      d={kind, pts:[[0,0],[t1,12],[t1+t2,0]], ymax:15};
+      q='Beschreibe die Bewegung. Bestimme die Geschwindigkeit hin und zurück.';
+      a='Erst wird s größer: Der Körper entfernt sich, v = 12 m / '+t1+' s = '+(12/t1)+' m/s. Dann wird s wieder 0: Er fährt zum Start zurück, v = 12 m / '+t2+' s = '+(12/t2)+' m/s'; }
+    else if(kind==='pause'){ const v=pick([3,4,5]);
+      d={kind, pts:[[0,0],[2,2*v],[5,2*v],[8,5*v]], ymax:30};
+      q='Beschreibe die Bewegung in den drei Abschnitten.';
+      a='0 bis 2 s: '+(2*v)+' m / 2 s = '+v+' m/s. 2 bis 5 s: waagerecht, Pause, v = 0. 5 bis 8 s: '+(3*v)+' m / 3 s = '+v+' m/s'; }
+    else { const s0=pick([15,20,25]);
+      d={kind, pts:[[0,s0],[8,s0]], ymax:30}; q='Beschreibe die Bewegung.';
+      a='Die Linie ist waagerecht: Der Ort ändert sich nicht. Der Körper steht bei '+s0+' m, v = 0'; }
+    task={d,q,a}; show=false; render(); };
+  root.querySelectorAll('[data-stul]').forEach(b=>b.addEventListener('click',()=>{ lv=b.dataset.stul;
+    root.querySelectorAll('[data-stul]').forEach(x=>x.classList.toggle('on',x===b)); mk(); }));
+  const nb=root.querySelector('[data-stu="new"]'); if(nb) nb.addEventListener('click', mk);
+  const sb=root.querySelector('[data-stu="solve"]'); if(sb) sb.addEventListener('click',()=>{ show=true; render(); });
+  mk();
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); if(!task){ RAF=requestAnimationFrame(loop); return; }
+    const d=task.d, F=chartFrame(ctx,{x:W*0.06,y:H*0.06,w:W*0.88,h:H*0.84}, 8, d.ymax, 't in s', 's in m');
+    chartGrid(ctx, F, 8, d.ymax);
+    const poly=(pts,dash)=>{ ctx.save(); if(dash) ctx.setLineDash(dash); ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3; ctx.beginPath();
+      pts.forEach((p,i)=>{ const X=F.X(p[0]), Y=F.Y(p[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke(); ctx.restore(); };
+    if(d.kind==='tabelle'){ if(show){ poly(d.pts); d.dots.forEach(p=>ball(ctx, F.X(p[0]), F.Y(p[1]), 5, '#1b2440')); } }
+    else if(d.kind==='zwei'){ d.lines.forEach((L,i)=>{ poly([[0,0],[8,8*L.v]], i?[9,6]:null); lbl(ctx, F.X(8)+5, F.Y(8*L.v), L.n, 14, '#1f4fc4', 'left'); }); }
+    else if(d.kind==='treffen'){ d.polys.forEach((p,i)=>{ poly(p, i?[9,6]:null); const e=p[p.length-1]; lbl(ctx, F.X(e[0])+5, F.Y(e[1]), i?'B':'A', 14, '#1f4fc4', 'left'); });
+      if(show){ const [tM,sM]=d.meet; ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=1.8; ctx.beginPath();
+        ctx.moveTo(F.X(tM),F.Y(0)); ctx.lineTo(F.X(tM),F.Y(sM)); ctx.lineTo(F.X(0),F.Y(sM)); ctx.stroke(); ctx.restore(); ball(ctx, F.X(tM), F.Y(sM), 6, '#f29a1f'); } }
+    else poly(d.pts);
+    if(d.kind==='v'){ const [T,s]=d.pts[1];                    // Ablesehilfe am Endpunkt
+      ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(F.X(T),F.Y(0)); ctx.lineTo(F.X(T),F.Y(s)); ctx.lineTo(F.X(0),F.Y(s)); ctx.stroke(); ctx.restore();
+      ball(ctx, F.X(T), F.Y(s), 4, '#1f4fc4'); lbl(ctx, F.X(T)-8, F.Y(s)-12, T+' s | '+s+' m', 12, '#1f4fc4', 'right'); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Einordnung: dieselbe gleichförmige Bewegung als s-t und als v-t
+function dualLab(root){ const c=root.querySelector('#c-dual'); if(!c) return; let last=0, t=0; const T=6, v=5;
+  const loop=ts=>{ const {ctx,W,H}=fit(c); const dt=Math.min(.05,(ts-last)/1000||0); last=ts; t=(t+dt)%T; ctx.clearRect(0,0,W,H);
+    const F1=chartFrame(ctx,{x:W*0.04,y:H*0.08,w:W*0.44,h:H*0.72}, T, v*T, 't in s', 's in m');
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(F1.X(0),F1.Y(0)); ctx.lineTo(F1.X(T),F1.Y(v*T)); ctx.stroke();
+    ball(ctx, F1.X(t), F1.Y(v*t), 5, '#2f6df6'); lbl(ctx, W*0.26, H*0.9, 's-t: steigende Gerade', 13, '#1b2440');
+    const F2=chartFrame(ctx,{x:W*0.54,y:H*0.08,w:W*0.44,h:H*0.72}, T, 10, 't in s', 'v in m/s');
+    ctx.strokeStyle='#e5533c'; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(F2.X(0),F2.Y(v)); ctx.lineTo(F2.X(T),F2.Y(v)); ctx.stroke();
+    ball(ctx, F2.X(t), F2.Y(v), 5, '#e5533c'); lbl(ctx, W*0.76, H*0.9, 'v-t: waagerechte Linie', 13, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Punkte ablesen auf Karopapier: eine Fahrt aus 5 bis 6 geraden Stücken (mit Pause und Rückfahrt), drei Fragen.
+// 1 Kästchen = 0,5 s nach rechts und 2 m nach oben. Antippen des Diagramms zeigt den Punkt der Linie zu dieser Zeit.
+const KARO={xMax:12, yMax:40, xk:0.5, yk:2};
+function karoFrame(ctx,W,H){ const nx=KARO.xMax/KARO.xk, ny=KARO.yMax/KARO.yk, mL=46, mR=50, mT=30, mB=34;
+  const cell=Math.min((W-mL-mR)/nx, (H-mT-mB)/ny), pw=cell*nx, ph=cell*ny;
+  const ox=mL+((W-mL-mR)-pw)/2, oy=mT+ph+((H-mT-mB)-ph)/2;
+  ctx.fillStyle='#fcfdff'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#d3e1f4'; ctx.lineWidth=1; ctx.beginPath();
+  for(let x=ox%cell; x<=W; x+=cell){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+  for(let y=oy%cell; y<=H; y+=cell){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
+  ctx.stroke();
+  const X=t=>ox+t/KARO.xk*cell, Y=s=>oy-s/KARO.yk*cell;
+  arrow(ctx, ox, oy, ox+pw+cell*1.4, oy, '#5a6684', 2); arrow(ctx, ox, oy, ox, oy-ph-cell*1.4, '#5a6684', 2);
+  for(let t=1;t<=KARO.xMax;t++){ ctx.strokeStyle='#5a6684'; ctx.beginPath(); ctx.moveTo(X(t),oy-3); ctx.lineTo(X(t),oy+3); ctx.stroke(); lbl(ctx, X(t), oy+14, String(t), 12, '#5a6684'); }
+  for(let s=4;s<=KARO.yMax;s+=4){ ctx.strokeStyle='#5a6684'; ctx.beginPath(); ctx.moveTo(ox-3,Y(s)); ctx.lineTo(ox+3,Y(s)); ctx.stroke(); lbl(ctx, ox-7, Y(s), String(s), 12, '#5a6684', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#5a6684', 'right');
+  lbl(ctx, ox+pw+cell*1.4, oy+16, 't in s', 13, '#1b2440', 'right'); lbl(ctx, ox+6, oy-ph-cell*1.4, 's in m', 13, '#1b2440', 'left');
+  return { X, Y, ox, oy, cell, inv:(px,py)=>[(px-ox)/cell*KARO.xk, (oy-py)/cell*KARO.yk] }; }
+
+function karoLab(root){ const c=root.querySelector('#c-karo'), qEl=root.querySelector('#karo-q'); if(!c||!qEl) return;
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const z=n=>{ const r=Math.round(n*100)/100; return String(r).replace('.',','); };
+  let pts=[], fr=[], show=false, tap=null, F=null;
+  const sAt=t=>{ for(let i=1;i<pts.length;i++){ const [t0,s0]=pts[i-1],[t1,s1]=pts[i]; if(t<=t1+1e-9) return s0+(s1-s0)*(t-t0)/(t1-t0); } return pts[pts.length-1][1]; };
+  // Tempo nur 2 oder 4 m/s, Knickpunkte auf geraden Metern: dann liegen alle Ablesepunkte auf Kästchenlinien
+  const neueFahrt=()=>{ for(let n=0;n<2000;n++){ const k=pick([5,6]), p=[[0,0]];
+      for(let i=0;i<k;i++){ const [t,s]=p[p.length-1], art = i===0 ? 'hin' : pick(['pause','hin','hin','zurueck','zurueck']); let dur, ds;
+        if(art==='pause'){ dur=pick([1,1.5,2]); ds=0; }
+        else { const v=pick([2,4,4]); dur = v===2 ? pick([1,2,3]) : pick([1,1.5,2,2.5]); ds=(art==='hin'?1:-1)*v*dur; }
+        p.push([t+dur, s+ds]); }
+      const T=p[p.length-1][0]; if(T<9||T>12||p.some(q=>q[1]<0||q[1]>38)) continue;
+      const d=p.slice(1).map((q,i)=>q[1]-p[i][1]), du=p.slice(1).map((q,i)=>q[0]-p[i][0]);
+      if(!d.includes(0) || !d.some(x=>x<0)) continue;
+      if(d.some((x,i)=>i>0 && x/du[i]===d[i-1]/du[i-1])) continue;
+      return p; }
+    return [[0,0],[2,12],[3,12],[5.5,22],[7,22],[10,4],[11,4]]; };
+  // Fragen: jede liefert Text, Antwort und Ablesehilfe
+  const machFragen=()=>{ const T=pts[pts.length-1][0], out=[];
+    const ort=()=>{ const ts=[]; for(let t=0.5;t<T;t+=0.5){ const s=sAt(t); if(Math.abs(s/2-Math.round(s/2))<1e-9 && !pts.some(p=>Math.abs(p[0]-t)<1e-9)) ts.push(t); }
+      if(!ts.length) return null; const t=pick(ts), s=sAt(t);
+      return {q:'Wo ist der Körper nach '+z(t)+' s?', a:'s = '+z(s)+' m', h:[{t,s}]}; };
+    const zeit=()=>{ const flach=new Set([Math.max(...pts.map(p=>p[1]))]); pts.slice(1).forEach((p,i)=>{ if(p[1]===pts[i][1]) flach.add(p[1]); });
+      const opts=[]; for(let L=2;L<=38;L+=2){ if(flach.has(L)) continue; const ts=[];
+        pts.slice(1).forEach((p,i)=>{ const [t0,s0]=pts[i], [t1,s1]=p; if(s0===s1) return; if((L-s0)*(L-s1)<=0){ const t=t0+(L-s0)/(s1-s0)*(t1-t0); if(!ts.some(x=>Math.abs(x-t)<1e-6)) ts.push(t); } });
+        if(ts.length && ts.every(t=>Math.abs(t*2-Math.round(t*2))<1e-9)) opts.push({L,ts}); }
+      if(!opts.length) return null; const mehr=opts.filter(o=>o.ts.length>=2), o=pick(mehr.length?mehr:opts);
+      return {q:'Zu welcher Zeit ist der Körper bei '+o.L+' m? Achtung, es kann mehrere Zeitpunkte geben.', a:(l=>l.length>1 ? l.slice(0,-1).join('; ')+' und '+l[l.length-1] : l[0])(o.ts.map(t=>'t = '+z(t)+' s')), h:o.ts.map(t=>({t,s:o.L}))}; };
+    const strecke=()=>{ const i=pick([0,1,2].filter(x=>x+3<pts.length)), j=Math.min(pts.length-1, i+pick([3,4]));
+      const teile=[]; let sum=0; for(let k=i+1;k<=j;k++){ const d=pts[k][1]-pts[k-1][1]; sum+=Math.abs(d); teile.push(d===0?'0 m (Pause)':Math.abs(d)+' m'+(d<0?' zurück':'')); }
+      const net=pts[j][1]-pts[i][1];
+      return {q:'Welche Strecke legt der Körper von t = '+z(pts[i][0])+' s bis t = '+z(pts[j][0])+' s insgesamt zurück?', a:teile.join(' + ')+' = '+sum+' m.'+(Math.abs(net)!==sum ? ' Der Ort ändert sich dabei nur um '+z(Math.abs(net))+' m, weil der Körper zwischendurch zurückfährt.' : ''), h:[], band:[pts[i][0],pts[j][0]]}; };
+    const tempo=()=>{ const idx=pts.slice(1).map((p,i)=>i).filter(i=>{ const d=pts[i+1][1]-pts[i][1], du=pts[i+1][0]-pts[i][0]; return d!==0 && Math.abs(Math.abs(d)/du*10-Math.round(Math.abs(d)/du*10))<1e-9; });
+      if(!idx.length) return null; const i=pick(idx), [t0,s0]=pts[i], [t1,s1]=pts[i+1], d=s1-s0, du=t1-t0;
+      return {q:'Wie schnell ist der Körper zwischen '+z(t0)+' s und '+z(t1)+' s, und in welche Richtung fährt er?', a:'v = Δs / Δt = '+Math.abs(d)+' m / '+z(du)+' s = '+z(Math.abs(d)/du)+' m/s, '+(d>0?'vom Start weg':'zurück zum Start'), h:[], dreieck:[t0,s0,t1,s1]}; };
+    const weit=()=>{ const m=Math.max(...pts.map(p=>p[1])), ts=pts.filter(p=>p[1]===m).map(p=>p[0]);
+      const wann = ts.length>1 ? 'von '+z(ts[0])+' s bis '+z(ts[ts.length-1])+' s' : 'bei t = '+z(ts[0])+' s';
+      return {q:'Wann ist der Körper am weitesten vom Start entfernt, und wie weit?', a:wann+', '+m+' m vom Start', h:ts.map(t=>({t,s:m}))}; };
+    const alle=[ort,zeit,strecke,tempo,weit].sort(()=>Math.random()-0.5);
+    for(const f of alle){ if(out.length>=3) break; const r=f(); if(r) out.push(r); }
+    return out; };
+  const render=()=>{ qEl.innerHTML=fr.map(f=>'<li>'+f.q+'<span class="karo-a"'+(show?'':' hidden')+'>'+f.a+'</span></li>').join(''); };
+  const neu=()=>{ pts=neueFahrt(); fr=machFragen(); show=false; tap=null; render(); };
+  root.querySelectorAll('[data-karo]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.karo==='neu') neu(); else { show=true; render(); } }));
+  c.addEventListener('pointerdown',e=>{ if(!F) return; const r=c.getBoundingClientRect(), [t]=F.inv(e.clientX-r.left, e.clientY-r.top);
+    const T=pts[pts.length-1][0]; tap = (t<0||t>T) ? null : Math.round(t*10)/10; });
+  neu();
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); F=karoFrame(ctx,W,H);
+    const hilfe=(t,s,nr)=>{ ctx.save(); ctx.setLineDash([5,4]); ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2; ctx.beginPath();
+      ctx.moveTo(F.X(t),F.Y(0)); ctx.lineTo(F.X(t),F.Y(s)); ctx.lineTo(F.X(0),F.Y(s)); ctx.stroke(); ctx.restore();
+      ball(ctx, F.X(t), F.Y(s), 5, '#f29a1f'); if(nr) lbl(ctx, F.X(t)+9, F.Y(s)-12, nr, 13, '#c06a00', 'left'); };
+    if(show) fr.forEach((f,i)=>{ const nr=String(i+1);
+      if(f.band){ ctx.fillStyle='rgba(242,154,31,.14)'; ctx.fillRect(F.X(f.band[0]), F.Y(KARO.yMax), F.X(f.band[1])-F.X(f.band[0]), F.Y(0)-F.Y(KARO.yMax)); lbl(ctx, (F.X(f.band[0])+F.X(f.band[1]))/2, F.Y(KARO.yMax)+10, nr, 13, '#c06a00'); }
+      if(f.dreieck){ const [t0,s0,t1,s1]=f.dreieck; ctx.strokeStyle='#f29a1f'; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(F.X(t0),F.Y(s0)); ctx.lineTo(F.X(t1),F.Y(s0)); ctx.lineTo(F.X(t1),F.Y(s1)); ctx.stroke();
+        lbl(ctx, F.X(t1)+9, F.Y((s0+s1)/2), nr, 13, '#c06a00', 'left'); }
+      f.h.forEach(p=>hilfe(p.t,p.s,nr)); });
+    ctx.strokeStyle='#2f6df6'; ctx.lineWidth=3.2; ctx.lineJoin='round'; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(F.X(p[0]),F.Y(p[1])):ctx.moveTo(F.X(p[0]),F.Y(p[1]))); ctx.stroke();
+    if(tap!==null){ const s=sAt(tap); hilfe(tap, s, ''); lbl(ctx, F.X(tap)+10, F.Y(s)-14, 't = '+z(tap)+' s, s = '+z(Math.round(s*10)/10)+' m', 13, '#1b2440', 'left'); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Transferfrage', title:'Die Fragen der Stunde', html:
+   `<div class="box frage"><span class="lbl">Transferfrage 1</span>Lena und Tom fahren mit dem Rad zur 2400 m entfernten Schule. Lena startet um 7:30 Uhr und fährt gleichförmig mit 4 m/s. Tom startet am selben Ort um 7:32 Uhr und fährt mit 6 m/s. Holt Tom Lena noch vor der Schule ein? Wenn ja: wann und wo?</div>
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Wanderin startet um 8 Uhr im Tal und ist um 16 Uhr auf dem Gipfel. Am nächsten Tag startet sie um 8 Uhr am Gipfel und steigt auf demselben Weg ab, mal schneller, mal langsamer, mit Pausen. Um 16 Uhr ist sie wieder im Tal. Gibt es eine Stelle auf dem Weg, an der sie an beiden Tagen zur selben Uhrzeit war? Begründe mit einem s-t-Diagramm.</div>
+    <p>Am Ende der Stunde kannst du beide beantworten. Notiere zwischendurch, was dir hilft.</p>` },
+
+ { step:'Das brauchst du', title:'Aus der Geschwindigkeits-Stunde', html:
+   `<p>Das brauchst du aus der Geschwindigkeits-Stunde:</p>
+    <ul>
+      <li>Eine Bewegung hat zu jeder Zeit t eine bereits zurückgelegte Strecke s.</li>
+      <li>Gleichförmig heißt: in gleichen Zeiten gleiche Strecken, die Geschwindigkeit bleibt konstant (v = s/t).</li>
+    </ul>
+    <p>In dieser Stunde stellst du solche Bewegungen als Diagramm dar und liest sie ab.</p>` },
+
+ { step:'Das Konzept', title:'Was ist ein s-t-Diagramm?', init:stPlot, html:
+   `<p>Ein s-t-Diagramm zeigt, an welchem Ort (Strecke s) ein Körper zu welcher Zeit (t) ist. Nach rechts läuft die Zeit, nach oben die Strecke. Jeder Moment der Bewegung wird zu einem Punkt.</p>
+    <canvas class="viz" id="c-plot"></canvas>
+    <div class="modes">
+      <button data-pm="gleich" class="on">gleichförmig</button>
+      <button data-pm="pause">mit Pause</button>
+      <button data-pm="zurueck">hin und zurück</button>
+      <button data-pm="zickzack">Zickzack</button>
+    </div>
+    <div class="box merke"><span class="lbl">Merke</span>Waagerechte Achse: <b>Zeit t</b>. Senkrechte Achse: <b>Strecke s</b>. Die Kurve zeigt die ganze Bewegung auf einen Blick. Zu jeder Zeit liest man den Ort ab: senkrecht hoch bis zur Linie, dann waagerecht zur s-Achse.</div>` },
+
+ { step:'Linien lesen', title:'Was die Form verrät', init:r=>{ stCases(r); revealCases(r); }, html:
+   `<p>An der Form der Linie erkennst du sofort, wie sich der Körper bewegt.</p>
+    <canvas class="viz" id="c-cases"></canvas>
+    <div class="modes">
+      <button data-mv="steht">steht</button>
+      <button data-mv="langsam">langsam</button>
+      <button data-mv="schnell" class="on">schnell</button>
+      <button data-mv="zurueck">zurück</button>
+      <button data-mv="pause">Pause</button>
+      <button data-mv="zickzack">Zickzack</button>
+    </div>
+    <div class="box merke"><span class="lbl">Merke</span>
+      <p style="margin:.15rem 0"><b>Waagerecht</b> → der Körper steht.</p>
+      <p style="margin:.15rem 0"><b>Steigende Gerade</b> → gleichförmig vom Start weg; je steiler, desto schneller.</p>
+      <p style="margin:.15rem 0"><b>Fallende Gerade</b> → der Körper fährt zum Start zurück.</p>
+      <p style="margin:.15rem 0"><b>Knick</b> → Tempo oder Richtung ändern sich. Ein Zickzack heißt: immer wieder hin und zurück.</p></div>
+    <div class="cases">
+      <div class="case"><h3>Zickzack ablesen</h3><p>Im Zickzack-Bild: Zu welchen Zeiten ist der Körper bei 12 m?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Viermal: bei t = 1 s (hin), bei t = 2,25 s (zurück), bei t = 3,5 s (wieder hin) und am Ende bei t = 6 s. Bei einer Rückfahrt gehören zu einem Ort mehrere Zeiten.</div></div>
+      <div class="case"><h3>Wie weit insgesamt?</h3><p>Welche Strecke legt der Körper im Zickzack-Bild insgesamt zurück? Wo ist er am Ende?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>18 m + 12 m + 18 m + 12 m = 60 m. Am Ende ist er aber nur 12 m vom Start entfernt.</div></div>
+    </div>` },
+
+ { step:'Punkte ablesen', title:'Werte auf Karopapier ablesen', init:karoLab, html:
+   `<style>
+      .karo-q{margin:.3rem 0; padding-left:1.4em}
+      .karo-q li{margin:.5rem 0; font-weight:600}
+      .karo-a{display:block; color:#1f7a34; font-weight:700; margin-top:.15rem}
+      .karo-a[hidden]{display:none}
+    </style>
+    <p>Ein Kästchen nach rechts sind 0,5 s, ein Kästchen nach oben sind 2 m.</p>
+    <canvas class="viz" id="c-karo"></canvas>
+    <div class="modes">
+      <button data-karo="neu">neue Fahrt</button>
+      <button data-karo="los">Lösungen</button>
+    </div>
+    <ol class="karo-q" id="karo-q"></ol>
+    <div class="box merke"><span class="lbl">So liest du ab</span>Ort zu einer Zeit: bei der Zeit senkrecht hoch bis zur Linie, dann waagerecht zur s-Achse. Zeit zu einem Ort: vom Ort waagerecht bis zur Linie, dann senkrecht zur t-Achse. Ein Ort kann zu mehreren Zeiten gehören, wenn der Körper zurückfährt.</div>` },
+
+ { step:'Steigung', title:'Die Steigung ist die Geschwindigkeit', init:slopeLab, html:
+   `<p>Wie schnell der Körper ist, liest man an der Steigung der Geraden ab: wie viel Strecke (Δs) in einer Zeit (Δt) dazukommt.</p>
+    <canvas class="viz" id="c-slope"></canvas>
+    <div class="box merke"><span class="lbl">Merke: Δ heißt Änderung</span>Δ (Delta) steht für eine Änderung: <b>Endwert minus Anfangswert</b>. Im Bild ist Δt = 5 s − 2 s = 3 s und Δs = 20 m − 8 m = 12 m.</div>
+    <div class="box merke"><span class="lbl">Merke</span>Steigung = <b>Δs / Δt = v</b>. Das ist genau die Geschwindigkeit, jetzt aus dem Diagramm abgelesen.</div>` },
+
+ { step:'Nicht gleichförmig', title:'Wenn sich das Tempo ändert', init:curveLab, html:
+   `<p>Ist die Bewegung nicht gleichförmig, wird die s-t-Linie gekrümmt: schneller werdend steigt sie immer steiler an, langsamer werdend wird sie flacher. Die gestrichelte Tangente berührt die Kurve genau an einer Stelle.</p>
+    <canvas class="viz" id="c-curve"></canvas>
+    <div class="modes">
+      <button data-cv="schneller" class="on">wird schneller</button>
+      <button data-cv="langsamer">wird langsamer</button>
+    </div>
+    <div class="box merke"><span class="lbl">Merke</span><b>Gerade</b> = gleichförmig. <b>Gekrümmt</b> = die Geschwindigkeit ändert sich. Die Steigung der Tangente an einer Stelle ist die <b>Momentangeschwindigkeit</b>, also das, was der Tacho in diesem Augenblick zeigt.</div>` },
+
+ { step:'Kein Bild', title:'Das Diagramm ist kein Bild der Straße', init:bildEx, html:
+   `<p>Ein Auto fährt auf einer ebenen, geraden Straße vom Start weg und wieder zurück. Das s-t-Diagramm sieht trotzdem aus wie ein Berg.</p>
+    <canvas class="viz" id="c-bild"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>Ein s-t-Diagramm ist <b>kein Bild</b> der Strecke oder der Landschaft. Es zeigt, wie weit der Körper zu welcher Zeit vom Start entfernt ist.</div>
+    <div class="cases">
+      <div class="case"><h3>Fährt das Auto bergauf?</h3><p>Die Linie steigt zuerst an. Heißt das, dass es bergauf geht?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Nein, die Straße ist eben. Die Linie steigt, weil sich das Auto vom Start entfernt: s wird größer.</div></div>
+      <div class="case"><h3>Der Gipfel</h3><p>Was passiert am höchsten Punkt der Kurve?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Dort ist das Auto am weitesten vom Start entfernt und steht einen Augenblick (waagerechte Tangente, v = 0). Danach fährt es zurück, s wird kleiner.</div></div>
+    </div>` },
+
+ { step:'Selbst zeichnen', title:'Vom Diagramm zur Bewegung', init:zeichnenLab, html:
+   `<p>Zeichne ein s-t-Diagramm und lass die Kugel diese Bewegung fahren. Probiere eine Pause, eine schnelle Strecke und eine Rückfahrt.</p>
+    <canvas class="viz" id="c-zeich"></canvas>
+    <div class="modes">
+      <button data-zeich="play">abspielen</button>
+      <button data-zeich="clear">löschen</button>
+    </div>
+    <div class="box merke"><span class="lbl">Merke</span>Waagerechte Stücke: Die Kugel steht. Steile Stücke: Sie fährt schnell. Fallende Stücke: Sie fährt zurück. Senkrecht nach oben geht nicht, dafür müsste sie in null Sekunden eine Strecke schaffen.</div>` },
+
+ { step:'Messversuch', title:'Vom Messwert zum Diagramm', init:messEx, html:
+   `<p>Eine Kugel rollt über eine Bahn. Alle 20 cm misst eine Lichtschranke die Zeit seit dem Start.</p>
+    <canvas class="viz" id="c-mess"></canvas>
+    <div class="modes">
+      <button data-mm="eben" class="on">ebene Bahn</button>
+      <button data-mm="schief">schiefe Bahn</button>
+    </div>
+    <div class="modes">
+      <button data-mess="neu">neu messen</button>
+      <button data-mess="plot">Diagramm zeigen</button>
+    </div>
+    <table class="cmp" style="margin:.2rem 0"><tbody>
+      <tr><th>s in m</th><td>0,2</td><td>0,4</td><td>0,6</td><td>0,8</td><td>1,0</td><td>1,2</td></tr>
+      <tr><th>t in s</th><td data-mt>–</td><td data-mt>–</td><td data-mt>–</td><td data-mt>–</td><td data-mt>–</td><td data-mt>–</td></tr>
+    </tbody></table>
+    <div class="box merke"><span class="lbl">Merke</span>Jedes Wertepaar aus der Tabelle wird ein Punkt im s-t-Diagramm. Auf der ebenen Bahn liegen die Punkte auf einer <b>Geraden</b>: gleichförmig. Auf der schiefen Bahn liegen sie auf einer Kurve, die immer steiler wird: beschleunigt.</div>
+    <div class="cases">
+      <div class="case"><h3>Ebene Bahn</h3><p>Bestimme aus der Messtabelle die Geschwindigkeit der Kugel.</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Etwa v = Δs / Δt = 1,2 m / 3,0 s = 0,4 m/s. Kleine Abweichungen sind Messfehler. Weil die Punkte auf einer Geraden liegen, ist die Geschwindigkeit überall gleich.</div></div>
+      <div class="case"><h3>Schiefe Bahn</h3><p>Woran erkennt man schon in der Tabelle, dass die Kugel schneller wird?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Für die gleichen 20 cm braucht sie immer weniger Zeit: Die Zeitabstände zwischen den Lichtschranken werden kleiner.</div></div>
+    </div>` },
+
+ { step:'Eigene Messung', title:'Unsere Messwerte im Diagramm', init:r=>{ eigenLab(r); revealCases(r); }, html:
+   `<style>
+      .eig{width:5.5em; font:inherit; font-weight:700; padding:.3rem .45rem; border:2px solid var(--line); border-radius:8px; text-align:right; color:var(--ink); background:#fff}
+      .eig:focus{outline:none; border-color:#2f6df6}
+    </style>
+    <p>Messt selbst, zum Beispiel einen Rollwagen, einen Ball oder eine Person, die über den Schulhof geht. Tragt zu jeder Strecke die gemessene Zeit ein. Komma oder Punkt sind beide erlaubt.</p>
+    <canvas class="viz" id="c-eigen"></canvas>
+    <div class="modes">
+      <button data-eig="fit" class="on">Ausgleichsgerade</button>
+      <button data-eig="plus">Zeile dazu</button>
+      <button data-eig="leer">leeren</button>
+      <button data-eig="bsp">Beispielwerte</button>
+    </div>
+    <table class="cmp" style="margin:.2rem 0"><thead><tr><th>Nr.</th><th>t in s</th><th>s in m</th></tr></thead><tbody id="eigen-rows"></tbody></table>
+    <p id="eigen-v" style="font-weight:800;color:#c06a00;margin:.3rem 0"></p>
+    <div class="box merke"><span class="lbl">Merke</span>Messwerte streuen immer ein wenig. Die Ausgleichsgerade läuft so durch die Punkte, dass sie möglichst nah an allen liegt. Ihre Steigung ist die Geschwindigkeit.</div>
+    <div class="cases">
+      <div class="case"><h3>Gleichförmig?</h3><p>Woran erkennst du im Diagramm, ob eure Bewegung gleichförmig war?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Liegen die Punkte ungefähr auf der Geraden, war das Tempo gleich. Liegen sie auf einer Kurve, die steiler oder flacher wird, war die Bewegung schneller oder langsamer werdend.</div></div>
+    </div>` },
+
+ { step:'Echte Daten', title:'Usain Bolts Weltrekord', init:boltEx, html:
+   `<p>Weltmeisterschaft Berlin 2009: Usain Bolt läuft 100 m in 9,58 s. Gemessen wurde die Zeit ab dem Startschuss alle 10 m.</p>
+    <canvas class="viz" id="c-bolt"></canvas>
+    <div class="modes">
+      <button data-bolt="st" class="on">s-t-Diagramm</button>
+      <button data-bolt="v">Tempo je Abschnitt</button>
+    </div>
+    <table class="cmp" style="margin:.2rem 0"><tbody>
+      <tr><th style="white-space:nowrap">s in m</th><td>10</td><td>20</td><td>30</td><td>40</td><td>50</td></tr>
+      <tr><th style="white-space:nowrap">t in s</th><td>1,89</td><td>2,88</td><td>3,78</td><td>4,64</td><td>5,47</td></tr>
+    </tbody></table>
+    <table class="cmp" style="margin:.2rem 0"><tbody>
+      <tr><th style="white-space:nowrap">s in m</th><td>60</td><td>70</td><td>80</td><td>90</td><td>100</td></tr>
+      <tr><th style="white-space:nowrap">t in s</th><td>6,29</td><td>7,10</td><td>7,92</td><td>8,75</td><td>9,58</td></tr>
+    </tbody></table>
+    <div class="cases">
+      <div class="case"><h3>Wo beschleunigt Bolt?</h3><p>Woran erkennst du im Diagramm und in der Tabelle, wo er schneller wird?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Auf den ersten 30 bis 40 m: Die Kurve wird steiler, und für jeweils 10 m braucht er immer weniger Zeit. Danach ist die Linie fast gerade, er läuft mit fast gleichem Tempo von etwa 12 m/s.</div></div>
+      <div class="case"><h3>Durchschnitt</h3><p>Bestimme seine Durchschnittsgeschwindigkeit in m/s und in km/h.</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>v = 100 m / 9,58 s ≈ 10,4 m/s. Mal 3,6 ergibt das etwa 37,6 km/h.</div></div>
+      <div class="case"><h3>Am schnellsten</h3><p>In welchem Abschnitt ist er am schnellsten, und wie schnell ist er dort?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Zwischen 60 m und 70 m: 10 m in 0,81 s, also etwa 12,3 m/s. Das sind rund 44 km/h.</div></div>
+    </div>` },
+
+ { step:'Mehr Beispiele', title:'Eine ganze Fahrt lesen', init:journeyEx, html:
+   `<p>Auch eine Fahrt mit mehreren Abschnitten steckt in einer Kurve: erst hin, dann Pause, dann zurück.</p>
+    <canvas class="viz" id="c-journey"></canvas>
+    <div class="box frage"><span class="lbl">Denk nach</span>Woran erkennst du im Diagramm, dass der Körper zurückfährt?</div>
+    <p class="lead">Lies die Diagramme. Erst überlegen, dann aufdecken.</p>
+    <div class="cases">
+      <div class="case"><h3>Zwei Geraden</h3><p>Im s-t-Diagramm sind zwei steigende Geraden: eine steil, eine flach. Welche gehört zum schnelleren Körper?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die steilere Gerade. Größere Steigung Δs/Δt bedeutet größere Geschwindigkeit.</div></div>
+      <div class="case"><h3>Waagerechtes Stück</h3><p>Eine s-t-Linie steigt, wird dann für einige Sekunden waagerecht und steigt danach weiter. Was passiert im waagerechten Stück?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der Ort ändert sich nicht, der Körper macht eine Pause (v = 0).</div></div>
+      <div class="case"><h3>Linie fällt</h3><p>Nach dem höchsten Punkt fällt die s-t-Linie wieder auf null. Was bedeutet das?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Strecke s wird wieder kleiner: Der Körper fährt zum Start zurück.</div></div>
+      <div class="case"><h3>Steigung ablesen</h3><p>Eine Gerade steigt in 5 s um 40 m. Wie schnell ist der Körper?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>v = Δs/Δt = 40 m / 5 s = 8 m/s.</div></div>
+    </div>` },
+
+ { step:'Treffpunkt', title:'Wann und wo treffen sie sich?', init:r=>{ treffLab(r); revealCases(r); }, html:
+   `<p>Zwei Fahrzeuge im selben s-t-Diagramm. Wo sich die Linien schneiden, sind beide zur selben Zeit am selben Ort.</p>
+    <canvas class="viz" id="c-treff"></canvas>
+    <div class="modes">
+      <button data-tr="einholen" class="on">Einholen</button>
+      <button data-tr="gegen">Gegenverkehr</button>
+    </div>
+    <div class="ctrl"><label>Tempo B</label><input type="range" id="treff-v" min="2" max="12" step="1" value="8"><span class="val" id="treff-vv">8 m/s</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>Der Schnittpunkt zweier s-t-Linien ist der Treffpunkt. Nach unten abgelesen ergibt er die Zeit, nach links den Ort.</div>
+    <div class="cases">
+      <div class="case"><h3>Nachrechnen</h3><p>Einholen mit B = 8 m/s: Prüfe mit einer Rechnung, dass sich A und B nach 6 s treffen.</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>A ist nach 6 s bei 4 m/s · 6 s = 24 m. B fährt erst ab 3 s, also 3 s lang: 8 m/s · 3 s = 24 m. Beide sind bei 24 m.</div></div>
+      <div class="case"><h3>Zu langsam</h3><p>Stelle B auf 4 m/s. Warum gibt es beim Einholen keinen Treffpunkt?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Beide Linien haben dieselbe Steigung und laufen parallel. B bleibt immer 3 s hinter A und holt den Abstand nie auf.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'s-t und v-t nebeneinander', init:dualLab, html:
+   `<p>Dieselbe gleichförmige Bewegung sieht in beiden Diagrammen anders aus: im s-t eine steigende Gerade, im v-t eine waagerechte Linie (das Tempo bleibt ja gleich).</p>
+    <canvas class="viz" id="c-dual"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>Nicht verwechseln: <b>s-t</b> zeigt den Ort, <b>v-t</b> zeigt die Geschwindigkeit. Das v-t-Diagramm brauchst du in der nächsten Stunde (Beschleunigung).</div>` },
+
+ { step:'Übungen', title:'s-t-Diagramme lesen und zeichnen', init:stUebung, html:
+   `<canvas class="viz" id="c-stu"></canvas>
+    <div class="modes">
+      <button data-stul="leicht" class="on">leicht</button>
+      <button data-stul="mittel">mittel</button>
+      <button data-stul="schwer">schwer</button>
+    </div>
+    <div class="box"><div id="stu-q" style="margin:.2rem 0;font-weight:600"></div><div id="stu-a" style="margin:.3rem 0 0;color:#1f7a34;font-weight:600" hidden></div></div>
+    <div class="modes">
+      <button data-stu="new">neue Aufgabe</button>
+      <button data-stu="solve">Lösung</button>
+    </div>
+    <div class="box merke"><span class="lbl">So liest du</span>Geschwindigkeit = Steigung = Δs / Δt. Waagerecht: Der Körper steht. Fällt die Linie, wird s kleiner: Der Körper fährt zurück.</div>` },
+
+ { step:'Ins Heft', title:'Das schreibst du ab', html:
+   `<div class="heft">
+      <h3>Das s-t-Diagramm</h3>
+      <p>Nach rechts die Zeit t, nach oben die zurückgelegte Strecke s.</p>
+      <svg viewBox="0 0 270 130" width="270" height="130">
+        <path d="M30 8 L30 112 L212 112" stroke="#5a6684" stroke-width="2" fill="none"/>
+        <text x="214" y="124" font-size="12" fill="#5a6684">t</text><text x="36" y="14" font-size="12" fill="#5a6684">s</text>
+        <path d="M30 112 L196 18" stroke="#2f6df6" stroke-width="3"/><text x="200" y="20" font-size="12" fill="#1f4fc4">schnell</text>
+        <path d="M30 112 L196 78" stroke="#2f6df6" stroke-width="3"/><text x="200" y="80" font-size="12" fill="#1f4fc4">langsam</text>
+        <path d="M30 56 L196 56" stroke="#2f6df6" stroke-width="3"/><text x="200" y="59" font-size="12" fill="#1f4fc4">steht</text>
+      </svg>
+      <ul>
+        <li>Waagerecht: Der Körper steht.</li>
+        <li>Gerade: gleichförmig. Je steiler, desto schneller.</li>
+        <li>Gekrümmt: Das Tempo ändert sich. Fällt die Linie, fährt der Körper zurück.</li>
+      </ul>
+      <p class="f">v = Δs / Δt &nbsp;(Steigung)</p>
+      <p>Δ heißt Änderung: Endwert minus Anfangswert. Bei einer Kurve liefert die Steigung der Tangente die Momentangeschwindigkeit.</p>
+      <p class="bsp">Beispiel: Eine Gerade steigt in 3 s um 12 m. v = 12 m / 3 s = 4 m/s.</p>
+    </div>
+    <p class="ueben-links">Zum Üben: <a href="blaetter/geschwindigkeit/geschwindigkeit.pdf">Arbeitsblatt Geschwindigkeit (PDF)</a> · <a href="training.html">Fit für die Arbeit</a></p>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Eine waagerechte Linie im s-t-Diagramm bedeutet:</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Der Körper steht.</button>
+       <button class="choice" data-ok="0">Der Körper ist sehr schnell.</button>
+       <button class="choice" data-ok="0">Der Körper beschleunigt.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Der Ort ändert sich nicht, der Körper steht.</div></div></div>
+    <div class="q"><p>Welche Linie gehört zu einem Körper, der schneller wird?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">eine nach oben gekrümmte Kurve (immer steiler)</button>
+       <button class="choice" data-ok="0">eine gerade Linie</button>
+       <button class="choice" data-ok="0">eine waagerechte Linie</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Wird das Tempo größer, steigt die Kurve immer steiler → gekrümmt.</div></div></div>
+    <div class="q"><p>Eine Gerade steigt in 3 s um 12 m. Wie groß ist die Geschwindigkeit?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">4 m/s</button>
+       <button class="choice" data-ok="0">36 m/s</button>
+       <button class="choice" data-ok="0">15 m/s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>v = Δs / Δt = 12 m / 3 s = 4 m/s.</div></div></div>
+    <div class="q"><p>Im v-t-Diagramm ist eine waagerechte Linie über null zu sehen. Wie bewegt sich der Körper?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">gleichförmig, mit konstanter Geschwindigkeit</button>
+       <button class="choice" data-ok="0">er steht</button>
+       <button class="choice" data-ok="0">er wird immer schneller</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Im v-t-Diagramm heißt waagerecht über null: v bleibt gleich → gleichförmige Bewegung.</div></div></div>
+    <div class="q"><p>Zwei Geraden im s-t-Diagramm: A ist steiler als B. Wer ist schneller?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">A</button>
+       <button class="choice" data-ok="0">B</button>
+       <button class="choice" data-ok="0">beide gleich schnell</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Größere Steigung = größere Geschwindigkeit. A ist steiler, also schneller.</div></div></div>` },
+
+ { step:'Lösung', title:'Die Transferfragen gelöst', init:transferTabs, html:
+   `<div class="modes">
+      <button data-tf="1" class="on">Transferfrage 1</button>
+      <button data-tf="2">Transferfrage 2</button>
+    </div>
+    <div data-tf-tab="1">
+    <div class="box frage"><span class="lbl">Transferfrage 1</span>Lena und Tom fahren mit dem Rad zur 2400 m entfernten Schule. Lena startet um 7:30 Uhr und fährt gleichförmig mit 4 m/s. Tom startet am selben Ort um 7:32 Uhr und fährt mit 6 m/s. Holt Tom Lena noch vor der Schule ein? Wenn ja: wann und wo?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Eine Zeit für beide</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Die Zeit t zählt ab 7:30 Uhr in Sekunden. Lena: s = 4 m/s · t. Tom startet 120 s später: s = 6 m/s · (t − 120 s).</div></div>
+      <div class="case"><h3>Schritt 2: Im Diagramm</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Lena ist eine Gerade durch den Ursprung. Tom ist eine steilere Gerade, die bei t = 120 s auf der Zeitachse beginnt. Wo sich beide schneiden, sind sie zur selben Zeit am selben Ort.</div></div>
+      <div class="case"><h3>Schritt 3: Rechnen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Gleicher Ort: 4 · t = 6 · (t − 120). Also 4t = 6t − 720, damit 2t = 720 und t = 360 s. Lena ist dann 4 m/s · 360 s = 1440 m weit.</div></div>
+      <div class="case"><h3>Schritt 4: Antwort</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Ja. Nach 360 s, also um 7:36 Uhr, holt Tom Lena nach 1440 m ein. Das sind 960 m vor der Schule.</div></div>
+    </div>
+    </div>
+    <div data-tf-tab="2" style="display:none">
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Wanderin startet um 8 Uhr im Tal und ist um 16 Uhr auf dem Gipfel. Am nächsten Tag startet sie um 8 Uhr am Gipfel und steigt auf demselben Weg ab, mal schneller, mal langsamer, mit Pausen. Um 16 Uhr ist sie wieder im Tal. Gibt es eine Stelle auf dem Weg, an der sie an beiden Tagen zur selben Uhrzeit war? Begründe mit einem s-t-Diagramm.</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Beide Tage in ein Diagramm</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Nach rechts die Uhrzeit von 8 bis 16 Uhr, nach oben der Weg s vom Tal aus. Tag 1 beginnt unten bei s = 0 und endet oben am Gipfel. Tag 2 beginnt oben und endet unten.</div></div>
+      <div class="case"><h3>Schritt 2: Die Linien müssen sich kreuzen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Beide Linien sind durchgehend, denn die Wanderin springt nicht. Eine Linie, die von unten nach oben läuft, und eine, die von oben nach unten läuft, müssen sich irgendwo schneiden. Egal wie krumm sie sind und wie viele Pausen es gibt.</div></div>
+      <div class="case"><h3>Schritt 3: Antwort</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Ja, es gibt immer so eine Stelle, genau am Schnittpunkt. Man kann sich auch zwei Wanderinnen am selben Tag vorstellen, eine geht hoch, eine runter: Sie müssen sich begegnen. Wo genau, kann man ohne weitere Angaben nicht sagen, nur dass es die Stelle gibt.</div></div>
+    </div>
+    </div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

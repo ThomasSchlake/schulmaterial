@@ -1,0 +1,768 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-9/Mechanik/_common.js + Physik/Klasse-9/Mechanik/topics/08-training.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 9 – Mechanik: gemeinsame Zeichen-Helfer für Bewegungsdiagramme.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr. Farben am Bildschirm erlaubt.
+
+// Beschriftungen wachsen mit Leinwand und Bildschirm: auf der Tafel größer (bis 1,4-fach),
+// auf kleinen Bildschirmen wie gehabt. Gilt für alle Mechanik-Stunden.
+const LBL_BASIS=lbl;
+lbl=function(ctx,x,y,t,size,col,align){
+  const w=(ctx && ctx.canvas && ctx.canvas.clientWidth)||0, sw=(typeof window!=='undefined' && window.innerWidth)||0;
+  const k=Math.min(1.4, Math.max(1, w/520, sw/1350));
+  return LBL_BASIS(ctx,x,y,t,size*k,col,align); };
+
+// Aufteilung für „Bahn + Diagramm“: auf breiten Leinwänden nebeneinander, auf hohen
+// (Tafel im Hochformat-Bereich) die Bahn oben und das Diagramm darunter.
+// tr = Bahn {x,y,w}, txt = Anker für Erklärtext {x,y}, step = Zeilenabstand, ch = Diagrammbox
+function splitLayout(W,H){
+  if(H > W*0.9) return { tr:{x:W*0.08, y:H*0.09, w:W*0.84}, txt:{x:W*0.5, y:H*0.16}, step:H*0.042, ch:{x:W*0.04, y:H*0.3, w:W*0.92, h:H*0.68} };
+  return { tr:{x:W*0.06, y:H*0.24, w:W*0.4}, txt:{x:W*0.28, y:H*0.62}, step:H*0.1, ch:{x:W*0.52, y:H*0.05, w:W*0.44, h:H*0.82} };
+}
+
+// Zeichnet einen Diagrammrahmen (Ursprung unten links) mit beschrifteten Achsen.
+// box = {x,y,w,h}. Gibt Mapper X(wert), Y(wert) und die Achsdaten zurück.
+function chartFrame(ctx, box, xMax, yMax, xlab, ylab){
+  const {x,y,w,h}=box, ox=x+40, oy=y+h-28, pw=w-52, ph=h-42;
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox, y+6); ctx.lineTo(ox, oy); ctx.lineTo(ox+pw, oy); ctx.stroke();
+  arrow(ctx, ox, oy+0.1, ox, y+4, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy+16, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+2, y+2, ylab, 13, '#5a6684', 'left');
+  const X = v => ox + (v/xMax)*pw, Y = v => oy - (v/yMax)*ph;
+  // Achsen-Zahlen (damit man Werte und Steigung ablesen kann)
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (Number.isInteger(r)?r:r.toFixed(1).replace('.',',')); };
+  const xs=nice(xMax), ys=nice(yMax);
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  // letzte Zahl am Achsenende weglassen, dort steht die Achsenbeschriftung
+  for(let v=xs; v<=xMax+1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); if(v<xMax-1e-6) lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy+14, '0', 12, '#8a94a8', 'right');
+  return { X, Y, ox, oy, pw, ph };
+}
+
+// Wie chartFrame, aber auch mit negativem Bereich: Die Zeitachse liegt bei 0, darunter negative Werte.
+function chartFrame2(ctx, box, xMax, yMin, yMax, xlab, ylab, yStep){
+  const {x,y,w,h}=box, ox=x+40, top=y+14, bot=y+h-6, pw=w-52;
+  const X=v=>ox+(v/xMax)*pw, Y=v=>top+(yMax-v)/(yMax-yMin)*(bot-top), oy=Y(0);
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(ox,bot); ctx.lineTo(ox,top); ctx.moveTo(ox,oy); ctx.lineTo(ox+pw,oy); ctx.stroke();
+  arrow(ctx, ox, top+0.1, ox, top-8, '#9aa8c6', 2);
+  arrow(ctx, ox, oy, ox+pw+4, oy, '#9aa8c6', 2);
+  lbl(ctx, ox+pw+2, oy-12, xlab, 13, '#5a6684', 'right');
+  lbl(ctx, ox+6, top-6, ylab, 13, '#5a6684', 'left');
+  const fmt=v=>{ const r=Math.round(v*100)/100; return (r<0?'−':'')+String(Math.abs(r)).replace('.',','); };
+  const ys=yStep||1; ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=1;
+  for(let v=Math.ceil(yMin/ys)*ys; v<=yMax+1e-6; v+=ys){ if(Math.abs(v)<1e-9) continue; const py=Y(v);
+    ctx.beginPath(); ctx.moveTo(ox-4,py); ctx.lineTo(ox,py); ctx.stroke(); lbl(ctx, ox-7, py, fmt(v), 12, '#8a94a8', 'right'); }
+  lbl(ctx, ox-7, oy, '0', 12, '#8a94a8', 'right');
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const xs=nice(xMax);
+  for(let v=xs; v<xMax-1e-6; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy+4); ctx.stroke(); lbl(ctx, px, oy+14, fmt(v), 12, '#8a94a8'); }
+  return { X, Y, ox, oy, pw };
+}
+
+// Feines Hilfsgitter zum Ablesen und Einzeichnen: nach chartFrame, vor den Linien zeichnen.
+// Senkrecht jede Einheit, waagerecht ein Viertel der Achsen-Schrittweite.
+function chartGrid(ctx, F, xMax, yMax){
+  const nice=m=>{ const raw=m/4, p=Math.pow(10,Math.floor(Math.log10(raw||1))); for(const k of [1,2,2.5,5,10]){ if(k*p>=raw) return k*p; } return 10*p; };
+  const ys=nice(yMax)/4; ctx.save(); ctx.strokeStyle='#e6eaf3'; ctx.lineWidth=1;
+  for(let v=1; v<=xMax+1e-6; v+=1){ ctx.beginPath(); ctx.moveTo(F.X(v),F.Y(0)); ctx.lineTo(F.X(v),F.Y(yMax)); ctx.stroke(); }
+  for(let v=ys; v<=yMax+1e-6; v+=ys){ ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(v)); ctx.lineTo(F.X(xMax),F.Y(v)); ctx.stroke(); }
+  ctx.restore(); }
+
+// Kleine Bewegungs-Bahn: Kugel bei Bruchteil p (0..1) auf einer waagerechten Strecke,
+// optional mit Zeitmarken an den übergebenen Positionen (Bruchteile 0..1).
+function track(ctx, x, y, w, ball_col, p, marks){
+  ctx.strokeStyle='#c4cbdb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y); ctx.stroke();
+  if(marks) marks.forEach(m=>{ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+m*w, y-7); ctx.lineTo(x+m*w, y+7); ctx.stroke(); });
+  ball(ctx, x + Math.max(0,Math.min(1,p))*w, y, 9, ball_col);
+}
+
+// Kariertes Koordinatensystem, das ±R Kästchen in box zeigt (Ursprung mittig).
+// Gibt Mapper X(u),Y(v) (v nach oben positiv) und die Zellgröße zurück.
+function coordGrid(ctx, box, R){
+  const {x,y,w,h}=box, cell=Math.min(w,h)/(2*R+1), ox=x+w/2, oy=y+h/2;
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  ctx.strokeStyle='#e6ebf5'; ctx.lineWidth=1;
+  for(let k=-R;k<=R;k++){
+    ctx.beginPath(); ctx.moveTo(ox+k*cell,y); ctx.lineTo(ox+k*cell,y+h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,oy+k*cell); ctx.lineTo(x+w,oy+k*cell); ctx.stroke();
+  }
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x,oy); ctx.lineTo(x+w,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,y); ctx.lineTo(ox,y+h); ctx.stroke();
+  // Einheitszahlen an den Achsen (jede zweite Marke, damit es nicht überläuft)
+  for(let k=-R;k<=R;k++){ if(k===0 || k%2!==0) continue;
+    lbl(ctx, ox+k*cell, oy+13, String(k), 11, '#9aa3b5');
+    lbl(ctx, ox-8, oy-k*cell, String(k), 11, '#9aa3b5', 'right'); }
+  ctx.restore();
+  return { X:u=>ox+u*cell, Y:v=>oy-v*cell, ox, oy, cell };
+}
+
+const PAGE={ area:'Mechanik', slug:'training', title:'Training', h1:'Fit für die Arbeit' };
+
+// Hilfen: Zahlen mit Komma, Vektoren als Spalte
+const trF=n=>{ const r=Math.round(n*100)/100; return (r<0?'−':'')+String(Math.abs(r)).replace('.',','); };
+const trF1=n=>(Math.round(n*10)/10).toFixed(1).replace('.',',');
+const trZ=n=>(typeof n==='number' && n<0) ? '−'+Math.abs(n) : String(n);
+function trSp(x,y){ return '<span style="display:inline-block;vertical-align:middle;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:2px;padding:1px 6px;margin:0 2px;line-height:1.12;text-align:center;font-weight:700">'+trZ(x)+'<br>'+trZ(y)+'</span>'; }
+const trPick=a=>a[Math.floor(Math.random()*a.length)];
+
+// Aufgabentypen je Thema. mk(stufe) liefert {q, a, draw?}
+// draw.type: 'st' (s-t, blau) · 'vt' (v-t, rot) · 'vek' (Pfeile im Gitter). draw.after: erst mit der Lösung zeigen.
+const TR_GEN={
+  vst:{topic:'geschw', mk(lv){
+    if(lv==='schwer'){ const v=trPick([5,10,15,20,25]), tm=trPick([2,4,5,10,12,20]), t=tm*60, s=v*t;
+      if(Math.random()<0.5) return {q:'Ein Zug legt '+trF(s/1000)+' km in '+tm+' min zurück. Bestimme die Geschwindigkeit in m/s.',
+        a:'Umrechnen: '+trF(s/1000)+' km = '+s+' m, '+tm+' min = '+t+' s.<br>v = s / t = '+s+' m / '+t+' s = <b>'+v+' m/s</b>'};
+      return {q:'Ein Zug fährt '+tm+' min lang mit '+v+' m/s. Bestimme die Strecke in km.',
+        a:'Umrechnen: '+tm+' min = '+t+' s.<br>s = v · t = '+v+' m/s · '+t+' s = '+s+' m = <b>'+trF(s/1000)+' km</b>'}; }
+    const v = lv==='leicht' ? trPick([2,3,4,5,6,8,10]) : trPick([1.5,2.5,4.5,7.5,12.5]);
+    const t = lv==='leicht' ? trPick([5,10,20,30]) : trPick([4,8,12,20]);
+    const s=v*t, wer=trPick(['Ein Radfahrer','Eine Läuferin','Ein Roller','Ein Hund']), ges=trPick(['v','s','t']);
+    if(ges==='v') return {q:wer+' legt '+trF(s)+' m in '+t+' s zurück. Bestimme die Geschwindigkeit.', a:'v = s / t = '+trF(s)+' m / '+t+' s = <b>'+trF(v)+' m/s</b>'};
+    if(ges==='s') return {q:wer+' ist '+t+' s lang mit '+trF(v)+' m/s unterwegs. Bestimme die Strecke.', a:'s = v · t = '+trF(v)+' m/s · '+t+' s = <b>'+trF(s)+' m</b>'};
+    return {q:wer+' ist mit '+trF(v)+' m/s unterwegs. Bestimme die Zeit für '+trF(s)+' m.', a:'t = s / v = '+trF(s)+' m / '+trF(v)+' m/s = <b>'+t+' s</b>'}; }},
+  kmh:{topic:'geschw', mk(lv){
+    if(lv==='schwer'){ if(Math.random()<0.5){ const k=trPick([18,36,54,72,90]); return {q:k+' km/h sind wie viele cm/s?', a:k+' km/h ÷ 3,6 = '+trF(k/3.6)+' m/s = <b>'+trF(k/3.6*100)+' cm/s</b>'}; }
+      const cm=trPick([150,250,500,750]); return {q:cm+' cm/s sind wie viele km/h?', a:cm+' cm/s = '+trF(cm/100)+' m/s. '+trF(cm/100)+' · 3,6 = <b>'+trF(cm/100*3.6)+' km/h</b>'}; }
+    if(Math.random()<0.5){ const v = lv==='leicht' ? trPick([5,10,15,20,25,30]) : trPick([2.5,7,12,22]);
+      return {q:trF(v)+' m/s sind wie viele km/h?', a:trF(v)+' · 3,6 = <b>'+trF(v*3.6)+' km/h</b>'}; }
+    const k = lv==='leicht' ? trPick([18,36,54,72,90,108]) : trPick([9,27,45,63,81]);
+    return {q:k+' km/h sind wie viele m/s?', a:k+' ÷ 3,6 = <b>'+trF(k/3.6)+' m/s</b>'}; }},
+  a:{topic:'besch', mk(lv){
+    if(lv==='leicht'){ const a=trPick([2,3,4,5]), t=trPick([2,4,5,6]), v=a*t;
+      return {q:'Ein Fahrzeug wird in '+t+' s von 0 auf '+v+' m/s schneller. Bestimme a.', a:'a = Δv / Δt = '+v+' m/s ÷ '+t+' s = <b>'+a+' m/s²</b>'}; }
+    if(lv==='mittel'){ const k=trPick([36,54,72,90,108]), t=trPick([2,4,5,10]), ms=k/3.6;
+      return {q:'Ein Auto beschleunigt in '+t+' s von 0 auf '+k+' km/h. Bestimme a.', a:k+' km/h ÷ 3,6 = '+trF(ms)+' m/s.<br>a = '+trF(ms)+' m/s ÷ '+t+' s = <b>'+trF(ms/t)+' m/s²</b>'}; }
+    if(Math.random()<0.5){ const k1=trPick([36,54]), k2=k1+trPick([18,36]), t=trPick([2,4,5]), dv=(k2-k1)/3.6;
+      return {q:'Ein Auto wird in '+t+' s von '+k1+' km/h auf '+k2+' km/h schneller. Bestimme a.',
+        a:'Δv = '+k2+' km/h − '+k1+' km/h = '+(k2-k1)+' km/h = '+trF(dv)+' m/s.<br>a = '+trF(dv)+' m/s ÷ '+t+' s = <b>'+trF(dv/t)+' m/s²</b>'}; }
+    const k=trPick([36,54,72,108]), t=trPick([2,4,5]), ms=k/3.6;
+    return {q:'Ein Auto bremst in '+t+' s von '+k+' km/h bis zum Stand. Bestimme a.',
+      a:k+' km/h = '+trF(ms)+' m/s. Δv = 0 − '+trF(ms)+' m/s = −'+trF(ms)+' m/s.<br>a = −'+trF(ms)+' m/s ÷ '+t+' s = <b>−'+trF(ms/t)+' m/s²</b>'}; }},
+  fall:{topic:'besch', mk(lv){ const t=trPick([1,2,3]), v=10*t;
+    if(lv==='schwer') return {q:'Ein Stein fällt '+t+' s lang frei (g ≈ 10 m/s²). Bestimme die Fallstrecke.',
+      a:'v = g · t = 10 m/s² · '+t+' s = '+v+' m/s.<br>Strecke = Fläche im v-t-Diagramm (Dreieck): ½ · '+v+' m/s · '+t+' s = <b>'+trF(0.5*v*t)+' m</b>',
+      draw:{type:'vt', pts:[[0,0],[t,v]], xMax:4, yMax:40, area:true, after:true}};
+    return {q:'Ein Stein fällt '+t+' s lang frei (g ≈ 10 m/s²). Bestimme seine Geschwindigkeit.', a:'v = g · t = 10 m/s² · '+t+' s = <b>'+v+' m/s</b>'}; }},
+  st:{topic:'diag', mk(lv){
+    if(lv==='leicht'){ const v=trPick([2,3,4,5]), T=trPick([4,5,6,8]);
+      return {q:'Bestimme die Geschwindigkeit aus dem s-t-Diagramm.', a:'v = Δs / Δt = '+(v*T)+' m / '+T+' s = <b>'+v+' m/s</b>',
+        draw:{type:'st', pts:[[0,0],[T,v*T]], xMax:8, yMax:50, marks:[[T,v*T]]}}; }
+    if(lv==='mittel'){ const s0=trPick([10,15,20]), v=trPick([2,3,4]), T=trPick([5,6,8]);
+      return {q:'Der Körper startet nicht bei 0 m. Bestimme seine Geschwindigkeit.',
+        a:'Δs = '+(s0+v*T)+' m − '+s0+' m = '+(v*T)+' m, Δt = '+T+' s.<br>v = '+(v*T)+' m / '+T+' s = <b>'+v+' m/s</b>',
+        draw:{type:'st', pts:[[0,s0],[T,s0+v*T]], xMax:8, yMax:50, marks:[[0,s0],[T,s0+v*T]]}}; }
+    const v1=trPick([4,6]), v2=trPick([1,2]), t1=trPick([2,3]), s1=v1*t1, s2=s1+v2*(8-t1);
+    return {q:'Bestimme die Geschwindigkeit in beiden Abschnitten.',
+      a:'Bis '+t1+' s: '+s1+' m / '+t1+' s = <b>'+v1+' m/s</b>. Danach: '+(s2-s1)+' m / '+(8-t1)+' s = <b>'+v2+' m/s</b>',
+      draw:{type:'st', pts:[[0,0],[t1,s1],[8,s2]], xMax:8, yMax:30, marks:[[t1,s1],[8,s2]]}}; }},
+  vt:{topic:'diag', mk(lv){
+    if(lv==='leicht'){ const a=trPick([1,2,3]), T=trPick([4,5,6]), v=a*T;
+      return {q:'Bestimme die Beschleunigung aus dem v-t-Diagramm.', a:'a = Δv / Δt = '+v+' m/s ÷ '+T+' s = <b>'+a+' m/s²</b>',
+        draw:{type:'vt', pts:[[0,0],[T,v]], xMax:8, yMax:20, marks:[[T,v]]}}; }
+    if(lv==='mittel'){ const v=trPick([4,6,8,10]), T=trPick([4,5,6,8]);
+      if(Math.random()<0.5) return {q:'Bestimme die zurückgelegte Strecke.', a:'Rechteck: s = v · t = '+v+' m/s · '+T+' s = <b>'+(v*T)+' m</b>',
+        draw:{type:'vt', pts:[[0,v],[T,v]], xMax:8, yMax:12, marks:[[T,v]], area:true}};
+      return {q:'Bestimme die zurückgelegte Strecke.', a:'Dreieck: s = ½ · v · t = ½ · '+v+' m/s · '+T+' s = <b>'+trF(0.5*v*T)+' m</b>',
+        draw:{type:'vt', pts:[[0,0],[T,v]], xMax:8, yMax:12, marks:[[T,v]], area:true}}; }
+    const v1=trPick([2,4]), v2=v1+trPick([4,6]), T=trPick([4,6]);
+    return {q:'Bestimme die Beschleunigung und die zurückgelegte Strecke.',
+      a:'a = ('+v2+' − '+v1+') m/s ÷ '+T+' s = <b>'+trF((v2-v1)/T)+' m/s²</b>.<br>Strecke = Rechteck + Dreieck = '+v1+' · '+T+' + ½ · '+(v2-v1)+' · '+T+' = <b>'+trF(v1*T+0.5*(v2-v1)*T)+' m</b>',
+      draw:{type:'vt', pts:[[0,v1],[T,v2]], xMax:8, yMax:12, marks:[[0,v1],[T,v2]], area:true}}; }},
+  anhalte:{topic:'diag', mk(lv){ const k=trPick(lv==='schwer'?[70,80,100,120]:[30,50]), a=lv==='schwer'?trPick([7,4]):7;
+    const v=k/3.6, tB=v/a, sB=0.5*v*tB;
+    return {q:'Ein Auto fährt '+k+' km/h. Nach 1 s Reaktionszeit bremst es mit '+a+' m/s². Bestimme den Anhalteweg.',
+      a:'v = '+k+' ÷ 3,6 = '+trF1(v)+' m/s. Reaktionsweg: '+trF1(v)+' m/s · 1 s = '+trF1(v)+' m.<br>Bremszeit: '+trF1(v)+' ÷ '+a+' = '+trF1(tB)+' s. Bremsweg: ½ · '+trF1(v)+' · '+trF1(tB)+' = '+trF1(sB)+' m.<br>Anhalteweg: <b>'+trF1(v+sB)+' m</b>',
+      draw:{type:'vt', pts:[[0,v],[1,v],[1+tB,0]], xMax:Math.ceil(1+tB)+1, yMax:40, area:true, after:true}}; }},
+  vek:{topic:'vek', mk(lv){ const TR=[[3,4],[4,3],[6,8],[8,6]], sg=()=>trPick([1,-1]);
+    if(lv==='leicht'){ const [p,r]=trPick(TR), x=p*sg(), y=r*sg();
+      const q2=n=>n<0?'('+trZ(n)+')²':trZ(n)+'²';
+      return {q:'Bestimme den Betrag von a = '+trSp(x,y)+'.', a:'|a| = √('+q2(x)+' + '+q2(y)+') = √'+(x*x+y*y)+' = <b>'+Math.hypot(x,y)+'</b>', draw:{type:'vek', vs:[[x,y]]}}; }
+    if(lv==='mittel'){ const r=()=>trPick([-4,-3,-2,-1,1,2,3,4]), ax=r(), ay=r(), bx=r(), by=r();
+      return {q:'Bestimme a + b für a = '+trSp(ax,ay)+' und b = '+trSp(bx,by)+'.', a:'a + b = <b>'+trSp(ax+bx,ay+by)+'</b>', draw:{type:'vek', vs:[[ax,ay],[bx,by]], sum:true}}; }
+    const [p,r]=trPick(TR);
+    return {q:'Ein Boot fährt mit '+trSp(0,r)+' m/s quer über den Fluss, die Strömung schiebt mit '+trSp(p,0)+' m/s. Bestimme die tatsächliche Geschwindigkeit und ihren Betrag.',
+      a:'v = '+trSp(p,r)+' m/s, |v| = √('+p+'² + '+r+'²) = <b>'+Math.hypot(p,r)+' m/s</b>', draw:{type:'vek', vs:[[0,r],[p,0]], sum:true}}; }},
+};
+const TR_TOPIC={geschw:'Geschwindigkeit', besch:'Beschleunigung', diag:'Diagramme', vek:'Vektoren'};
+
+function trainLab(root){ const c=root.querySelector('#c-tr'); if(!c) return;
+  let level='leicht', topic='alle', task=null, show=false, rated=false, lastKind='', ok=0, n=0;
+  const qEl=root.querySelector('#tr-q'), aEl=root.querySelector('#tr-a'), rate=root.querySelector('#tr-rate'), sc=root.querySelector('#tr-score'), tp=root.querySelector('#tr-topic');
+  const render=()=>{ if(qEl) qEl.innerHTML=task.q; if(aEl){ aEl.innerHTML=task.a; aEl.hidden=!show; }
+    if(rate) rate.style.display=(!show||rated)?'none':''; if(sc) sc.textContent=n?('Richtig: '+ok+' von '+n):'';
+    if(tp) tp.textContent=TR_TOPIC[task.topic]+' · '+level; };
+  const mk=()=>{ const pool=Object.keys(TR_GEN).filter(k=>(topic==='alle'||TR_GEN[k].topic===topic) && (k!=='anhalte'||level!=='leicht'));
+    let kind=trPick(pool); if(pool.length>1) while(kind===lastKind) kind=trPick(pool); lastKind=kind;
+    task=Object.assign({topic:TR_GEN[kind].topic}, TR_GEN[kind].mk(level)); show=false; rated=false; render(); };
+  const group=(sel,set)=>root.querySelectorAll(sel).forEach(b=>b.addEventListener('click',()=>{ set(b); root.querySelectorAll(sel).forEach(x=>x.classList.toggle('on',x===b)); mk(); }));
+  group('[data-trl]', b=>{ level=b.dataset.trl; }); group('[data-trt]', b=>{ topic=b.dataset.trt; });
+  const on=(sel,fn)=>{ const b=root.querySelector(sel); if(b) b.addEventListener('click',fn); };
+  on('[data-tr="new"]', mk); on('[data-tr="solve"]', ()=>{ show=true; render(); });
+  on('[data-tr="ok"]', ()=>{ if(!rated){ ok++; n++; rated=true; render(); } });
+  on('[data-tr="no"]', ()=>{ if(!rated){ n++; rated=true; render(); } });
+  on('[data-tr="reset"]', ()=>{ ok=0; n=0; render(); });
+  mk();
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); if(!task){ RAF=requestAnimationFrame(loop); return; }
+    const d=task.draw;
+    if(!d || (d.after && !show)){                             // Aufgabe ohne Bild: Thema groß
+      lbl(ctx, W*0.5, H*0.42, TR_TOPIC[task.topic], 28, '#c4cbdb'); lbl(ctx, W*0.5, H*0.58, 'Stufe: '+level, 16, '#c4cbdb'); }
+    else if(d.type==='vek'){ const G=coordGrid(ctx,{x:W*0.04,y:H*0.03,w:W*0.92,h:H*0.94}, 9);
+      const [a,b]=d.vs; arrow(ctx, G.X(0),G.Y(0), G.X(a[0]),G.Y(a[1]), '#2f6df6', 3.4);
+      if(b){ arrow(ctx, G.X(a[0]),G.Y(a[1]), G.X(a[0]+b[0]),G.Y(a[1]+b[1]), '#e5533c', 3.4);
+        if(show&&d.sum) arrow(ctx, G.X(0),G.Y(0), G.X(a[0]+b[0]),G.Y(a[1]+b[1]), '#1f9e75', 3.8); } }
+    else { const F=chartFrame(ctx,{x:W*0.06,y:H*0.06,w:W*0.88,h:H*0.86}, d.xMax, d.yMax, 't in s', d.type==='st'?'s in m':'v in m/s');
+      chartGrid(ctx, F, d.xMax, d.yMax); const col=d.type==='st'?'#2f6df6':'#e5533c';
+      if(d.area && show){ ctx.fillStyle=d.type==='st'?'rgba(47,109,246,.15)':'rgba(229,83,60,.16)'; ctx.beginPath();
+        ctx.moveTo(F.X(d.pts[0][0]),F.Y(0)); d.pts.forEach(p=>ctx.lineTo(F.X(p[0]),F.Y(p[1]))); ctx.lineTo(F.X(d.pts[d.pts.length-1][0]),F.Y(0)); ctx.closePath(); ctx.fill(); }
+      ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath(); d.pts.forEach((p,i)=>{ const X=F.X(p[0]),Y=F.Y(p[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }); ctx.stroke();
+      (d.marks||[]).forEach(([mt,mv])=>{ ball(ctx, F.X(mt), F.Y(mv), 4.5, '#1b2440');
+        lbl(ctx, F.X(mt)+(mt>d.xMax*0.6?-8:8), F.Y(mv)-12, mt+' s | '+mv+(d.type==='st'?' m':' m/s'), 12, '#1b2440', mt>d.xMax*0.6?'right':'left'); }); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Zuordnen: Bewegungsbeschreibung antippen, dann das passende Diagramm (s-t oder v-t)
+const ZO_ITEMS=[{k:'steht',t:'steht an der Ampel'},{k:'gleich',t:'fährt mit gleichem Tempo'},{k:'an',t:'fährt an'},{k:'brems',t:'bremst bis zum Stand'}];
+function zoSVG(k, mode){ const L=10, R=104, T=6, B=58; let path;
+  if(mode==='st') path = k==='steht' ? 'M'+L+' 32 L'+(R-4)+' 32' : k==='gleich' ? 'M'+L+' '+B+' L'+(R-4)+' 10'
+    : k==='an' ? 'M'+L+' '+B+' Q 70 '+B+' '+(R-4)+' 8' : 'M'+L+' '+B+' Q 48 10 '+(R-4)+' 12';
+  else path = k==='steht' ? 'M'+L+' '+B+' L'+(R-4)+' '+B : k==='gleich' ? 'M'+L+' 28 L'+(R-4)+' 28'
+    : k==='an' ? 'M'+L+' '+B+' L'+(R-4)+' 10' : 'M'+L+' 10 L'+(R-4)+' '+B;
+  const col=mode==='st'?'#2f6df6':'#e5533c', yl=mode==='st'?'s':'v';
+  return '<svg viewBox="0 0 110 66" width="110" height="66"><path d="M'+L+' '+T+' L'+L+' '+B+' L'+R+' '+B+'" stroke="#9aa8c6" stroke-width="2" fill="none"/>'
+    +'<text x="14" y="12" font-size="10" fill="#5a6684">'+yl+'</text><text x="'+(R-2)+'" y="'+(B-4)+'" font-size="10" fill="#5a6684" text-anchor="end">t</text>'
+    +'<path d="'+path+'" stroke="'+col+'" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>'; }
+function zuordnenInit(root){ const box=root.querySelector('#zo'), msg=root.querySelector('#zo-msg'); if(!box) return; let mode='st', sel=null, done=0;
+  const mix=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+  const build=()=>{ sel=null; done=0; if(msg) msg.textContent='';
+    box.innerHTML='<div class="zo-col">'+mix(ZO_ITEMS).map(it=>'<button class="zo-d" data-k="'+it.k+'">'+it.t+'</button>').join('')+'</div>'
+      +'<div class="zo-col zo-g">'+mix(ZO_ITEMS).map(it=>'<button class="zo-p" data-k="'+it.k+'">'+zoSVG(it.k,mode)+'</button>').join('')+'</div>';
+    box.querySelectorAll('.zo-d').forEach(b=>b.addEventListener('click',()=>{ if(b.classList.contains('ok')) return;
+      box.querySelectorAll('.zo-d').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); sel=b; }));
+    box.querySelectorAll('.zo-p').forEach(b=>b.addEventListener('click',()=>{ if(!sel || b.classList.contains('ok')) return;
+      if(b.dataset.k===sel.dataset.k){ b.classList.add('ok'); sel.classList.remove('sel'); sel.classList.add('ok'); sel=null; done++;
+        if(done===ZO_ITEMS.length && msg) msg.textContent='Alle richtig zugeordnet.'; }
+      else { b.classList.add('no'); setTimeout(()=>b.classList.remove('no'),600); } })); };
+  root.querySelectorAll('[data-zo]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.zo!=='neu'){ mode=b.dataset.zo;
+    root.querySelectorAll('[data-zo="st"],[data-zo="vt"]').forEach(x=>x.classList.toggle('on',x===b)); } build(); }));
+  build(); }
+
+// Geschichte und Diagramm: eine Fahrt aus 3 bis 4 Abschnitten, jeder Abschnitt {dur, d}
+// (d = Änderung von s im s-t-Diagramm bzw. von v im v-t-Diagramm)
+const GS_MAX={st:30, vt:12};
+function gsPts(segs){ const p=[[0,0]]; segs.forEach(g=>{ const [t,y]=p[p.length-1]; p.push([t+g.dur, y+g.d]); }); return p; }
+function gsOk(segs, m){ return gsPts(segs).every(q=>q[1]>=0 && q[1]<=GS_MAX[m]); }
+function gsNeu(m){
+  const D = m==='st' ? [4,6,8,10,12] : [2,4,6,8];
+  for(let n=0;n<500;n++){ const k=trPick([3,3,4]), segs=[];
+    for(let i=0;i<k;i++){ const r=Math.random(); segs.push({dur:trPick([1,2,2,3,3,4]), d: i===0 ? trPick(D) : (r<0.3 ? 0 : (r<0.65 ? trPick(D) : -trPick(D)))}); }
+    const T=segs.reduce((a,g)=>a+g.dur,0);
+    const hoch=Math.max(...gsPts(segs).map(q=>q[1]));
+    if(T>12 || T<6 || hoch<GS_MAX[m]/2 || !gsOk(segs,m) || !segs.some(g=>g.d===0) || !segs.some((g,i)=>i>0 && g.d!==0)) continue;
+    if(segs.some((g,i)=>i>0 && g.d/g.dur===segs[i-1].d/segs[i-1].dur)) continue;   // gleiche Steigung hintereinander wäre ein Abschnitt
+    return segs; }
+  return m==='st' ? [{dur:3,d:12},{dur:2,d:0},{dur:4,d:-12}] : [{dur:3,d:6},{dur:3,d:0},{dur:2,d:-6}]; }
+function gsGeschichte(segs, m, mitWert){
+  const wer = m==='st' ? trPick([['Lena','fährt','sie'],['Tom','fährt','er'],['Mia','läuft','sie'],['der Hund','läuft','er']]) : trPick([['der Bus','','er'],['die Straßenbahn','','sie'],['das Auto','','es'],['die Radfahrerin','','sie']]);
+  const con=['Zuerst','Dann','Danach','Zum Schluss'], p=gsPts(segs);
+  return segs.map((g,i)=>{ const c = i===segs.length-1 && i>0 ? con[3] : con[Math.min(i,2)], y0=p[i][1], y1=p[i+1][1];
+    const q=Math.abs(g.d/g.dur), glatt=Math.abs(q*2-Math.round(q*2))<1e-9;
+    const w = mitWert && g.d!==0 ? ' ('+(m==='st'?'v':'a')+(glatt?' = ':' ≈ ')+(m==='vt'&&g.d<0?'−':'')+(glatt?trF(q):trF1(q))+(m==='st'?' m/s':' m/s²')+')' : '';
+    if(m==='st'){ const vb=wer[1], n=i?wer[2]:wer[0];
+      if(g.d>0) return c+' '+vb+' '+n+' in '+g.dur+' s '+g.d+' m '+(y0>0?'weiter ':'')+'vom Start weg'+w+'.';
+      if(g.d===0) return c+' bleibt '+n+' '+g.dur+' s lang '+(y0===0?'am Start':'bei '+y0+' m')+' stehen.';
+      return c+' '+vb+' '+n+' in '+g.dur+' s '+(-g.d)+' m zurück in Richtung Start'+w+(y1===0?' und ist wieder am Start.':'.'); }
+    const n=i?wer[2]:wer[0];
+    if(g.d>0) return y0===0 ? c+' fährt '+n+' an und ist nach '+g.dur+' s '+y1+' m/s schnell'+w+'.' : c+' beschleunigt '+n+' in '+g.dur+' s von '+y0+' auf '+y1+' m/s'+w+'.';
+    if(g.d===0) return y0===0 ? c+' steht '+n+' '+g.dur+' s lang.' : c+' fährt '+n+' '+g.dur+' s lang gleichförmig mit '+y0+' m/s.';
+    return y1===0 ? c+' bremst '+n+' in '+g.dur+' s bis zum Stand'+w+'.' : c+' bremst '+n+' in '+g.dur+' s von '+y0+' auf '+y1+' m/s ab'+w+'.'; }).join(' '); }
+function gsVariante(segs, m){
+  const cp=()=>segs.map(g=>({...g})), nz=segs.map((g,i)=>i).filter(i=>segs[i].d!==0), z=segs.map((g,i)=>i).filter(i=>segs[i].d===0);
+  const muts=[
+    ()=>{ const s=cp(), i=trPick(nz); s[i].d=-s[i].d; return s; },
+    ()=>{ const s=cp(), i=trPick(nz); s[i].d=0; return s; },
+    ()=>{ if(!z.length) return null; const s=cp(), i=trPick(z); s[i].d=trPick(m==='st'?[6,8,-6,-8]:[2,4,-2,-4]); return s; },
+    ()=>{ const s=cp(), i=Math.floor(Math.random()*(s.length-1)); [s[i],s[i+1]]=[s[i+1],s[i]]; return s; },
+    ()=>{ const s=cp(), i=trPick(nz); s[i].d*=trPick([2,0.5]); return s; } ];
+  return trPick(muts)(); }
+function gsSVG(segs, m){
+  const p=gsPts(segs), T=Math.max(6, Math.ceil(p[p.length-1][0]/2)*2), Y=GS_MAX[m], col=m==='st'?'#2f6df6':'#e5533c';
+  const x0=38, y0=172, w=286, h=150, X=t=>x0+t/T*w, Yp=v=>y0-v/Y*h, yStep=m==='st'?5:2, yLab=m==='st'?10:4;
+  let g='';
+  for(let t=1;t<=T;t++) g+='<line x1="'+X(t)+'" y1="'+Yp(0)+'" x2="'+X(t)+'" y2="'+Yp(Y)+'" stroke="#e6eaf3"/>';
+  for(let v=yStep;v<=Y;v+=yStep) g+='<line x1="'+X(0)+'" y1="'+Yp(v)+'" x2="'+X(T)+'" y2="'+Yp(v)+'" stroke="#e6eaf3"/>';
+  for(let t=2;t<T;t+=2) g+='<text x="'+X(t)+'" y="'+(y0+14)+'" font-size="11" fill="#8a94a8" text-anchor="middle">'+t+'</text>';
+  for(let v=yLab;v<=Y;v+=yLab) g+='<text x="'+(x0-6)+'" y="'+(Yp(v)+4)+'" font-size="11" fill="#8a94a8" text-anchor="end">'+v+'</text>';
+  g+='<text x="'+(x0-6)+'" y="'+(y0+14)+'" font-size="11" fill="#8a94a8" text-anchor="end">0</text>';
+  g+='<path d="M'+x0+' 14 L'+x0+' '+y0+' L'+(x0+w+6)+' '+y0+'" stroke="#9aa8c6" stroke-width="2" fill="none"/>';
+  g+='<text x="'+(x0+4)+'" y="12" font-size="11" fill="#5a6684">'+(m==='st'?'s in m':'v in m/s')+'</text>';
+  g+='<text x="'+(x0+w+6)+'" y="'+(y0+14)+'" font-size="11" fill="#5a6684" text-anchor="end">t in s</text>';
+  g+='<polyline points="'+p.map(q=>X(q[0])+','+Yp(q[1])).join(' ')+'" stroke="'+col+'" stroke-width="3.5" fill="none" stroke-linejoin="round"/>';
+  return '<svg viewBox="0 0 340 192">'+g+'</svg>'; }
+function geschichteInit(root){ const box=root.querySelector('#gs-box'); if(!box) return; let m='st', r='d2g';
+  const key=s=>JSON.stringify(gsPts(s));
+  const build=()=>{ const segs=gsNeu(m);
+    if(r==='d2g'){
+      box.innerHTML='<p style="font-weight:600;margin:.2rem 0">Erzähle die Geschichte zu diesem Diagramm, Abschnitt für Abschnitt.</p>'
+        +'<div class="gs-big">'+gsSVG(segs,m)+'</div><button class="reveal" id="gs-zeig">Geschichte zeigen</button>'
+        +'<p id="gs-lsg" style="color:#1f7a34;font-weight:600;margin:.5rem 0" hidden>'+gsGeschichte(segs,m,true)+'</p>';
+      const b=box.querySelector('#gs-zeig'); b.addEventListener('click',()=>{ box.querySelector('#gs-lsg').hidden=false; b.style.display='none'; });
+      return; }
+    const opts=[segs], keys=[key(segs)];
+    for(let n=0;n<300 && opts.length<3;n++){ const v=gsVariante(segs,m); if(v && gsOk(v,m) && !keys.includes(key(v))){ opts.push(v); keys.push(key(v)); } }
+    while(opts.length<3){ const v=gsNeu(m); if(!keys.includes(key(v))){ opts.push(v); keys.push(key(v)); } }
+    const order=[0,1,2].map(i=>[Math.random(),i]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+    box.innerHTML='<p style="font-weight:600;margin:.2rem 0">'+gsGeschichte(segs,m,false)+'</p><p style="margin:.3rem 0">Welches Diagramm passt?</p>'
+      +'<div class="gs-opt">'+order.map(i=>'<button class="gs-o" data-i="'+i+'">'+gsSVG(opts[i],m)+'</button>').join('')+'</div>'
+      +'<p id="gs-msg" style="font-weight:800;color:#1f7a34;min-height:1.4em;margin:.4rem 0"></p>';
+    box.querySelectorAll('.gs-opt button').forEach(b=>b.addEventListener('click',()=>{
+      if(b.dataset.i==='0'){ b.classList.add('ok'); box.querySelector('#gs-msg').textContent='Richtig.'; }
+      else { b.classList.add('no'); setTimeout(()=>b.classList.remove('no'),700); } })); };
+  const grp=(sel,fn)=>root.querySelectorAll(sel).forEach(b=>b.addEventListener('click',()=>{ fn(b);
+    root.querySelectorAll(sel).forEach(x=>x.classList.toggle('on',x===b)); build(); }));
+  grp('[data-gsm]', b=>{ m=b.dataset.gsm; }); grp('[data-gsr]', b=>{ r=b.dataset.gsr; });
+  const nb=root.querySelector('[data-gs="neu"]'); if(nb) nb.addEventListener('click',build);
+  build(); }
+
+const SECTIONS=[
+ { step:'Transferfrage', title:'Die Fragen der Stunde', html:
+   `<div class="box frage"><span class="lbl">Transferfrage 1</span>Beim Elfmeter fliegt der Ball mit 108 km/h auf das 11 m entfernte Tor. Ein Torwart braucht etwa 0,3 s, bis er überhaupt reagiert. Kann er auf den Schuss reagieren, oder muss er raten?</div>
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Autofahrerin fährt auf einer Landstraße mit 72 km/h. 50 m vor der Haltlinie springt die Ampel auf Gelb, Gelb dauert 3 s. Sie reagiert nach 1 s und könnte dann mit 5 m/s² bremsen. Soll sie bremsen oder mit gleichem Tempo weiterfahren?</div>
+    <p>Am Ende der Stunde kannst du beide beantworten. Notiere zwischendurch, was dir hilft.</p>` },
+
+ { step:'Das brauchst du', title:'Alle Formeln auf einen Blick', html:
+   `<p>Das brauchst du aus den Mechanik-Stunden:</p>
+    <ul>
+      <li>Geschwindigkeit: v = s / t, Einheit m/s. Formeldreieck: s = v · t, t = s / v.</li>
+      <li>Umrechnen: m/s · 3,6 = km/h, km/h ÷ 3,6 = m/s.</li>
+      <li>Beschleunigung: a = Δv / Δt, Einheit m/s². Beim Bremsen ist a negativ. Freier Fall: g ≈ 9,81 m/s² (gerundet 10 m/s²).</li>
+      <li>s-t-Diagramm: Steigung = v. v-t-Diagramm: Steigung = a, Fläche = s.</li>
+      <li>Anhalteweg = Reaktionsweg + Bremsweg.</li>
+      <li>Vektoren: Betrag |a| = √(x² + y²), Addition komponentenweise.</li>
+    </ul>` },
+
+ { step:'Zuordnen', title:'Welches Diagramm passt?', init:zuordnenInit, html:
+   `<style>
+      .zo-wrap{display:flex; gap:1.6rem; flex-wrap:wrap; align-items:flex-start}
+      .zo-col{display:flex; flex-direction:column; gap:.7rem}
+      .zo-g{display:grid; grid-template-columns:repeat(2,auto); gap:.7rem}
+      .zo-d,.zo-p{border:2px solid var(--line); background:#f4f7ff; border-radius:12px; font:inherit; font-weight:700; cursor:pointer; color:var(--ink)}
+      .zo-d{padding:.8rem 1.2rem; text-align:left; min-width:15rem; font-size:clamp(1rem,1.15vw,1.4rem)}
+      .zo-p{padding:.3rem}
+      .zo-p svg{display:block; width:clamp(110px,9vw,200px); height:auto}
+      .zo-d.sel{border-color:#2f6df6; background:#e6efff}
+      .zo-d.ok,.zo-p.ok{border-color:#1f9e75; background:#e3f6ee; cursor:default}
+      .zo-p.no{border-color:#e5533c; background:#fdeceb}
+    </style>
+    <p>Ordne jeder Bewegung ihr Diagramm zu.</p>
+    <div class="zo-wrap" id="zo"></div>
+    <p id="zo-msg" style="font-weight:800;color:#1f7a34;min-height:1.4em;margin:.4rem 0"></p>
+    <div class="modes">
+      <button data-zo="st" class="on">s-t-Diagramme</button>
+      <button data-zo="vt">v-t-Diagramme</button>
+      <button data-zo="neu">neu mischen</button>
+    </div>` },
+
+ { step:'Geschichten', title:'Geschichte und Diagramm', init:geschichteInit, html:
+   `<style>
+      .gs-big svg{display:block; width:min(100%,760px); height:auto; margin:.3rem 0 .6rem}
+      .gs-opt{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:.8rem; margin:.4rem 0}
+      .gs-o{border:2px solid var(--line); background:#f8faff; border-radius:12px; padding:.3rem; cursor:pointer; font:inherit}
+      .gs-o svg{display:block; width:100%; height:auto}
+      .gs-o.ok{border-color:#1f9e75; background:#e3f6ee}
+      .gs-o.no{border-color:#e5533c; background:#fdeceb}
+    </style>
+    <div class="modes">
+      <button data-gsr="d2g" class="on">Diagramm → Geschichte</button>
+      <button data-gsr="g2d">Geschichte → Diagramm</button>
+    </div>
+    <div class="modes">
+      <button data-gsm="st" class="on">s-t-Diagramm</button>
+      <button data-gsm="vt">v-t-Diagramm</button>
+      <button data-gs="neu">neue Aufgabe</button>
+    </div>
+    <div id="gs-box"></div>` },
+
+ { step:'Training', title:'Gemischte Aufgaben', init:trainLab, html:
+   `<canvas class="viz" id="c-tr"></canvas>
+    <div class="modes">
+      <button data-trl="leicht" class="on">leicht</button>
+      <button data-trl="mittel">mittel</button>
+      <button data-trl="schwer">schwer</button>
+    </div>
+    <div class="modes">
+      <button data-trt="alle" class="on">alle Themen</button>
+      <button data-trt="geschw">Geschwindigkeit</button>
+      <button data-trt="besch">Beschleunigung</button>
+      <button data-trt="diag">Diagramme</button>
+      <button data-trt="vek">Vektoren</button>
+    </div>
+    <div class="modes">
+      <button data-tr="new">neue Aufgabe</button>
+      <button data-tr="solve">Lösung</button>
+    </div>
+    <div class="box">
+      <p id="tr-topic" style="margin:0 0 .3rem;color:#5a6684;font-size:.85em;font-weight:700"></p>
+      <p id="tr-q" style="margin:.2rem 0;font-weight:600"></p>
+      <p id="tr-a" style="margin:.4rem 0 0;color:#1f7a34;font-weight:600" hidden></p>
+      <div class="modes" id="tr-rate" style="display:none"><button data-tr="ok">richtig gelöst</button><button data-tr="no">nicht geschafft</button></div>
+    </div>
+    <div class="box"><span id="tr-score" style="font-weight:800"></span> <button class="reveal" data-tr="reset" style="margin-left:.6rem">Zähler zurücksetzen</button></div>` },
+
+ { step:'Checkliste', title:'Das kann ich', html:
+   `<p>Hake ab, was du sicher kannst. Was fehlt, übst du im Training mit dem passenden Thema.</p>
+    <ul style="list-style:none;padding-left:0">
+      <li><label><input type="checkbox"> Ich kann v = s / t anwenden und nach s oder t umstellen.</label></li>
+      <li><label><input type="checkbox"> Ich kann m/s und km/h ineinander umrechnen.</label></li>
+      <li><label><input type="checkbox"> Ich kann Durchschnitts- und Momentangeschwindigkeit unterscheiden.</label></li>
+      <li><label><input type="checkbox"> Ich kann ein s-t-Diagramm zeichnen und die Geschwindigkeit ablesen.</label></li>
+      <li><label><input type="checkbox"> Ich kann im s-t-Diagramm bestimmen, wann und wo sich zwei Körper treffen.</label></li>
+      <li><label><input type="checkbox"> Ich kann a = Δv / Δt berechnen, auch mit km/h und beim Bremsen.</label></li>
+      <li><label><input type="checkbox"> Ich kann s-t-, v-t- und a-t-Diagramm einer Bewegung zuordnen.</label></li>
+      <li><label><input type="checkbox"> Ich kann aus einem v-t-Diagramm die Strecke als Fläche bestimmen.</label></li>
+      <li><label><input type="checkbox"> Ich kann den Anhalteweg aus Reaktionsweg und Bremsweg berechnen.</label></li>
+      <li><label><input type="checkbox"> Ich kann Betrag und Summe von Vektoren berechnen.</label></li>
+    </ul>` },
+
+ { step:'Lösung', title:'Die Transferfragen gelöst', init:transferTabs, html:
+   `<div class="modes">
+      <button data-tf="1" class="on">Transferfrage 1</button>
+      <button data-tf="2">Transferfrage 2</button>
+    </div>
+    <div data-tf-tab="1">
+    <div class="box frage"><span class="lbl">Transferfrage 1</span>Beim Elfmeter fliegt der Ball mit 108 km/h auf das 11 m entfernte Tor. Ein Torwart braucht etwa 0,3 s, bis er überhaupt reagiert. Kann er auf den Schuss reagieren, oder muss er raten?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Umrechnen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>108 km/h ÷ 3,6 = 30 m/s.</div></div>
+      <div class="case"><h3>Schritt 2: Flugzeit</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>t = s / v = 11 m ÷ 30 m/s ≈ 0,37 s.</div></div>
+      <div class="case"><h3>Schritt 3: Vergleich</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Nach 0,3 s Reaktionszeit bleiben nur etwa 0,07 s für den Sprung. So schnell kommt kein Torwart in die Ecke. Er muss sich vor dem Schuss für eine Seite entscheiden, also raten oder den Schützen genau beobachten.</div></div>
+    </div>
+    </div>
+    <div data-tf-tab="2" style="display:none">
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Eine Autofahrerin fährt auf einer Landstraße mit 72 km/h. 50 m vor der Haltlinie springt die Ampel auf Gelb, Gelb dauert 3 s. Sie reagiert nach 1 s und könnte dann mit 5 m/s² bremsen. Soll sie bremsen oder mit gleichem Tempo weiterfahren?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Umrechnen</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>72 km/h ÷ 3,6 = 20 m/s.</div></div>
+      <div class="case"><h3>Schritt 2: Bremsen?</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Reaktionsweg: 20 m/s · 1 s = 20 m. Bremszeit: 20 m/s ÷ 5 m/s² = 4 s, Bremsweg ½ · 20 m/s · 4 s = 40 m. Anhalteweg 60 m, mehr als 50 m. Sie stünde 10 m hinter der Haltlinie mitten auf der Kreuzung.</div></div>
+      <div class="case"><h3>Schritt 3: Weiterfahren?</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Mit 20 m/s braucht sie für 50 m nur 50 m ÷ 20 m/s = 2,5 s. Die Ampel ist dann noch gelb.</div></div>
+      <div class="case"><h3>Schritt 4: Antwort</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Weiterfahren ist hier richtig. Bremsen würde gefährlich mitten auf der Kreuzung enden. Man nennt diesen Bereich vor der Ampel, in dem Anhalten nicht mehr geht, die Dilemmazone.</div></div>
+    </div>
+    </div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

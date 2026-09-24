@@ -1,0 +1,879 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Mathe/Klasse-11/vektorrechnung/_common.js + Mathe/Klasse-11/vektorrechnung/topics/13-parallelogramm-trapez.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Mathe EF – Vektorrechnung: gemeinsame Zeichen-Helfer für das Schrägbild.
+// Konvention wie im Schulbuch (Lambacher Schweizer), gezählt in Kästchen:
+//   x2 nach rechts und x3 nach oben: 2 Kästchen sind eine Einheit.
+//   x1 nach vorn (schräg): ein Kästchen schräg (eins nach links, eins nach unten) ist eine Einheit.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball.
+
+const C_INK='#1b2440', C_MUTED='#5a6684', C_GRID='#dfe5f2', C_BLUE='#2f6df6', C_RED='#e5533c', C_GREEN='#1f9e75';
+
+// Bildkoordinaten (in Kästchen) eines Raumpunkts: x2/x3 doppelt, x1 schräg um 1
+function sbX(x1,x2){ return 2*x2 - x1; }
+function sbY(x1,x3){ return 2*x3 - x1; }
+
+// Schrägbild anlegen: box = {x,y,w,h} (Pixel), r = {x1:[min,max], x2:[min,max], x3:[min,max]}.
+// Zeichnet Karoraster und Achsen mit Skala und liefert S = {P, u, ox, oy}:
+// S.P(x1,x2,x3) -> [X,Y] Bildschirmpixel, S.u = Pixel je Kästchen.
+function schraegbild(ctx, box, r, o){
+  o=o||{};
+  const xs=[sbX(r.x1[0],r.x2[0]),sbX(r.x1[1],r.x2[0]),sbX(r.x1[0],r.x2[1]),sbX(r.x1[1],r.x2[1])];
+  const ys=[sbY(r.x1[0],r.x3[0]),sbY(r.x1[1],r.x3[0]),sbY(r.x1[0],r.x3[1]),sbY(r.x1[1],r.x3[1])];
+  // Ränder in Kästchen: x2/x3 brauchen 2 pro Einheit, deshalb etwas mehr Luft
+  const xmin=Math.min(...xs)-1, xmax=Math.max(...xs)+1.6, ymin=Math.min(...ys)-1, ymax=Math.max(...ys)+1.6;
+  const u=Math.min(box.w/(xmax-xmin), box.h/(ymax-ymin)); // Pixel je Kästchen
+  const ox=box.x+(box.w-(xmax-xmin)*u)/2 - xmin*u;
+  const oy=box.y+box.h-(box.h-(ymax-ymin)*u)/2 + ymin*u;
+  const P=(x1,x2,x3)=>[ox+sbX(x1,x2)*u, oy-sbY(x1,x3)*u];
+  if(o.grid!==false){ ctx.save(); ctx.strokeStyle=C_GRID; ctx.lineWidth=1; ctx.beginPath();
+    for(let gx=Math.ceil(xmin);gx<=Math.floor(xmax);gx++){ const px=ox+gx*u; ctx.moveTo(px,oy-ymax*u); ctx.lineTo(px,oy-ymin*u); }
+    for(let gy=Math.ceil(ymin);gy<=Math.floor(ymax);gy++){ const py=oy-gy*u; ctx.moveTo(ox+xmin*u,py); ctx.lineTo(ox+xmax*u,py); }
+    ctx.stroke(); ctx.restore(); }
+  const ac=o.axisColor||C_MUTED, fs=Math.max(11,Math.min(15,u*0.7));
+  const sichtbar=!/rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(ac);
+  // Belegte Flächen (Achsenzahlen, Achsennamen, spätere Beschriftungen) für die Platzsuche S.platz
+  const belegt=[];
+  const L=(x,y,t,s,a)=>{ lbl(ctx,x,y,t,s,ac,a); if(sichtbar) belegt.push(lblBox(ctx,x,y,t,s,a)); };
+  // Skalenzahl nur zeichnen, wenn sie keine andere Zahl berührt (bei langen Achsen und kleinem Bild)
+  const Lt=(x,y,t,s,a)=>{ if(!belegt.some(b=>boxStoss(b,lblBox(ctx,x,y,t,s,a)))) L(x,y,t,s,a); };
+  const a1=Math.min(r.x1[0],0), a2=Math.min(r.x2[0],0), a3=Math.min(r.x3[0],0);
+  // x2-Achse (nach rechts), x3-Achse (nach oben), x1-Achse (schräg nach vorn)
+  arrow(ctx, ...P(0,a2,0), ...P(0,r.x2[1]+0.5,0), ac, 1.8);
+  arrow(ctx, ...P(0,0,a3), ...P(0,0,r.x3[1]+0.5), ac, 1.8);
+  arrow(ctx, ...P(a1,0,0), ...P(r.x1[1]+0.7,0,0), ac, 1.8);
+  const e2=P(0,r.x2[1]+0.5,0), e3=P(0,0,r.x3[1]+0.5), e1=P(r.x1[1]+0.7,0,0);
+  L(e2[0]+4, e2[1]-12, 'x₂', fs+1, 'left');
+  L(e3[0]+12, e3[1]+2, 'x₃', fs+1, 'left');
+  L(e1[0]-10, e1[1]+4, 'x₁', fs+1, 'right');
+  if(o.ticks!==false){ ctx.strokeStyle=ac; ctx.lineWidth=1.4;
+    for(let k=r.x2[0];k<=r.x2[1];k++){ if(k===0) continue; const [px,py]=P(0,k,0);
+      ctx.beginPath(); ctx.moveTo(px,py-4); ctx.lineTo(px,py+4); ctx.stroke(); Lt(px,py+12,String(k),fs-1); }
+    for(let k=r.x3[0];k<=r.x3[1];k++){ if(k===0) continue; const [px,py]=P(0,0,k);
+      ctx.beginPath(); ctx.moveTo(px-4,py); ctx.lineTo(px+4,py); ctx.stroke(); Lt(px-9,py,String(k),fs-1,'right'); }
+    for(let k=r.x1[0];k<=r.x1[1];k++){ if(k===0) continue; const [px,py]=P(k,0,0);
+      ctx.save(); ctx.strokeStyle=ac; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(px-3,py-3); ctx.lineTo(px+3,py+3); ctx.stroke(); ctx.restore();
+      // Zahl rechts unten; stößt sie (bei negativem x1 nahe dem Ursprung) an andere Zahlen, links oben, sonst weglassen
+      const t=String(k), b1=lblBox(ctx,px+7,py+9,t,fs-1,'left'), b2=lblBox(ctx,px-7,py-9,t,fs-1,'right');
+      if(!belegt.some(b=>boxStoss(b,b1))) L(px+7,py+9,t,fs-1,'left');
+      else if(!belegt.some(b=>boxStoss(b,b2))) L(px-7,py-9,t,fs-1,'right'); }
+  }
+  // Freie Stelle für eine Beschriftung suchen: erst die gewünschte, dann Nachbarpositionen.
+  const platz=(c,x,y,t,s,a)=>{ const w=lblBox(c,0,0,t,s,'left').x1, d=s*1.05, dx=w*0.5+6;
+    const kand=[[0,0],[0,-d],[0,d],[dx,0],[-dx,0],[dx,-d],[-dx,-d],[dx,d],[-dx,d],[0,-2*d],[0,2*d]];
+    for(const [mx,my] of kand){ const b=lblBox(c,x+mx,y+my,t,s,a); if(!belegt.some(q=>boxStoss(q,b))){ belegt.push(b); return [x+mx,y+my]; } }
+    belegt.push(lblBox(c,x,y,t,s,a)); return [x,y]; };
+  return {P,u,ox,oy,belegt,platz};
+}
+// Rechteck, das eine Beschriftung von lbl() einnimmt (für die Platzsuche)
+function lblBox(ctx,x,y,t,size,align){ ctx.save(); ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  const w=ctx.measureText(String(t)).width; ctx.restore(); const a=align||'center', x0=a==='center'?x-w/2:a==='right'?x-w:x;
+  return {x0, x1:x0+w, y0:y-size*0.5, y1:y+size*0.5}; }
+function boxStoss(a,b){ return Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0)>1 && Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0)>1; }
+// Beschriftung an einer freien Stelle (weicht Achsenzahlen und früheren Beschriftungen aus)
+function lblFrei(ctx,S,x,y,t,size,col,align){ const [fx,fy]=S.platz?S.platz(ctx,x,y,t,size,align):[x,y]; lbl(ctx,fx,fy,t,size,col,align); }
+function vlblFrei(ctx,S,x,y,expr,size,col,align){ const plain=expr.replace(/[\[\]]/g,'');
+  const [fx,fy]=S.platz?S.platz(ctx,x,y-size*0.2,plain,size,align):[x,y+size*0.2]; vlbl(ctx,fx,fy+size*0.2,expr,size,col,align); }
+function alblFrei(ctx,S,x,y,t,size,col,align){ const [fx,fy]=S.platz?S.platz(ctx,x,y-size*0.25,t,size,align):[x,y]; albl(ctx,fx,fy+(S.platz?size*0.25:0),t,size,col,align); }
+
+// Weg vom Ursprung zum Punkt: erst x1 (schräg), dann x2 (rechts), dann x3 (hoch).
+// frac in [0,1] zeichnet den Weg anteilig (für Animation), col Farbe der Hilfslinien.
+function weg(ctx, S, x1, x2, x3, frac, col, o){
+  o=o||{}; frac=frac==null?1:frac;
+  const pts=[S.P(0,0,0), S.P(x1,0,0), S.P(x1,x2,0), S.P(x1,x2,x3)];
+  const segs=[[pts[0],pts[1]],[pts[1],pts[2]],[pts[2],pts[3]]];
+  ctx.save(); ctx.setLineDash(o.dash||[6,5]); ctx.strokeStyle=col||C_MUTED; ctx.lineWidth=o.width||2;
+  let rest=frac*3;
+  for(const [a,b] of segs){ if(rest<=0) break; const f=Math.min(1,rest); rest-=1;
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f); ctx.stroke(); }
+  ctx.restore();
+  if(o.labels && frac>=1){ const fs=Math.max(11,Math.min(15,S.u*0.7));
+    const m1=[(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2], m2=[(pts[1][0]+pts[2][0])/2,(pts[1][1]+pts[2][1])/2], m3=[(pts[2][0]+pts[3][0])/2,(pts[2][1]+pts[3][1])/2];
+    if(x1) lblFrei(ctx,S,m1[0]-9,m1[1]-9,'x₁ = '+x1,fs,col||C_MUTED,'right');
+    if(x2) lblFrei(ctx,S,m2[0],m2[1]+(x3>=0?14:-12),'x₂ = '+x2,fs,col||C_MUTED);
+    if(x3) lblFrei(ctx,S,m3[0]+8,m3[1],'x₃ = '+x3,fs,col||C_MUTED,'left'); }
+  return pts[3];
+}
+
+// Fläche (Polygon) im Schrägbild: pts = [[x1,x2,x3],...], gefüllt mit Rand.
+function flaeche(ctx, S, pts, col, o){
+  o=o||{}; ctx.save(); ctx.beginPath();
+  pts.forEach((p,i)=>{ const q=S.P(p[0],p[1],p[2]); if(i) ctx.lineTo(q[0],q[1]); else ctx.moveTo(q[0],q[1]); });
+  ctx.closePath();
+  ctx.fillStyle=o.fill||'rgba(47,109,246,.12)'; ctx.fill();
+  if(o.dash) ctx.setLineDash(o.dash);
+  ctx.strokeStyle=col||C_BLUE; ctx.lineWidth=o.width||2.6; ctx.stroke(); ctx.restore();
+}
+
+// Punkt mit Namen zeichnen
+function punkt(ctx, S, x1, x2, x3, name, col, o){
+  o=o||{}; const [px,py]=S.P(x1,x2,x3); const fs=Math.max(12,Math.min(17,S.u*0.8));
+  ctx.beginPath(); ctx.arc(px,py,(o.r||5)+2.5,0,7); ctx.fillStyle='#fff'; ctx.fill(); // weißer Rand für Sichtbarkeit
+  ball(ctx, px, py, o.r||5, col||C_BLUE);
+  // Punkt auf der x1-Achse: Die Skalenzahlen stehen rechts unten, der Name kommt nach links oben.
+  const aufX1=x1!==0&&x2===0&&x3===0&&o.dx==null&&o.dy==null;
+  if(name&&aufX1) lblFrei(ctx, S, px-9, py-10, name, fs, col||C_BLUE, 'right');
+  else if(name) lblFrei(ctx, S, px+(o.dx==null?9:o.dx), py+(o.dy==null?-9:o.dy), name, fs, col||C_BLUE, o.align||'left');
+  return [px,py];
+}
+
+// Quader [0,a]×[0,b]×[0,c] als Drahtmodell. Die drei Kanten am Ursprung liegen hinten und werden gestrichelt.
+function quaderDraw(ctx, S, a, b, c, col, o){
+  o=o||{}; const V=(x1,x2,x3)=>S.P(x1,x2,x3);
+  const E=[[[0,0,0],[a,0,0]],[[0,0,0],[0,b,0]],[[0,0,0],[0,0,c]],
+    [[a,0,0],[a,b,0]],[[a,0,0],[a,0,c]],[[0,b,0],[a,b,0]],[[0,b,0],[0,b,c]],[[0,0,c],[a,0,c]],[[0,0,c],[0,b,c]],
+    [[a,b,0],[a,b,c]],[[a,0,c],[a,b,c]],[[0,b,c],[a,b,c]]];
+  ctx.save(); ctx.strokeStyle=col||C_MUTED; ctx.lineWidth=o.width||2;
+  E.forEach(([p,q],k)=>{ const hidden=k<3 && o.hidden!==false; ctx.setLineDash(hidden?[5,5]:[]);
+    const A=V(...p), B=V(...q); ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(B[0],B[1]); ctx.stroke(); });
+  ctx.restore();
+}
+
+// Ebenes Koordinatensystem (Wiederholung): box, r = {x:[min,max], y:[min,max]}. Liefert {P,u}.
+function ebene(ctx, box, r){
+  const xmin=r.x[0]-0.7, xmax=r.x[1]+1.0, ymin=r.y[0]-0.7, ymax=r.y[1]+1.0;
+  const u=Math.min(box.w/(xmax-xmin), box.h/(ymax-ymin));
+  const ox=box.x+(box.w-(xmax-xmin)*u)/2 - xmin*u, oy=box.y+box.h-(box.h-(ymax-ymin)*u)/2 + ymin*u;
+  const P=(x,y)=>[ox+x*u, oy-y*u];
+  ctx.save(); ctx.strokeStyle=C_GRID; ctx.lineWidth=1; ctx.beginPath();
+  for(let gx=Math.ceil(xmin);gx<=Math.floor(xmax);gx++){ const px=ox+gx*u; ctx.moveTo(px,oy-ymax*u); ctx.lineTo(px,oy-ymin*u); }
+  for(let gy=Math.ceil(ymin);gy<=Math.floor(ymax);gy++){ const py=oy-gy*u; ctx.moveTo(ox+xmin*u,py); ctx.lineTo(ox+xmax*u,py); }
+  ctx.stroke(); ctx.restore();
+  const fs=Math.max(11,Math.min(14,u*0.42));
+  arrow(ctx, ...P(Math.min(r.x[0],0),0), ...P(r.x[1]+0.8,0), C_MUTED, 1.8);
+  arrow(ctx, ...P(0,Math.min(r.y[0],0)), ...P(0,r.y[1]+0.8), C_MUTED, 1.8);
+  const ex=P(r.x[1]+0.8,0), ey=P(0,r.y[1]+0.8);
+  lbl(ctx, ex[0]+4, ex[1]-12, 'x', fs+1, C_MUTED, 'left'); lbl(ctx, ey[0]+12, ey[1]+2, 'y', fs+1, C_MUTED, 'left');
+  ctx.strokeStyle=C_MUTED; ctx.lineWidth=1.4;
+  for(let k=r.x[0];k<=r.x[1];k++){ if(!k) continue; const [px,py]=P(k,0); ctx.beginPath(); ctx.moveTo(px,py-4); ctx.lineTo(px,py+4); ctx.stroke(); lbl(ctx,px,py+12,String(k),fs-1,C_MUTED); }
+  for(let k=r.y[0];k<=r.y[1];k++){ if(!k) continue; const [px,py]=P(0,k); ctx.beginPath(); ctx.moveTo(px-4,py); ctx.lineTo(px+4,py); ctx.stroke(); lbl(ctx,px-9,py,String(k),fs-1,C_MUTED,'right'); }
+  return {P,u};
+}
+
+// ---------- 3D-Ansicht mit three.js (r128, UMD) ----------
+// Wird bei Bedarf aus lib/three.r128.min.js (im Projekt, kein CDN) nachgeladen.
+// Grund: ein externer Abruf würde die IP-Adresse jedes Besuchers an Cloudflare/USA
+// senden (Datenschutz). Schlägt das Laden fehl, bleibt die 3D-Fläche leer,
+// das Schrägbild darunter funktioniert weiter.
+let THREE_LOADING=null;
+function loadThree(cb){ if(window.THREE){ cb(); return; }
+  if(!THREE_LOADING){ THREE_LOADING=new Promise((res,rej)=>{ const s=document.createElement('script');
+    s.src='../../../lib/three.r128.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+  THREE_LOADING.then(cb).catch(()=>{}); }
+
+// Text als Sprite (für Achsenbeschriftungen und Punktnamen)
+function textSprite(text, color, px){ const cv=document.createElement('canvas'); cv.width=256; cv.height=128; const g=cv.getContext('2d');
+  g.font='700 72px "Segoe UI",system-ui,sans-serif'; g.fillStyle=color||'#1b2440'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,128,64);
+  const tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false})); const s=px||0.9; sp.scale.set(2*s,s,1); return sp; }
+
+let S3D_LAST=null;
+// 3D-Szene in einem Canvas. Mathe (x1,x2,x3) -> three (x=x2, y=x3, z=x1), x1 zeigt also zum Betrachter.
+// o = { range:{x1:[a,b],x2:[a,b],x3:[a,b]}, center:[x1,x2,x3], dist, axes:true, grid:true }
+// Liefert { V, add, remove, render, group } – V(x1,x2,x3) ergibt einen THREE.Vector3.
+function szene3d(canvas, o){
+  o=o||{};
+  if(S3D_LAST){ try{ S3D_LAST.renderer.dispose(); S3D_LAST.renderer.forceContextLoss(); }catch(_){ } S3D_LAST=null; }
+  const V=(x1,x2,x3)=>new THREE.Vector3(x2,x3,x1);
+  const renderer=new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); renderer.setClearColor(0x000000,0);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+  const r=o.range||{x1:[-2,4],x2:[-2,6],x3:[-2,4]};
+  const c=o.center||[(r.x1[0]+r.x1[1])/2,(r.x2[0]+r.x2[1])/2,(r.x3[0]+r.x3[1])/2];
+  const target=V(...c);
+  const orbit={theta:o.theta==null?0.55:o.theta, phi:o.phi==null?0.42:o.phi, dist:o.dist||Math.max(r.x2[1]-r.x2[0], r.x3[1]-r.x3[0], r.x1[1]-r.x1[0])*1.9};
+  function placeCam(){ const ct=Math.cos(orbit.phi); camera.position.set(target.x+orbit.dist*ct*Math.sin(orbit.theta), target.y+orbit.dist*Math.sin(orbit.phi), target.z+orbit.dist*ct*Math.cos(orbit.theta)); camera.lookAt(target); }
+  placeCam();
+  scene.add(new THREE.AmbientLight(0xffffff,0.85)); const dl=new THREE.DirectionalLight(0xffffff,0.5); dl.position.set(3,8,6); scene.add(dl);
+  const lineMat=(col,w)=>new THREE.LineBasicMaterial({color:col});
+  // Karoraster auf dem „Boden" (x1x2-Ebene) und an der „Rückwand" (x2x3-Ebene)
+  if(o.grid!==false){ const pts=[];
+    for(let a=Math.ceil(r.x1[0]);a<=r.x1[1];a++){ pts.push(V(a,r.x2[0],0),V(a,r.x2[1],0)); }
+    for(let b=Math.ceil(r.x2[0]);b<=r.x2[1];b++){ pts.push(V(r.x1[0],b,0),V(r.x1[1],b,0)); }
+    const g=new THREE.BufferGeometry().setFromPoints(pts); scene.add(new THREE.LineSegments(g,lineMat(0xd3dbea)));
+    if(o.wall){ const wp=[];
+      for(let b=Math.ceil(r.x2[0]);b<=r.x2[1];b++){ wp.push(V(r.x1[0],b,r.x3[0]),V(r.x1[0],b,r.x3[1])); }
+      for(let h=Math.ceil(r.x3[0]);h<=r.x3[1];h++){ wp.push(V(r.x1[0],r.x2[0],h),V(r.x1[0],r.x2[1],h)); }
+      scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(wp),lineMat(0xe3e8f2))); } }
+  // Achsen mit Pfeilspitzen und Beschriftung
+  if(o.axes!==false){ const ax=[[V(1,0,0),r.x1,'x₁'],[V(0,1,0),r.x2,'x₂'],[V(0,0,1),r.x3,'x₃']];
+    ax.forEach(([dir,rg,name])=>{ const from=dir.clone().multiplyScalar(Math.min(rg[0],0)), len=rg[1]-Math.min(rg[0],0)+0.9;
+      scene.add(new THREE.ArrowHelper(dir, from, len, 0x5a6684, 0.45, 0.22));
+      const sp=textSprite(name,'#5a6684',0.75); sp.position.copy(dir.clone().multiplyScalar(rg[1]+1.4)); scene.add(sp);
+      for(let k=Math.ceil(rg[0]);k<=rg[1];k++){ if(!k) continue; const p=dir.clone().multiplyScalar(k);
+        const t=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), new THREE.MeshBasicMaterial({color:0x5a6684})); t.position.copy(p); scene.add(t); } });
+    const o0=new THREE.Mesh(new THREE.SphereGeometry(0.09,10,10), new THREE.MeshBasicMaterial({color:0x1b2440})); scene.add(o0); }
+  const group=new THREE.Group(); scene.add(group);
+  // Drehen durch Ziehen
+  let drag=null;
+  canvas.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove',e=>{ if(!drag) return; orbit.theta-=(e.clientX-drag.x)*0.008; orbit.phi=Math.max(-0.2,Math.min(1.35,orbit.phi+(e.clientY-drag.y)*0.006)); drag={x:e.clientX,y:e.clientY}; placeCam(); });
+  canvas.addEventListener('pointerup',()=>{ drag=null; }); canvas.addEventListener('pointercancel',()=>{ drag=null; });
+  canvas.addEventListener('wheel',e=>{ e.preventDefault(); orbit.dist=Math.max(3,Math.min(80,orbit.dist*(e.deltaY>0?1.08:0.93))); placeCam(); },{passive:false});
+  function render(){ const W=canvas.clientWidth||400, H=canvas.clientHeight||300;
+    if(canvas.width!==Math.round(W*renderer.getPixelRatio())||canvas.height!==Math.round(H*renderer.getPixelRatio())){ renderer.setSize(W,H,false); }
+    camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.render(scene,camera); }
+  const api={V, scene, camera, renderer, group, render, add:(m)=>group.add(m), clear:()=>{ while(group.children.length) group.remove(group.children[0]); }};
+  S3D_LAST=api; return api;
+}
+// Kugel-Punkt, Hilfslinien-Weg und Drahtquader für die 3D-Szene
+function kugel3d(S, x1,x2,x3, col, rad){ const m=new THREE.Mesh(new THREE.SphereGeometry(rad||0.16,16,16), new THREE.MeshLambertMaterial({color:col||0x2f6df6})); m.position.copy(S.V(x1,x2,x3)); S.add(m); return m; }
+function weg3d(S, x1,x2,x3, col){ const pts=[S.V(0,0,0),S.V(x1,0,0),S.V(x1,x2,0),S.V(x1,x2,x3)];
+  const g=new THREE.BufferGeometry().setFromPoints(pts); const l=new THREE.Line(g,new THREE.LineDashedMaterial({color:col||0x2f6df6, dashSize:0.25, gapSize:0.15})); l.computeLineDistances(); S.add(l); return l; }
+function wegUpdate(S, line, x1,x2,x3){ if(!line) return; const pos=line.geometry.attributes.position;
+  [S.V(0,0,0),S.V(x1,0,0),S.V(x1,x2,0),S.V(x1,x2,x3)].forEach((p,i)=>pos.setXYZ(i,p.x,p.y,p.z)); pos.needsUpdate=true; line.computeLineDistances(); }
+function quader3d(S, a,b,c, col){ const g=new THREE.EdgesGeometry(new THREE.BoxGeometry(b,c,a)); const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col||0x9aa3b5})); l.position.copy(S.V(a/2,b/2,c/2)); S.add(l); return l; }
+function label3d(S, x1,x2,x3, text, col){ const sp=textSprite(text,col||'#2f6df6',0.7); sp.position.copy(S.V(x1,x2,x3)); sp.position.y+=0.45; S.add(sp); return sp; }
+// Pfeil (Vektor) in 3D von 'from' nach 'to' (je [x1,x2,x3]).
+function pfeil3d(S, from, to, col){ const a=S.V(from[0],from[1],from[2]), b=S.V(to[0],to[1],to[2]);
+  const d=b.clone().sub(a), len=d.length(); if(len<1e-6) return null;
+  const ah=new THREE.ArrowHelper(d.clone().normalize(), a, len, col==null?0x2f6df6:col, Math.min(0.5,len*0.28), Math.min(0.3,len*0.18)); S.add(ah); return ah; }
+// Rechteckige Fläche aus vier Ecken (je [x1,x2,x3]) in 3D: getönte Füllung plus Rand.
+function rechteck3d(S, corners, col){ col=col==null?0x2f6df6:col;
+  const V=corners.map(c=>S.V(c[0],c[1],c[2]));
+  const verts=[]; [[0,1,2],[0,2,3]].forEach(t=>t.forEach(i=>verts.push(V[i].x,V[i].y,V[i].z)));
+  const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts),3));
+  const mesh=new THREE.Mesh(g, new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.16, side:THREE.DoubleSide, depthWrite:false})); S.add(mesh);
+  const eg=new THREE.BufferGeometry().setFromPoints([...V, V[0]]);
+  const line=new THREE.Line(eg, new THREE.LineBasicMaterial({color:col})); S.add(line);
+  return {mesh, line};
+}
+
+// Umschalter zwischen mehreren Ansichten (z.B. 3D-Raum und Schrägbild), damit immer
+// genau eine groß und lesbar ist. Erwartet eine Leiste [data-viewtabs] mit Buttons
+// [data-view] und Flächen (Canvas) mit [data-viewpane]. cb(v) wird bei jedem Wechsel
+// aufgerufen (z.B. um die 3D-Szene sofort neu zu zeichnen).
+function viewToggle(root, cb){
+  const bar=root.querySelector('[data-viewtabs]'); if(!bar) return;
+  const btns=[...bar.querySelectorAll('[data-view]')];
+  const show=(v)=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.view===v));
+    root.querySelectorAll('[data-viewpane]').forEach(el=>{ el.style.display = el.dataset.viewpane===v ? 'block' : 'none'; });
+    if(cb) cb(v); };
+  btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+  show((btns.find(b=>b.classList.contains('on'))||btns[0]).dataset.view);
+}
+
+// Statisches Bild, umschaltbar zwischen Schrägbild und 3D-Szene (Regel: 3D immer umschaltbar).
+// draw(ctx,W,H) zeichnet das Schrägbild, build(S3) füllt die 3D-Szene, o sind die szene3d-Optionen.
+function statisch(root, id2, id3, draw, o, build){
+  const c=root.querySelector('#'+id2), c3=root.querySelector('#'+id3); if(!c) return;
+  let S3=null;
+  const draw2d=()=>{ stopRAF(); RAF=requestAnimationFrame(()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); draw(ctx,W,H); }); };
+  loadThree(()=>{ if(c3&&document.contains(c3)){ S3=szene3d(c3,o); build(S3); S3.render(); } });
+  draw2d();
+  viewToggle(root, ()=>{ draw2d(); if(S3) requestAnimationFrame(()=>S3.render()); });
+}
+
+// Regler-Werte lesen und Anzeige aktualisieren: ids = ['sl-a','sl-b',...] -> Zahlen
+function sliders(root, ids){ return ids.map(id=>{ const s=root.querySelector('#'+id); if(!s) return 0;
+  const v=+s.value; const out=root.querySelector('#val-'+id.replace(/^sl-/,'')); if(out) out.textContent=v; return v; }); }
+
+// Formatierung eines Punkts: P(2 | 3 | 4)
+function ptxt(name,x1,x2,x3){ return name+'('+x1+' | '+x2+' | '+x3+')'; }
+
+// Vektor-Overarrow für HTML-Text (v, a, AB ...). Punkte NICHT damit schreiben.
+// Der Pfeil sitzt knapp über dem höchsten Buchstaben: Der Abstand von der Oberkante der Zeile
+// (Schrift-Oberlänge) bis zur Oberkante der Buchstaben wird einmal je Text gemessen (in em).
+const OV_CACHE={};
+function ovAbstand(t){
+  if(t in OV_CACHE) return OV_CACHE[t];
+  let g=null;
+  try{ const c=document.createElement('canvas').getContext('2d');
+    c.font='100px '+getComputedStyle(document.body).fontFamily;
+    const m=c.measureText(t);
+    if(m.fontBoundingBoxAscent!=null && m.actualBoundingBoxAscent!=null) g=(m.fontBoundingBoxAscent-m.actualBoundingBoxAscent)/100;
+  }catch(_){ }
+  if(g==null||!isFinite(g)) g=/[A-ZÄÖÜbdfhklt0-9]/.test(t)?0.38:0.58;   // Ersatzwerte für Segoe UI
+  return OV_CACHE[t]=g;
+}
+function av(t){ return '<span class="ov" style="--ovg:'+ovAbstand(t).toFixed(3)+'em">'+t+'</span>'; }
+// Canvas-Label eines Vektornamens: wie lbl, plus Pfeil knapp über den Buchstaben (gemessen).
+function albl(ctx,x,y,t,size,col,align){
+  lbl(ctx,x,y,t,size,col,align);
+  ctx.save();
+  ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle';
+  const m=ctx.measureText(t);
+  const x0=x-(m.actualBoundingBoxLeft||0)+size*0.03, x1=x+(m.actualBoundingBoxRight||m.width)-size*0.03;
+  const asc=(m.actualBoundingBoxAscent!=null)?m.actualBoundingBoxAscent:size*0.4;
+  const ay=y-asc-size*0.16, hs=size*0.17;
+  ctx.strokeStyle=col||'#3a4256'; ctx.lineWidth=Math.max(1.3,size*0.075); ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(x0,ay); ctx.lineTo(x1,ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1-hs,ay-hs*0.8); ctx.lineTo(x1,ay); ctx.lineTo(x1-hs,ay+hs*0.8); ctx.stroke();
+  ctx.restore();
+}
+// Canvas-Beschriftung eines Terms: Vektornamen in eckigen Klammern bekommen einen Pfeil,
+// alles andere nicht. Beispiele: '[a] + [b]', '2·[a]', '[AB]'. So steht a⃗ + b⃗ statt eines
+// Pfeils über „a+b".
+function vlbl(ctx,x,y,expr,size,col,align){
+  const parts=[]; expr.replace(/\[([^\]]+)\]|([^\[]+)/g,(m,v,t)=>{ parts.push(v!=null?{t:v,v:true}:{t:t,v:false}); return m; });
+  ctx.save(); ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  const ws=parts.map(p=>ctx.measureText(p.t).width), W=ws.reduce((s,w)=>s+w,0); ctx.restore();
+  const a=align||'center'; let cx = a==='center' ? x-W/2 : a==='right' ? x-W : x;
+  parts.forEach((p,i)=>{ if(p.v) albl(ctx,cx,y,p.t,size,col,'left'); else lbl(ctx,cx,y,p.t,size,col,'left'); cx+=ws[i]; });
+}
+
+const PAGE={ area:'Vektorrechnung', slug:'parallelogramm-trapez', title:'Parallelogramm und Trapez nachweisen', h1:'Parallelogramm und Trapez nachweisen',
+  ziel:'Ich kann mit Vektoren nachweisen, dass ein Viereck ABCD ein Parallelogramm (Vektor AB gleich Vektor DC) oder ein Trapez (Vektor AB gleich k mal Vektor DC) ist, und begründen, wenn es keins von beiden ist.' };
+
+const COL_B='#e8730c', COL_OK='#1f9e75';
+const OHNE_ACHSEN={ticks:false, axisColor:'rgba(0,0,0,0)'};
+function fmt(n){ const r=Math.round(n*100)/100; return (r<0?'−':'')+String(Math.abs(r)).replace('.',','); }
+function vek(a,b,c,col){ return '<span style="display:inline-block;vertical-align:middle;border-left:2.5px solid '+(col||'currentColor')+';border-right:2.5px solid '+(col||'currentColor')+';padding:2px 6px;margin:0 3px;line-height:1.12;text-align:center;font-weight:700;border-radius:2px">'+fmt(a)+'<br>'+fmt(b)+'<br>'+fmt(c)+'</span>'; }
+function vekv(v,col){ return vek(v[0],v[1],v[2],col); }
+function add3(p,v){ return [p[0]+v[0],p[1]+v[1],p[2]+v[2]]; }
+function sub3(b,a){ return [b[0]-a[0],b[1]-a[1],b[2]-a[2]]; }
+function mul3(k,v){ return [k*v[0],k*v[1],k*v[2]]; }
+function rng(pts){ const ax=[0,1,2].map(i=>{ let lo=0,hi=0; pts.forEach(p=>{ lo=Math.min(lo,p[i]); hi=Math.max(hi,p[i]); }); return [lo<0?Math.floor(lo)-1:0, Math.max(3,Math.ceil(hi)+1)]; }); return {x1:ax[0],x2:ax[1],x3:ax[2]}; }
+function dot(ctx,S,c,col){ const [px,py]=S.P(c[0],c[1],c[2]); ctx.beginPath(); ctx.arc(px,py,7,0,7); ctx.fillStyle='#fff'; ctx.fill(); ball(ctx,px,py,4.5,col||C_BLUE); return [px,py]; }
+function pfeil(ctx,S,from,to,col,wd){ const a=S.P(...from), b=S.P(...to); arrow(ctx,a[0],a[1],b[0],b[1],col,wd||3.6); }
+function linie(ctx,S,p,q,col,dash,wd){ ctx.save(); if(dash) ctx.setLineDash(dash); const a=S.P(...p), b=S.P(...q); ctx.strokeStyle=col; ctx.lineWidth=wd||2; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); ctx.restore(); }
+function mitteBild(S,pts){ const P=pts.map(p=>S.P(...p)); return [P.reduce((s,p)=>s+p[0],0)/P.length, P.reduce((s,p)=>s+p[1],0)/P.length]; }
+function nameLbl(ctx,S,p,z,name,col){ const q=S.P(...p); let d=[q[0]-z[0],q[1]-z[1]]; const L=Math.hypot(d[0],d[1])||1; d=[d[0]/L,d[1]/L];
+  lblFrei(ctx,S,q[0]+d[0]*16,q[1]+d[1]*16,name,15,col||C_INK,Math.abs(d[0])<0.35?'center':(d[0]>0?'left':'right')); }
+// Parallel-Kennzeichnung wie im Geometrieheft: n kleine Pfeilspitzen in Richtung p → q auf der Seitenmitte
+function parallelMarke(ctx,S,p,q,n,col){ const a=S.P(...p), b=S.P(...q), m=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  const d=[b[0]-a[0],b[1]-a[1]], L=Math.hypot(d[0],d[1])||1, e=[d[0]/L,d[1]/L], nn=[-e[1],e[0]];
+  ctx.save(); ctx.strokeStyle=col||C_INK; ctx.lineWidth=2; ctx.lineJoin='round';
+  for(let i=0;i<n;i++){ const o=(i-(n-1)/2)*6+3, c=[m[0]+e[0]*o,m[1]+e[1]*o];
+    ctx.beginPath(); ctx.moveTo(c[0]-e[0]*6+nn[0]*5,c[1]-e[1]*6+nn[1]*5); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0]-e[0]*6-nn[0]*5,c[1]-e[1]*6-nn[1]*5); ctx.stroke(); }
+  ctx.restore(); }
+function linie3d(S3,p,q,col){ S3.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([S3.V(...p),S3.V(...q)]),new THREE.LineBasicMaterial({color:col}))); }
+function flaeche3d(S3,pts,col,op){ const V=pts.map(p=>S3.V(...p)); const tri=[]; for(let i=1;i<V.length-1;i++) tri.push(V[0],V[i],V[i+1]);
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(tri.flatMap(p=>[p.x,p.y,p.z])),3));
+  S3.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op||0.18,side:THREE.DoubleSide,depthWrite:false})));
+  S3.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([...V,V[0]]),new THREE.LineBasicMaterial({color:col}))); }
+
+// Prüfverfahren aus Einheit 12: b = k · a komponentenweise
+function faktor(a,b){ const zeilen=a.map((ai,i)=>{ const bi=b[i];
+    if(ai===0) return bi===0?{art:'frei'}:{art:'widerspruch'};
+    return {art:'k', k:bi/ai}; });
+  const ks=zeilen.filter(z=>z.art==='k').map(z=>z.k);
+  const ok=!zeilen.some(z=>z.art==='widerspruch') && ks.length>0 && ks.every(k=>Math.abs(k-ks[0])<1e-9);
+  return {ok, k:ok?ks[0]:null}; }
+
+// ---------- 1 Das brauchst du: kollinear, Gegenvektor ----------
+function recapLab(root){
+  const v=[2,4,-2], P=[1,1,4], Q=[1,5,4], R=rng([P,add3(P,v),Q,add3(Q,mul3(-1,v))]);
+  statisch(root,'c-recap','c3-recap',(ctx,W,H)=>{
+    const S=schraegbild(ctx,{x:W*0.04,y:H*0.04,w:W*0.92,h:H*0.9},R);
+    dot(ctx,S,P,C_MUTED); dot(ctx,S,Q,C_MUTED);
+    pfeil(ctx,S,P,add3(P,v),C_BLUE); pfeil(ctx,S,Q,add3(Q,mul3(-1,v)),COL_B);
+    const m1=S.P(...add3(P,mul3(0.5,v))), m2=S.P(...add3(Q,mul3(-0.5,v)));
+    vlbl(ctx,m1[0]+14,m1[1]+4,'[v]',15,C_BLUE,'left'); vlbl(ctx,m2[0]+14,m2[1]+4,'−[v]',15,COL_B,'left');
+  },{range:R, center:[1,3,3], dist:15, theta:0.6, phi:0.4},
+  S3=>{ pfeil3d(S3,P,add3(P,v),0x2f6df6); pfeil3d(S3,Q,add3(Q,mul3(-1,v)),0xe8730c); });
+  revealCases(root); }
+
+// ---------- 2 Ein Beispiel: Welche Form haben die Dachflächen? ----------
+// Walmdach: Traufe (Rechteck A B C D) auf Höhe 2, 8 m lang (x2) und 6 m tief (x1), First 4 m höher.
+// Firstlänge f per Regler, der First ist mittig: E(4 | 3+s | 6), F(4 | 11−s | 6) mit s = (8 − f)/2.
+function dach(f){ const s=(8-f)/2;
+  return { A:[7,3,2], B:[7,11,2], C:[1,11,2], D:[1,3,2], E:[4,3+s,6], F:[4,11-s,6],
+    A0:[7,3,0], B0:[7,11,0], C0:[1,11,0], D0:[1,3,0] }; }
+function beispielLab(root){ const c=root.querySelector('#c-bsp'), c3=root.querySelector('#c3-bsp'); if(!c) return;
+  let S3=null, key3='';
+  const RB={x1:[0,8],x2:[0,12],x3:[0,7]};
+  loadThree(()=>{ if(c3&&document.contains(c3)) S3=szene3d(c3,{range:RB, center:[4,7,3], dist:17, theta:0.55, phi:0.35}); });
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const [f]=sliders(root,['sl-f']), P=dach(f), {A,B,C,D,E,F}=P;
+    const AB=sub3(B,A), EF=sub3(F,E), AE=sub3(E,A), BF=sub3(F,B), p1=faktor(EF,AB), p2=faktor(AE,BF);
+    const S=schraegbild(ctx,{x:W*0.04,y:H*0.04,w:W*0.92,h:H*0.9},RB,OHNE_ACHSEN);
+    // Hauswände (hinten gestrichelt), Dachflächen
+    [[P.A0,P.B0],[P.B0,P.C0],[P.A0,A],[P.B0,B],[P.C0,C]].forEach(([p,q])=>linie(ctx,S,p,q,'#b3bccd',null,1.6));
+    [[P.A0,P.D0],[P.D0,P.C0],[P.D0,D]].forEach(([p,q])=>linie(ctx,S,p,q,'#c4ccdb',[5,4],1.4));
+    flaeche(ctx,S,[D,C,F,E],'#9aa3b5',{fill:'rgba(154,163,181,.10)',width:1.2,dash:[5,4]});
+    flaeche(ctx,S,[B,C,F],'#9aa3b5',{fill:'rgba(154,163,181,.18)',width:1.4});
+    flaeche(ctx,S,[A,B,F,E],C_BLUE,{fill:'rgba(47,109,246,.16)',width:2.2});
+    flaeche(ctx,S,[A,E,D],'#9aa3b5',{fill:'rgba(154,163,181,.12)',width:1.2,dash:[5,4]});
+    parallelMarke(ctx,S,A,B,1,C_INK); parallelMarke(ctx,S,E,F,1,C_INK);
+    if(p2.ok){ parallelMarke(ctx,S,A,E,2,C_INK); parallelMarke(ctx,S,B,F,2,C_INK); }
+    const z=mitteBild(S,[A,B,E,F]);
+    [A,B,E,F].forEach(p=>dot(ctx,S,p,C_INK));
+    [['A',A],['B',B],['E',E],['F',F]].forEach(([n,p])=>nameLbl(ctx,S,p,z,n));
+    const o=root.querySelector('#bsp-out');
+    if(o) o.innerHTML='Vordere Dachfläche ABFE: Traufe '+av('AB')+' = '+vekv(AB)+', First '+av('EF')+' = '+vekv(EF)+'. '
+      +(p1.k===1?av('AB')+' = '+av('EF')+'.':av('AB')+' = '+fmt(p1.k)+' · '+av('EF')+', also parallel.')+'<br>'
+      +'Schräge Kanten: '+av('AE')+' = '+vekv(AE)+', '+av('BF')+' = '+vekv(BF)+(p2.ok?', gleich.':', nicht kollinear.')+'<br>'
+      +(p1.k===1?'<b>Die Dachfläche ist ein Parallelogramm (hier sogar ein Rechteck). Aus dem Walmdach ist ein Satteldach geworden.</b>'
+        :'<b>Genau ein Paar paralleler Seiten: Die Dachfläche ist ein Trapez, aber kein Parallelogramm.</b>');
+    if(S3){ const k=String(f); if(k!==key3){ S3.clear();
+      [[P.A0,P.B0],[P.B0,P.C0],[P.C0,P.D0],[P.D0,P.A0],[P.A0,A],[P.B0,B],[P.C0,C],[P.D0,D]].forEach(([p,q])=>linie3d(S3,p,q,0xb3bccd));
+      flaeche3d(S3,[A,B,F,E],0x2f6df6,0.28); flaeche3d(S3,[D,C,F,E],0x9aa3b5,0.15); flaeche3d(S3,[B,C,F],0x9aa3b5,0.22); flaeche3d(S3,[A,E,D],0x9aa3b5,0.22);
+      [['A',A],['B',B],['E',E],['F',F]].forEach(([n,p])=>label3d(S3,...p,n,'#1b2440'));
+      key3=k; } S3.render(); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); revealCases(root);
+  viewToggle(root, ()=>{ key3=''; if(S3) requestAnimationFrame(()=>S3.render()); }); }
+
+// ---------- 3 Das Konzept: A, B, C fest, der Regler bewegt D ----------
+const KA=[2,3,2], KB=[4,7,4], KC=[2,5,6];
+const KSTART={ par:[0,1,4], trap:[1,3,5], weder:[1,2,4], falle:[0,1,4] };
+function konzeptLab(root){ const c=root.querySelector('#c-k'), c3=root.querySelector('#c3-k'); if(!c) return;
+  let S3=null, key3='', mode='par';
+  const ids=['sl-k1','sl-k2','sl-k3'];
+  const setStart=m=>KSTART[m].forEach((x,i)=>{ const s=root.querySelector('#'+ids[i]); if(s) s.value=x; });
+  const presets=root.querySelectorAll('.presets button[data-mode]');
+  presets.forEach(btn=>btn.addEventListener('click',()=>{ presets.forEach(x=>x.classList.remove('on')); btn.classList.add('on'); mode=btn.dataset.mode; setStart(mode); key3=''; }));
+  loadThree(()=>{ if(c3&&document.contains(c3)) S3=szene3d(c3,{range:{x1:[0,5],x2:[0,8],x3:[0,7]}, center:[2,4,4], dist:17, theta:0.6, phi:0.4}); });
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const D=sliders(root,ids), A=KA, B=KB, C=KC, out=root.querySelector('#k-out');
+    const AB=sub3(B,A), DC=sub3(C,D), CD=sub3(D,C), AD=sub3(D,A), BC=sub3(C,B);
+    const p1=faktor(DC,AB), p2=faktor(BC,AD);       // AB = k · DC, AD = k · BC
+    const S=schraegbild(ctx,{x:W*0.04,y:H*0.04,w:W*0.92,h:H*0.9},rng([A,B,C,D]));
+    flaeche(ctx,S,[A,B,C,D],'#8fb2f7',{fill:'rgba(47,109,246,.08)',width:1.4});
+    linie(ctx,S,A,D,C_MUTED,null,2.2); linie(ctx,S,B,C,C_MUTED,null,2.2);
+    if(p1.ok){ parallelMarke(ctx,S,A,B,1,C_INK); parallelMarke(ctx,S,D,C,1,C_INK); }
+    if(p2.ok){ parallelMarke(ctx,S,A,D,2,C_INK); parallelMarke(ctx,S,B,C,2,C_INK); }
+    [A,B,C,D].forEach(p=>dot(ctx,S,p));
+    pfeil(ctx,S,A,B,C_BLUE,3.4);
+    if(mode==='falle') pfeil(ctx,S,C,D,COL_B,3.4); else pfeil(ctx,S,D,C,COL_B,3.4);
+    const z=mitteBild(S,[A,B,C,D]);
+    [['A',A],['B',B],['C',C],['D',D]].forEach(([n,p])=>nameLbl(ctx,S,p,z,n,C_BLUE));
+    if(out){ let t='';
+      if(mode==='falle'){ const f=faktor(CD,AB);
+        t+='<b>Falsch verglichen:</b> '+av('AB')+' = '+vekv(AB)+' mit '+av('CD')+' = '+vekv(CD)+(f.ok?': '+av('AB')+' = '+fmt(f.k)+' · '+av('CD')+'. Die Pfeile zeigen gegeneinander, '+av('CD')+' läuft in der falschen Richtung um.':'.')+'<br><b>Richtig verglichen:</b> ';
+      }
+      t+=av('AB')+' = '+vekv(AB)+', '+av('DC')+' = '+vekv(DC)+': '+(p1.ok?(p1.k===1?'gleich.':av('AB')+' = '+fmt(p1.k)+' · '+av('DC')+', parallel.'):'nicht kollinear.')+'<br>'
+        +av('AD')+' = '+vekv(AD)+', '+av('BC')+' = '+vekv(BC)+': '+(p2.ok?(p2.k===1?'gleich.':av('AD')+' = '+fmt(p2.k)+' · '+av('BC')+', parallel.'):'nicht kollinear.')+'<br>';
+      if(p1.ok&&p1.k===1) t+='<b>'+av('AB')+' = '+av('DC')+': ABCD ist ein Parallelogramm.</b>';
+      else if(p1.ok&&p1.k<0||p2.ok&&p2.k<0) t+='<b>Kollinear mit negativem Faktor: Das Viereck ABCD überschlägt sich.</b>';
+      else if(p1.ok||p2.ok) t+='<b>Genau ein Paar paralleler Seiten: ABCD ist ein Trapez, aber kein Parallelogramm.</b>';
+      else t+='<b>Kein Seitenpaar ist parallel: weder Trapez noch Parallelogramm.</b>';
+      out.innerHTML=t; }
+    if(S3){ const k=mode+'|'+D.join(); if(k!==key3){ S3.clear(); flaeche3d(S3,[A,B,C,D],0x2f6df6,0.16);
+      pfeil3d(S3,A,B,0x2f6df6); if(mode==='falle') pfeil3d(S3,C,D,0xe8730c); else pfeil3d(S3,D,C,0xe8730c);
+      [['A',A],['B',B],['C',C],['D',D]].forEach(([n,p])=>{ kugel3d(S3,...p,0x2f6df6,0.12); label3d(S3,...p,n,'#1b2440'); }); key3=k; } S3.render(); }
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop);
+  viewToggle(root, ()=>{ key3=''; if(S3) requestAnimationFrame(()=>S3.render()); }); }
+
+// ---------- 4 Üben: das Walmdach aus Aufgabe 4 ----------
+function uebenLab(root){
+  const A=[5,2,3], B=[5,12,3], C=[1,12,3], D=[1,2,3], E=[3,5,7], F=[3,9,7], R={x1:[0,6],x2:[0,13],x3:[0,8]};
+  statisch(root,'c-ueb','c3-ueb',(ctx,W,H)=>{
+    const S=schraegbild(ctx,{x:W*0.04,y:H*0.04,w:W*0.92,h:H*0.9},{x1:[1,5],x2:[2,12],x3:[3,7]},OHNE_ACHSEN);
+    flaeche(ctx,S,[D,C,F,E],'#9aa3b5',{fill:'rgba(154,163,181,.10)',width:1.2,dash:[5,4]});
+    flaeche(ctx,S,[A,E,D],'#9aa3b5',{fill:'rgba(154,163,181,.12)',width:1.2,dash:[5,4]});
+    flaeche(ctx,S,[B,C,F],'#9aa3b5',{fill:'rgba(154,163,181,.18)',width:1.6});
+    flaeche(ctx,S,[A,B,F,E],C_BLUE,{fill:'rgba(47,109,246,.14)',width:2.2});
+    const z=mitteBild(S,[A,B,C,D,E,F]);
+    [A,B,C,D,E,F].forEach(p=>dot(ctx,S,p));
+    [['A',A],['B',B],['C',C],['D',D],['E',E],['F',F]].forEach(([n,p])=>nameLbl(ctx,S,p,z,n,C_BLUE));
+  },{range:R, center:[3,7,4], dist:22, theta:0.6, phi:0.4},
+  S3=>{ flaeche3d(S3,[A,B,F,E],0x2f6df6,0.25); flaeche3d(S3,[D,C,F,E],0x9aa3b5,0.15); flaeche3d(S3,[B,C,F],0x9aa3b5,0.2); flaeche3d(S3,[A,E,D],0x9aa3b5,0.2);
+    [['A',A],['B',B],['C',C],['D',D],['E',E],['F',F]].forEach(([n,p])=>label3d(S3,...p,n,'#1b2440')); });
+  revealCases(root); }
+
+const VSW2D='<div class="vswitch" data-viewtabs><button data-view="2d" class="on" title="Schrägbild (Papier)">📐</button><button data-view="3d" title="3D-Raum (drehbar)">🧊</button></div>';
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Kollinear und Gegenvektor', init:recapLab, html:
+   `${VSW2D}
+    <canvas class="viz" id="c-recap" data-viewpane="2d"></canvas>
+    <canvas class="viz" id="c3-recap" data-viewpane="3d"></canvas>
+    <p>Das brauchst du aus Einheit 4, 12 und der Sekundarstufe I:</p>
+    <ul>
+      <li><b>Kollinear:</b> ${av('b')} = k · ${av('a')} mit einem k in allen drei Zeilen. Kollineare Vektoren sind parallel.</li>
+      <li><b>Gegenvektor:</b> −${av('v')} hat dieselbe Länge und die umgekehrte Orientierung. Es gilt ${av('CD')} = −${av('DC')}.</li>
+      <li><b>Trapez:</b> Viereck mit mindestens einem Paar paralleler Seiten. <b>Parallelogramm:</b> beide Paare gegenüberliegender Seiten parallel. Jedes Parallelogramm ist also auch ein Trapez.</li>
+    </ul>
+    <div class="cases">
+      <div class="case"><h3>Aufwärmen 1</h3><p>Sind (2; −4; 2) und (−1; 2; −1) kollinear?</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>Ja, in allen Zeilen k = −0,5.</div></div>
+      <div class="case"><h3>Aufwärmen 2</h3><p>Es ist ${av('CD')} = (3; −1; 2). Gib ${av('DC')} an.</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>${av('DC')} = −${av('CD')} = <b>(−3; 1; −2)</b>.</div></div>
+    </div>` },
+
+ { step:'Ein Beispiel', title:'Welche Form haben die Dachflächen?', init:beispielLab, html:
+   `<div class="vswitch" data-viewtabs><button data-view="3d" class="on" title="3D-Raum (drehbar)">🧊</button><button data-view="2d" title="Schrägbild (Papier)">📐</button></div>
+    <canvas class="viz" id="c3-bsp" data-viewpane="3d"></canvas>
+    <canvas class="viz" id="c-bsp" data-viewpane="2d"></canvas>
+    <div class="ctrls">
+      <div class="ctrl"><label>Firstlänge (m)</label><input type="range" id="sl-f" min="2" max="8" step="2" value="4"><span class="val" id="val-f">4</span></div>
+    </div>
+    <p>Ein Walmdach: Die Traufe (untere Dachkante) ist ein Rechteck von 8 m mal 6 m, der First (obere Kante) liegt mittig 4 m höher. <b>Welche Form hat die vordere Dachfläche ABFE?</b></p>
+    <p><span id="bsp-out"></span></p>
+    <div class="cases">
+      <div class="case"><h3>Überlege zuerst</h3><p>Welche Seiten der Dachfläche vergleicht man, und woran erkennt man, ob sie parallel sind?</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>Man vergleicht gegenüberliegende Seiten: Traufe ${av('AB')} mit First ${av('EF')} und die schrägen Kanten ${av('AE')} mit ${av('BF')}. Parallel sind sie, wenn die Vektoren <b>kollinear</b> sind. Traufe und First sind es immer, die schrägen Kanten nur, wenn der First so lang ist wie die Traufe. Dann sind auch ${av('AB')} und ${av('EF')} gleich.</div></div>
+    </div>` },
+
+ { step:'Das Konzept', title:'Parallelogramm oder Trapez?', init:konzeptLab, html:
+   `${VSW2D}
+    <canvas class="viz" id="c-k" data-viewpane="2d"></canvas>
+    <canvas class="viz" id="c3-k" data-viewpane="3d"></canvas>
+    <div class="ctrls">
+      <div class="ctrl"><label>d₁</label><input type="range" id="sl-k1" min="0" max="4" step="1" value="0"><span class="val" id="val-k1">0</span></div>
+      <div class="ctrl"><label>d₂</label><input type="range" id="sl-k2" min="0" max="8" step="1" value="1"><span class="val" id="val-k2">1</span></div>
+      <div class="ctrl"><label>d₃</label><input type="range" id="sl-k3" min="1" max="7" step="1" value="4"><span class="val" id="val-k3">4</span></div>
+    </div>
+    <div class="presets"><button data-mode="par" class="on">Parallelogramm</button><button data-mode="trap">Trapez</button><button data-mode="weder">Weder noch</button><button data-mode="falle">Falle: Reihenfolge</button></div>
+    <p><b>Am Bild:</b> <span id="k-out"></span></p>
+    <div class="box merke"><span class="lbl">Merke: Parallelogramm nachweisen</span>
+      <p style="margin:.15rem 0">Das Viereck ABCD ist ein <b>Parallelogramm</b>, wenn ${av('AB')} = ${av('DC')} gilt. Das zweite Seitenpaar muss man nicht mehr prüfen, es gilt dann automatisch ${av('AD')} = ${av('BC')}.</p></div>
+    <div class="cases"><div class="case"><h3>Warum reicht ein Paar?</h3><p>Folgt aus ${av('AB')} = ${av('DC')} wirklich ${av('AD')} = ${av('BC')}?</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>Vektorkette von A nach D über B und C: ${av('AD')} = ${av('AB')} + ${av('BC')} + ${av('CD')}. Wegen ${av('CD')} = −${av('DC')} = −${av('AB')} heben sich ${av('AB')} und ${av('CD')} auf, es bleibt ${av('AD')} = ${av('BC')}.</div></div></div>
+    <div class="box merke"><span class="lbl">Merke: Trapez nachweisen</span>
+      <p style="margin:.15rem 0">Ist ${av('AB')} = k · ${av('DC')}, sind AB und DC parallel, und ABCD ist ein <b>Trapez</b>. Für k = 1 ist es sogar ein Parallelogramm. Ist kein Seitenpaar kollinear, ist ABCD weder Trapez noch Parallelogramm.</p></div>
+    <div class="box merke"><span class="lbl">Merke: Reihenfolge beachten</span>
+      <p style="margin:.15rem 0">Vergleiche gegenüberliegende Seiten in derselben Richtung: ${av('AB')} mit ${av('DC')} und ${av('AD')} mit ${av('BC')}. Wer ${av('AB')} mit ${av('CD')} vergleicht, bekommt beim Parallelogramm den Gegenvektor (k = −1).</p></div>
+    <div class="box merke"><span class="lbl">Merke: das Gegenteil begründen</span>
+      <p style="margin:.15rem 0">„ABCD ist kein Parallelogramm, weil ${av('AB')} ≠ ${av('DC')} ist." Ein einziger passender Vergleich genügt für die Begründung.</p></div>` },
+
+ { step:'Üben', title:'Arbeitsblatt: Parallelogramm und Trapez', init:uebenLab, html:
+   `${VSW2D}
+    <canvas class="viz" id="c-ueb" data-viewpane="2d"></canvas>
+    <canvas class="viz" id="c3-ueb" data-viewpane="3d"></canvas>
+    <p>Jetzt das Arbeitsblatt <a href="blaetter/13-parallelogramm-trapez.pdf" target="_blank"><b>Parallelogramm und Trapez nachweisen (PDF)</b></a>. Das Bild zeigt das Walmdach aus Aufgabe 4.</p>
+    <div class="cases">
+      <div class="case"><h3>Aufgabe 1a</h3><p>A(1 | 2 | 0), B(4 | 3 | 2), C(5 | 6 | 3), D(2 | 5 | 1)</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>${av('AB')} = ${av('DC')} = (3; 1; 2): <b>Parallelogramm</b>.</div></div>
+      <div class="case"><h3>Aufgabe 1b</h3><p>A(2 | 0 | 1), B(5 | 2 | 2), C(6 | 5 | 4), D(3 | 3 | 2)</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>${av('AB')} = (3; 2; 1), ${av('DC')} = (3; 2; 2): <b>kein Parallelogramm</b>.</div></div>
+      <div class="case"><h3>Aufgabe 2a</h3><p>A(1 | 1 | 1), B(7 | 4 | 4), C(5 | 6 | 4), D(3 | 5 | 3)</p><button class="reveal">Antwort zeigen</button><div class="res" hidden>${av('AB')} = 3 · ${av('DC')}, ${av('AD')} und ${av('BC')} nicht kollinear: <b>Trapez, aber kein Parallelogramm</b>.</div></div>
+      <div class="case"><h3>Tipp zu Aufgabe 3</h3><p>Den vierten Punkt D bestimmen.</p><button class="reveal">Tipp zeigen</button><div class="res" hidden>Parallel und halb so lang heißt: ${av('DC')} = ½ · ${av('AB')}. Von C aus gehst du diesen Vektor rückwärts, also ${av('d')} = ${av('c')} − ${av('DC')}.</div></div>
+      <div class="case"><h3>Tipp zu Aufgabe 5</h3><p>Raute ohne vorgegebenes Parallelogramm.</p><button class="reveal">Tipp zeigen</button><div class="res" hidden>Der Nachweis hat zwei Schritte: Erst ${av('AB')} mit ${av('DC')} vergleichen (Parallelogramm), dann |${av('AB')}|² mit |${av('AD')}|² vergleichen (Raute, wie in Einheit 11). Erst beides zusammen reicht.</div></div>
+      <div class="case"><h3>Tipp zu Aufgabe 6</h3><p>Lisas Vergleich.</p><button class="reveal">Tipp zeigen</button><div class="res" hidden>Lisa vergleicht ${av('AB')} mit ${av('CD')}. Überlege, welcher Vektor im Parallelogramm ABCD zu ${av('AB')} passt und wie er mit ${av('CD')} zusammenhängt.</div></div>
+      <div class="case"><h3>Tipp zu Aufgabe 8</h3><p>Drei mögliche Punkte D.</p><button class="reveal">Tipp zeigen</button><div class="res" hidden>Nimm nacheinander AC, BC und AB als Diagonale. Ist AC die Diagonale, heißt das Parallelogramm ABCD, und D liegt so, dass ${av('AD')} = ${av('BC')} gilt. Die beiden anderen Fälle gehen genauso, nur mit anderer Reihenfolge der Ecken.</div></div>
+    </div>
+    <p>Die Lösungen aller Aufgaben stehen auf der letzten Seite des Blattes.</p>` },
+
+ { step:'Einordnung', title:'Wo stehen wir?', html:
+   `<div class="box"><span class="lbl">Vorher</span>Kollinear oder nicht (Einheit 12) und Längen vergleichen bei vorgegebenem Parallelogramm (Einheit 11).</div>
+    <div class="box merke"><span class="lbl">Jetzt</span><b>Parallelogramm</b> und <b>Trapez</b> selbst nachweisen: ${av('AB')} = ${av('DC')} oder ${av('AB')} = k · ${av('DC')}, in der richtigen Reihenfolge. Zusammen mit Einheit 11 lässt sich jetzt auch eine Raute ganz nachweisen.</div>
+    <div class="box"><span class="lbl">Danach</span>Der <b>rechte Winkel</b> (Einheit 14 und 15), das vollständige <b>Aufschreiben</b> eines Nachweises (Einheit 17) und die ganze Kriterienkette für Vierecke (Einheit 19).</div>
+    <p class="lead">Für das Reihenziel: Zwei der drei Nachweis-Werkzeuge sind jetzt da, Länge und Parallelität. Es fehlt noch der rechte Winkel.</p>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt ihr', init:quiz, html:
+   `<div class="q" data-hilfe="Schritt 3 „Das Konzept“, Voreinstellung „Parallelogramm“ und Merkkasten „Parallelogramm nachweisen“"><p>Für ein Viereck ABCD gilt ${av('AB')} = ${av('DC')}. <b>Was folgt?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">ABCD ist ein Parallelogramm.</button>
+       <button class="choice" data-ok="0">ABCD ist ein Trapez, aber kein Parallelogramm.</button>
+       <button class="choice" data-ok="0">Man muss erst noch ${av('AD')} und ${av('BC')} prüfen.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Ein gleiches Vektorpaar in der richtigen Reihenfolge genügt. ${av('AD')} = ${av('BC')} folgt daraus automatisch.</div></div></div>
+    <div class="q" data-hilfe="Schritt 3 „Das Konzept“, Voreinstellung „Trapez“ und Merkkasten „Trapez nachweisen“"><p>Für ein Viereck ABCD gilt ${av('AB')} = 2 · ${av('DC')}. <b>Was folgt?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">ABCD ist ein Trapez, aber kein Parallelogramm.</button>
+       <button class="choice" data-ok="0">ABCD ist ein Parallelogramm.</button>
+       <button class="choice" data-ok="0">Nichts, weil die Vektoren verschieden sind.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>AB und DC sind parallel, AB ist doppelt so lang. Dann können AD und BC nicht auch parallel sein, sonst wären AB und DC gleich lang.</div></div></div>
+    <div class="q" data-hilfe="Schritt 3 „Das Konzept“, Voreinstellung „Falle: Reihenfolge“ und Merkkasten „Reihenfolge beachten“"><p>Es ist ${av('AB')} = (2; 1; 3) und ${av('CD')} = (−2; −1; −3). <b>Was folgt für ABCD?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Parallelogramm, denn ${av('DC')} = (2; 1; 3) = ${av('AB')}.</button>
+       <button class="choice" data-ok="0">Kein Parallelogramm, die Vektoren sind verschieden.</button>
+       <button class="choice" data-ok="0">Trapez mit k = −1.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>${av('CD')} läuft in die falsche Richtung. Der richtige Vergleichspartner ist ${av('DC')} = −${av('CD')}, und der ist gleich ${av('AB')}.</div></div></div>
+    <div class="q" data-hilfe="Schritt 3 „Das Konzept“, Merkkasten „Parallelogramm nachweisen“ (gleicher Vektor, nicht nur gleiche Länge)"><p>Jemand schreibt: „|${av('AB')}| = |${av('DC')}|, also ist ABCD ein Parallelogramm." <b>Stimmt das?</b></p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Nein, gleich lang reicht nicht, auch die Richtung muss stimmen.</button>
+       <button class="choice" data-ok="0">Ja, gleich lange Gegenseiten ergeben ein Parallelogramm.</button>
+       <button class="choice" data-ok="0">Ja, wenn auch die anderen Seiten gleich lang sind.</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Ein gleichschenkliges Trapez hat zwei gleich lange Seiten, die nicht parallel sind. Im Raum reichen nicht einmal vier gleich lange Seiten (Einheit 11). Nötig ist der gleiche Vektor: ${av('AB')} = ${av('DC')}.</div></div></div>` },
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

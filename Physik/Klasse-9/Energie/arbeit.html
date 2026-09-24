@@ -1,0 +1,488 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-9/Energie/_common.js + Physik/Klasse-9/Energie/topics/02-arbeit.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 9 – Energie: gemeinsame Zeichen-Helfer.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr.
+
+// Waagerechter Energiebalken (frac 0..1).
+function energyBar(ctx, x, y, wMax, frac, col, label){
+  frac=Math.max(0,Math.min(1,frac));
+  ctx.fillStyle='#e3e7ef'; rr(ctx,x,y,wMax,16,6); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(2,wMax*frac),16,6); ctx.fill();
+  ctx.strokeStyle='#c0c8da'; ctx.lineWidth=1; rr(ctx,x,y,wMax,16,6); ctx.stroke();
+  if(label) lbl(ctx, x, y-9, label, 12, '#1b2440','left');
+}
+
+// Bodenlinie mit Schraffur.
+function ground(ctx, x1, x2, y){
+  ctx.strokeStyle='#8a8a92'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+  ctx.strokeStyle='#c0c8da'; ctx.lineWidth=1; for(let x=x1+6;x<x2;x+=12){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-6,y+8); ctx.stroke(); }
+}
+
+// Klotz (Kiste).
+function crate(ctx, x, y, s){
+  ctx.fillStyle='#c9a06a'; ctx.strokeStyle='#8a5a2b'; ctx.lineWidth=2; rr(ctx, x, y, s, s, 3); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+s,y+s); ctx.moveTo(x+s,y); ctx.lineTo(x,y+s); ctx.stroke();
+}
+
+const PAGE={ area:'Energie', slug:'arbeit', title:'Arbeit W = F·s', h1:'Arbeit: Energie übertragen' };
+
+// Das brauchst du – Kraft bewegt, Energie in Joule
+function recapLab(root){ const c=root.querySelector('#c-recap'); if(!c) return;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    ground(ctx, W*0.15, W*0.85, H*0.62); crate(ctx, W*0.4, H*0.62-46, 46);
+    arrow(ctx, W*0.3, H*0.62-23, W*0.4, H*0.62-23, '#1f7a34', 4); lbl(ctx, W*0.3, H*0.62-40, 'Kraft F', 12, '#1f7a34','left');
+    lbl(ctx, W*0.5, H*0.9, 'Eine Kraft schiebt einen Körper – dabei wird Energie übertragen', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Arbeit = Kraft · Weg
+function workLab(root){ const c=root.querySelector('#c-work'); if(!c) return;
+  const sF=root.querySelector('#sl-F'), sS=root.querySelector('#sl-s');
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const F=sF?+sF.value:20, s=sS?+sS.value:3, Wk=F*s;
+    const gy=H*0.52, x0=W*0.18, sPx=s*W*0.10, cx=x0+sPx;
+    ground(ctx, W*0.1, W*0.9, gy);
+    ctx.setLineDash([5,4]); ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x0+23, gy-8); ctx.lineTo(cx+23, gy-8); ctx.stroke(); ctx.setLineDash([]);
+    lbl(ctx, (x0+cx)/2+23, gy-16, 'Weg s = '+s+' m', 12, '#5a6684');
+    crate(ctx, cx, gy-46, 46);
+    const aLen=12+F*0.7; arrow(ctx, cx-aLen, gy-23, cx, gy-23, '#1f7a34', 4); lbl(ctx, cx-aLen, gy-40, 'F = '+F+' N', 12, '#1f7a34','left');
+    energyBar(ctx, W*0.2, H*0.72, W*0.6, Wk/250, '#2f6df6', 'verrichtete Arbeit = übertragene Energie');
+    lbl(ctx, W*0.5, H*0.93, 'W = F · s = '+F+' N · '+s+' m = '+Wk+' J', 14, '#1b2440');
+    const vF=root.querySelector('#val-F'); if(vF) vF.textContent=F+' N';
+    const vS=root.querySelector('#val-s'); if(vS) vS.textContent=s+' m';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Hubarbeit → Lageenergie
+function liftLab(root){ const c=root.querySelector('#c-lift'); if(!c) return; const sH=root.querySelector('#sl-h');
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const h=sH?+sH.value:2, F=20, Wk=F*h;
+    const gy=H*0.78, top=H*0.14, y=gy - (h/3)*(gy-top);
+    ground(ctx, W*0.1, W*0.6, gy);
+    ctx.setLineDash([5,4]); ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(W*0.12, y+23); ctx.lineTo(W*0.12, gy); ctx.stroke(); ctx.setLineDash([]);
+    lbl(ctx, W*0.14, (y+gy)/2, 'h = '+h+' m', 12, '#5a6684','left');
+    crate(ctx, W*0.18, y, 46);
+    arrow(ctx, W*0.41, y+34, W*0.41, y+6, '#1f7a34', 4); lbl(ctx, W*0.43, y+20, 'F = 20 N', 12, '#1f7a34','left');
+    energyBar(ctx, W*0.62, H*0.5, W*0.3, Wk/60, '#e08a00', 'Lageenergie');
+    lbl(ctx, W*0.5, H*0.93, 'Hubarbeit W = F · h = 20 N · '+h+' m = '+Wk+' J  →  steckt als Lageenergie im Körper', 12, '#1b2440');
+    const vH=root.querySelector('#val-h'); if(vH) vH.textContent=h+' m';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Transferfrage', title:'Die Fragen der Stunde', html:
+   `<div class="box frage"><span class="lbl">Transferfrage 1</span>Ein Koffer mit der Gewichtskraft 200 N soll 1 m hoch auf eine Ladefläche. Du kannst ihn direkt hochheben oder über eine 4 m lange, glatte Rampe hinaufschieben. Dafür reichen 50 N. Spart die Rampe Arbeit?</div>
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Du steigst in den 5. Stock, 15 m hoch, deine Gewichtskraft ist 500 N. Stattdessen könntest du den Aufzug nehmen: Die Kabine wiegt 4000 N, und über eine Rolle hängt an ihr ein Gegengewicht von ebenfalls 4000 N, das nach unten fährt, während die Kabine hochfährt. Wie viel Arbeit muss der Aufzugmotor mindestens verrichten? Vergleiche mit dir auf der Treppe.</div>
+    <p>Am Ende der Stunde kannst du beide beantworten. Notiere zwischendurch, was dir hilft.</p>` },
+
+ { step:'Das brauchst du', title:'Kraft und Energie', init:recapLab, html:
+   `<p>Das brauchst du:</p>
+    <ul>
+      <li>Eine <b>Kraft</b> wird in <b>Newton (N)</b> gemessen und kann einen Körper bewegen.</li>
+      <li><b>Energie</b> ist die Fähigkeit, etwas zu bewegen; sie wird in <b>Joule (J)</b> gemessen (letzte Stunde).</li>
+    </ul>
+    <canvas class="viz" id="c-recap"></canvas>
+    <p>Wenn eine Kraft einen Körper ein Stück weit schiebt, wird <b>Energie übertragen</b>. Das misst man als <b>Arbeit</b>.</p>` },
+
+ { step:'Arbeit = Kraft · Weg', title:'W = F · s', init:workLab, html:
+   `<p>Schiebt eine <b>Kraft F</b> einen Körper über den <b>Weg s</b>, so verrichtet sie die <b>Arbeit W = F · s</b>. Die Arbeit ist genau die dabei übertragene Energie – auch sie wird in Joule gemessen. Verstelle Kraft und Weg.</p>
+    <canvas class="viz" id="c-work"></canvas>
+    <div class="ctrl"><label>Kraft F</label><input type="range" id="sl-F" min="5" max="50" step="5" value="20"><span class="val" id="val-F">20 N</span></div>
+    <div class="ctrl"><label>Weg s</label><input type="range" id="sl-s" min="1" max="5" step="1" value="3"><span class="val" id="val-s">3 m</span></div>
+    <div class="box merke"><span class="lbl">Merke</span><b>Arbeit W = F · s</b> (Kraft mal Weg), Einheit <b>Joule (J)</b>. 1 J = 1 N · 1 m. Durch Arbeit wird Energie von einem Körper auf einen anderen <b>übertragen</b> oder umgewandelt.</div>` },
+
+ { step:'Hubarbeit', title:'Arbeit wird zu Lageenergie', init:liftLab, html:
+   `<p>Hebt man einen Körper hoch, arbeitet man gegen die Gewichtskraft. Diese <b>Hubarbeit</b> steckt danach als <b>Lageenergie</b> im Körper – lässt man ihn los, wird sie wieder frei. Verstelle die Höhe und beobachte, wie die Lageenergie mitwächst.</p>
+    <canvas class="viz" id="c-lift"></canvas>
+    <div class="ctrl"><label>Höhe h</label><input type="range" id="sl-h" min="1" max="3" step="1" value="2"><span class="val" id="val-h">2 m</span></div>
+    <div class="box merke"><span class="lbl">Merke</span>Die <b>Hubarbeit</b> W = F · h wird im angehobenen Körper als <b>Lageenergie</b> gespeichert. Doppelte Höhe → doppelte Arbeit → doppelte Lageenergie.</div>` },
+
+ { step:'Mehr Beispiele', title:'Arbeit ausrechnen', init:revealCases, html:
+   `<p>Rechne erst selbst – tippe dann auf „Antwort zeigen". Es gilt W = F · s.</p>
+    <div class="cases">
+      <div class="case"><h3>Kiste schieben</h3><p>Du schiebst eine Kiste mit 30 N über 4 m. Wie viel Arbeit verrichtest du?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>W = F · s = 30 N · 4 m = <b>120 J</b>.</div></div>
+      <div class="case"><h3>Doppelter Weg</h3><p>Du schiebst dieselbe Kiste doppelt so weit. Was passiert mit der Arbeit?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Sie verdoppelt sich – die Arbeit ist proportional zum Weg.</div></div>
+      <div class="case"><h3>Ohne Weg keine Arbeit</h3><p>Du drückst mit aller Kraft gegen eine Wand, sie bewegt sich nicht. Wie viel Arbeit im physikalischen Sinn verrichtest du?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Null Joule – ohne zurückgelegten Weg (s = 0) ist W = F · 0 = 0. Anstrengend ist es trotzdem.</div></div>
+      <div class="case"><h3>Buch heben</h3><p>Ein Buch (Gewichtskraft 10 N) wird 1,5 m hochgehoben. Wie groß ist die Hubarbeit?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>W = 10 N · 1,5 m = <b>15 J</b> – das steckt danach als Lageenergie im Buch.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wohin das führt', init:liftLab, html:
+   `<div class="cases">
+      <div class="case"><h3>Das ist neu</h3><p><b>W = F · s</b>: Durch Arbeit wird Energie übertragen; Hubarbeit wird zu Lageenergie.</p></div>
+      <div class="case"><h3>Noch offen</h3><p>Was geschieht mit der Energie danach? Sie <b>wandelt</b> sich um.</p></div>
+      <div class="case"><h3>Das kommt als Nächstes</h3><p><b>Energieumwandlung</b> und die <b>Energieerhaltung</b>.</p></div>
+    </div>
+    <div class="box merke"><span class="lbl">Reihenbezug</span>Arbeit ist der „Umschlagplatz" der Energie: Sie überträgt Energie von einer Form in eine andere. Wie sich diese Formen ineinander umwandeln, klärt die nächste Stunde.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Wie berechnet man die mechanische Arbeit?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">W = F · s (Kraft mal Weg)</button>
+       <button class="choice" data-ok="0">W = F + s</button>
+       <button class="choice" data-ok="0">W = F / s</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Arbeit = Kraft mal Weg, W = F · s, Einheit Joule.</div></div></div>
+    <div class="q"><p>Du schiebst mit 25 N über 2 m. Wie viel Arbeit ist das?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">50 J</button>
+       <button class="choice" data-ok="0">27 J</button>
+       <button class="choice" data-ok="0">12,5 J</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>W = 25 N · 2 m = 50 J.</div></div></div>
+    <div class="q"><p>Du drückst gegen eine Wand, die sich nicht bewegt. Die verrichtete Arbeit ist …</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">0 J (kein Weg)</button>
+       <button class="choice" data-ok="0">sehr groß</button>
+       <button class="choice" data-ok="0">gleich der Kraft</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Ohne Weg (s = 0) ist W = 0 – im physikalischen Sinn wird keine Arbeit verrichtet.</div></div></div>
+    <div class="q"><p>Wohin geht die Hubarbeit beim Anheben eines Körpers?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">sie wird als Lageenergie gespeichert</button>
+       <button class="choice" data-ok="0">sie verschwindet</button>
+       <button class="choice" data-ok="0">sie wird zu Spannenergie</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Die Hubarbeit steckt danach als Lageenergie im angehobenen Körper.</div></div></div>` },
+
+ { step:'Lösung', title:'Die Transferfragen gelöst', init:transferTabs, html:
+   `<div class="modes">
+      <button data-tf="1" class="on">Transferfrage 1</button>
+      <button data-tf="2">Transferfrage 2</button>
+    </div>
+    <div data-tf-tab="1">
+    <div class="box frage"><span class="lbl">Transferfrage 1</span>Ein Koffer mit der Gewichtskraft 200 N soll 1 m hoch auf eine Ladefläche. Du kannst ihn direkt hochheben oder über eine 4 m lange, glatte Rampe hinaufschieben. Dafür reichen 50 N. Spart die Rampe Arbeit?</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Heben</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>W = F · s = 200 N · 1 m = 200 J.</div></div>
+      <div class="case"><h3>Schritt 2: Rampe</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>W = F · s = 50 N · 4 m = 200 J.</div></div>
+      <div class="case"><h3>Schritt 3: Antwort</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Die Arbeit ist gleich groß. Die Rampe spart Kraft, dafür ist der Weg länger. Am Ende steckt in beiden Fällen dieselbe Lageenergie im Koffer. Mit Reibung braucht man auf der Rampe sogar etwas mehr Arbeit.</div></div>
+    </div>
+    </div>
+    <div data-tf-tab="2" style="display:none">
+    <div class="box frage"><span class="lbl">Transferfrage 2</span>Du steigst in den 5. Stock, 15 m hoch, deine Gewichtskraft ist 500 N. Stattdessen könntest du den Aufzug nehmen: Die Kabine wiegt 4000 N, und über eine Rolle hängt an ihr ein Gegengewicht von ebenfalls 4000 N, das nach unten fährt, während die Kabine hochfährt. Wie viel Arbeit muss der Aufzugmotor mindestens verrichten? Vergleiche mit dir auf der Treppe.</div>
+    <div class="cases" style="grid-template-columns:1fr">
+      <div class="case"><h3>Schritt 1: Treppe</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>W = F · s = 500 N · 15 m = 7500 J.</div></div>
+      <div class="case"><h3>Schritt 2: Nach oben</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Kabine und du: 4000 N + 500 N = 4500 N werden 15 m gehoben: 4500 N · 15 m = 67 500 J.</div></div>
+      <div class="case"><h3>Schritt 3: Nach unten</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Das Gegengewicht sinkt 15 m und gibt dabei 4000 N · 15 m = 60 000 J Lageenergie ab. Die hilft beim Hochziehen der Kabine.</div></div>
+      <div class="case"><h3>Schritt 4: Antwort</h3>
+        <button class="reveal">Schritt zeigen</button><div class="res" hidden>Der Motor muss nur 67 500 J − 60 000 J = 7500 J aufbringen, genau so viel wie du auf der Treppe. Das Gegengewicht sorgt dafür, dass nur deine eigene Lageenergie bezahlt werden muss.</div></div>
+    </div>
+    </div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

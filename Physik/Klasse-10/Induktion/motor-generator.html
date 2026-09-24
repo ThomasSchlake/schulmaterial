@@ -1,0 +1,533 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-10/Induktion/_common.js + Physik/Klasse-10/Induktion/topics/04-motor-generator.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 10 – Induktion: gemeinsame Zeichen-Helfer.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr.
+
+// Zeiger-Messgerät (Spannung). val in [-1,1]; 0 = Zeiger senkrecht, + rechts (blau), − links (rot).
+function meter(ctx, cx, cy, r, val){
+  const v=Math.max(-1,Math.min(1,val));
+  ctx.fillStyle='#fff'; ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2;
+  rr(ctx, cx-r, cy-r*0.72, 2*r, r*1.15, 6); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle='#c0c8da'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx, cy+r*0.28, r*0.78, Math.PI*1.18, Math.PI*1.82); ctx.stroke();
+  lbl(ctx, cx-r*0.6, cy-r*0.02, '−', 13, '#c0392b');
+  lbl(ctx, cx+r*0.6, cy-r*0.02, '+', 13, '#2f6df6');
+  lbl(ctx, cx, cy+r*0.5, '0', 11, '#8a94a8');
+  const ang=-Math.PI/2 + v*0.92, pivotY=cy+r*0.28, L=r*0.72;
+  ctx.strokeStyle=Math.abs(v)<0.03?'#5a6684':(v>0?'#2f6df6':'#c0392b'); ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(cx, pivotY); ctx.lineTo(cx+Math.cos(ang)*L, pivotY+Math.sin(ang)*L); ctx.stroke();
+  ball(ctx, cx, pivotY, 3, '#5a6684');
+  lbl(ctx, cx, cy-r*0.5, 'V', 12, '#5a6684');
+}
+
+// Spule als Solenoid (n vertikale Windungen entlang der waagerechten Achse).
+function coil(ctx, cx, cy, halfW, halfH, n){
+  ctx.strokeStyle='#b8792e'; ctx.lineWidth=3;
+  for(let k=0;k<n;k++){ const x=cx-halfW + (2*halfW)*(k/(n-1));
+    ctx.beginPath(); ctx.ellipse(x, cy, halfW*0.09, halfH, 0, 0, 7); ctx.stroke(); }
+}
+
+// Zwei Leitungen von der Spule hinunter zum Messgerät.
+function coilLeads(ctx, cx, cy, halfW, halfH, mx, my){
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(cx-halfW, cy+halfH); ctx.lineTo(cx-halfW, my); ctx.lineTo(mx-14, my);
+  ctx.moveTo(cx+halfW, cy+halfH); ctx.lineTo(cx+halfW, my); ctx.lineTo(mx+14, my);
+  ctx.stroke();
+}
+
+// Stabmagnet, waagerecht. northRight=true → rechte Hälfte N (rot), zeigt zur Spule.
+function magnet(ctx, cx, cy, w, h, northRight){
+  const half=w/2;
+  ctx.fillStyle=northRight?'#2f6df6':'#e5533c'; rr(ctx, cx-half, cy-h/2, half, h, 3); ctx.fill();
+  ctx.fillStyle=northRight?'#e5533c':'#2f6df6'; rr(ctx, cx, cy-h/2, half, h, 3); ctx.fill();
+  lbl(ctx, cx-half/2, cy, northRight?'S':'N', 14, '#fff');
+  lbl(ctx, cx+half/2, cy, northRight?'N':'S', 14, '#fff');
+}
+
+// Standardszene: Spule rechts, Magnet auf der Achse, Messgerät unten.
+// o = {magX, val, showLines, penetration, windings}
+function induScene(ctx, W, H, o){
+  const magX=o.magX, val=o.val||0, showLines=o.showLines, pen=Math.max(0,Math.min(1,o.penetration||0)), nw=o.windings||7;
+  const cy=H*0.40, cxCoil=W*0.62, chW=W*0.13, chH=H*0.17;
+  if(showLines){ const n=1+Math.round(4*pen);
+    for(let k=0;k<n;k++){ const y=cy-chH*0.7+chH*1.4*(k/Math.max(1,n-1)); arrow(ctx, cxCoil-chW, y, cxCoil+chW, y, '#7a5cf0', 1.4); } }
+  coil(ctx, cxCoil, cy, chW, chH, nw);
+  const my=H*0.82, mx=W*0.62;
+  coilLeads(ctx, cxCoil, cy, chW, chH, mx, my);
+  meter(ctx, mx, my, H*0.14, val);
+  magnet(ctx, magX, cy, W*0.16, H*0.12, true);
+  return { cy, cxCoil, chW };
+}
+
+const PAGE={ area:'Induktion', slug:'motor-generator', title:'Motor = Generator umgekehrt', h1:'Motor und Generator: dieselbe Maschine' };
+
+// Feldmagnet waagerecht: N links, S rechts.
+function polesH(ctx, W, H, cy){
+  const pw=W*0.08, ph=H*0.46, py=cy-ph/2;
+  ctx.fillStyle='#e5533c'; rr(ctx, W*0.05, py, pw, ph, 4); ctx.fill();
+  ctx.fillStyle='#2f6df6'; rr(ctx, W*0.95-pw, py, pw, ph, 4); ctx.fill();
+  lbl(ctx, W*0.05+pw/2, py-10, 'N', 16, '#1b2440'); lbl(ctx, W*0.95-pw/2, py-10, 'S', 16, '#1b2440');
+  for(let k=0;k<3;k++){ const y=py+ph*(0.2+0.3*k); arrow(ctx, W*0.18, y, W*0.82, y, '#7a5cf0', 1.3); }
+}
+
+// Drehbare Schleife als Balken mit zwei Leiterenden.
+function loopBar(ctx, cx, cy, armR, th){
+  const aA=Math.PI-th, ax=cx+armR*Math.cos(aA), ay=cy-armR*Math.sin(aA), bx=2*cx-ax, by=2*cy-ay;
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  ctx.fillStyle='#c9a06a'; ctx.strokeStyle='#8a5a2b'; ctx.lineWidth=2;
+  [[ax,ay],[bx,by]].forEach(p=>{ ctx.beginPath(); ctx.arc(p[0],p[1],8,0,7); ctx.fill(); ctx.stroke(); });
+}
+
+function drawBattery(ctx, cx, cy){
+  ctx.strokeStyle='#1b2440'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-12,cy-13); ctx.lineTo(cx-12,cy+13); ctx.stroke();
+  ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(cx+2,cy-7); ctx.lineTo(cx+2,cy+7); ctx.stroke();
+  lbl(ctx, cx+34, cy, 'Quelle', 12, '#5a6684', 'left');
+}
+function drawCrank(ctx, cx, cy, th){
+  const r=15; ctx.strokeStyle='#5a6684'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  const hx=cx+Math.cos(th)*r, hy=cy+Math.sin(th)*r;
+  ctx.strokeStyle='#3a3f4b'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(hx,hy); ctx.stroke();
+  ball(ctx, hx, hy, 5, '#3a3f4b');
+  lbl(ctx, cx, cy+r+13, 'Kurbel', 12, '#5a6684');
+}
+
+// Motorbild: Pole + drehende Schleife + Welle. mode 'motor'|'gen'
+function machine(ctx, W, H, th, mode){
+  const cx=W*0.5, cy=H*0.38, armR=Math.min(W,H)*0.22;
+  polesH(ctx, W, H, cy);
+  ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx,H*0.78); ctx.stroke();
+  loopBar(ctx, cx, cy, armR, th);
+  if(mode==='motor'){ drawBattery(ctx, cx, H*0.84); }
+  else { drawCrank(ctx, cx, H*0.82, th); meter(ctx, W*0.84, H*0.80, H*0.13, Math.sin(th)); }
+  return {cx, cy};
+}
+
+// Das brauchst du – der Motor, den wir kennen
+function recapLab(root){ const c=root.querySelector('#c-recap'); if(!c) return; let th=0;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    th+=0.05; machine(ctx,W,H,th,'motor');
+    lbl(ctx, W*0.5, H*0.97, 'Motor: Strom rein → Drehung (Oberthema 2)', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Andersherum gedacht – Motor/Generator umschalten
+function reverseLab(root){ const c=root.querySelector('#c-rev'); if(!c) return; let mode='motor', th=0;
+  const bt=root.querySelectorAll('[data-md]');
+  bt.forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.md; bt.forEach(x=>x.classList.toggle('on',x.dataset.md===mode)); }));
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    th+=0.05; machine(ctx,W,H,th,mode==='gen'?'gen':'motor');
+    lbl(ctx, W*0.5, H*0.97, mode==='gen'?'Generator: von Hand drehen → Spannung (Zeiger schlägt aus)':'Motor: Strom rein → Drehung', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Warum beim Drehen Spannung entsteht – Fluss (Feld ⊙ aus der Ebene, Fläche kippt)
+function whyLab(root){ const c=root.querySelector('#c-why'); if(!c) return; let th=0;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    th+=0.02;
+    const cx=W*0.42, cy=H*0.40, ry=H*0.22, rx=Math.max(2, W*0.16*Math.abs(Math.cos(th)));
+    // Feld aus der Ebene: Gitter aus ⊙
+    let inside=0; const d=Math.min(W,H)*0.09;
+    for(let gx=cx-W*0.2; gx<=cx+W*0.2; gx+=d) for(let gy=cy-ry-6; gy<=cy+ry+6; gy+=d){
+      const ins = ((gx-cx)/rx)**2 + ((gy-cy)/ry)**2 <= 1;
+      if(ins) inside++;
+      ctx.strokeStyle=ins?'#7a5cf0':'#d4d9e6'; ctx.lineWidth=ins?2:1;
+      ctx.beginPath(); ctx.arc(gx,gy,ins?4:3,0,7); ctx.stroke();
+      if(ins){ ctx.fillStyle='#7a5cf0'; ctx.beginPath(); ctx.arc(gx,gy,1.4,0,7); ctx.fill(); } }
+    // Spulenfläche (Ellipse), kippt mit dem Winkel
+    ctx.strokeStyle='#b8792e'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,7); ctx.stroke();
+    meter(ctx, W*0.82, H*0.62, H*0.14, Math.sin(th));
+    lbl(ctx, cx, H*0.90, 'Feldlinien durch die Spule: '+inside+(inside>6?' (viel)':inside<2?' (fast keine)':''), 12, '#1b2440');
+    lbl(ctx, W*0.5, H*0.97, 'Beim Drehen ändert sich der Durchsatz ständig → Spannung', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Der Motor, den wir kennen', init:recapLab, html:
+   `<p>Das brauchst du aus den letzten Stunden:</p>
+    <ul>
+      <li>Der <b>Motor</b> macht aus <b>Strom eine Drehung</b>: Strom in der Spule, Kraft im Feld, der Polwender hält sie in Gang (Oberthema 2).</li>
+      <li><b>Induktion</b>: Eine <b>Änderung</b> des Feldes durch die Spule erzeugt eine Spannung (3.1).</li>
+      <li><b>Lenz</b>: Die Induktion <b>bremst</b> die Bewegung, die sie erzeugt (3.3).</li>
+    </ul>
+    <canvas class="viz" id="c-recap"></canvas>
+    <p>Was passiert, wenn wir den Motor nicht mit Strom antreiben, sondern von Hand <b>drehen</b>?</p>` },
+
+ { step:'Andersherum gedacht', title:'Motor oder Generator', init:reverseLab, html:
+   `<p>Es ist <b>dieselbe Maschine</b> – nur die Richtung ist umgekehrt. Schalte um: Als <b>Motor</b> steckst du Strom hinein und bekommst eine Drehung. Als <b>Generator</b> drehst du von Hand (Kurbel) und bekommst eine Spannung – der Zeiger schlägt aus.</p>
+    <canvas class="viz" id="c-rev"></canvas>
+    <div class="modes">
+      <button data-md="motor" class="on">Motor (Strom → Drehung)</button>
+      <button data-md="gen">Generator (Drehung → Spannung)</button>
+    </div>
+    <div class="box merke"><span class="lbl">Merke</span>Motor und Generator sind <b>derselbe Aufbau</b>. Motor: elektrische Energie → Bewegung. Generator: Bewegung → elektrische Energie. Man muss den Generator <b>antreiben</b> (Kurbel, Turbine) – wegen der Lenzschen Bremskraft geht es nicht von allein.</div>` },
+
+ { step:'Warum das geht', title:'Drehen ändert den Durchsatz', init:whyLab, html:
+   `<p>Warum liefert die Drehung eine Spannung? Weil sich beim Drehen die Zahl der <b>Feldlinien durch die Spule</b> ständig ändert – und genau eine solche <b>Änderung</b> induziert Spannung (3.1). Steht die Spule breit im Feld, gehen viele Linien hindurch; dreht sie sich hochkant, fast keine.</p>
+    <canvas class="viz" id="c-why"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>Beim Drehen wechselt der „Durchsatz" an Feldlinien fortlaufend zwischen viel und wenig. Diese ständige <b>Änderung</b> erzeugt die Spannung. Der Zeiger schlägt am stärksten aus, wenn sich der Durchsatz am schnellsten ändert.</div>` },
+
+ { step:'Mehr Beispiele', title:'Generatoren im Alltag', init:revealCases, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Fahrraddynamo</h3><p>Warum liefert der Dynamo Strom, obwohl keine Batterie drin ist?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Das Rad dreht einen Magneten an einer Spule. Die Drehung ändert das Feld durch die Spule – induzierte Spannung. Der Dynamo ist ein kleiner Generator.</div></div>
+      <div class="case"><h3>Kurbeltaschenlampe</h3><p>Du kurbelst, die Lampe leuchtet – ohne Batterie. Wie?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Kurbel dreht einen Generator. Deine Muskelarbeit wird über die Induktion zu elektrischer Energie und bringt die Lampe zum Leuchten.</div></div>
+      <div class="case"><h3>E-Auto bremsen</h3><p>Beim Bremsen lädt sich der Akku eines E-Autos wieder auf (Rekuperation). Was passiert mit dem Motor?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der Antriebsmotor wird zum Generator: Die Räder treiben ihn, er erzeugt Strom und lädt den Akku. Die Lenzsche Bremskraft bremst dabei das Auto.</div></div>
+      <div class="case"><h3>Windrad</h3><p>Wodurch entsteht im Windrad die Spannung?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der Wind dreht die Flügel und damit einen Generator. Die Drehung ändert das Feld durch die Spulen – Induktion. Dasselbe Prinzip wie beim Fahrraddynamo, nur größer.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wohin das führt', init:reverseLab, html:
+   `<div class="cases">
+      <div class="case"><h3>Das ist neu</h3><p>Derselbe Aufbau ist <b>Motor</b> (Strom → Drehung) und <b>Generator</b> (Drehung → Spannung).</p></div>
+      <div class="case"><h3>Oberthema 3 fertig</h3><p>Wann (3.1), wie stark (3.2), in welche Richtung (3.3) und wozu (3.4) Induktion – geklärt.</p></div>
+      <div class="case"><h3>Das kommt als Nächstes</h3><p>Beim gleichmäßigen Drehen wechselt die Spannung ständig die Richtung: <b>Wechselspannung</b> – der Generator (Oberthema 4).</p></div>
+    </div>
+    <canvas class="viz" id="c-rev"></canvas>
+    <div class="modes">
+      <button data-md="motor" class="on">Motor (Strom → Drehung)</button>
+      <button data-md="gen">Generator (Drehung → Spannung)</button>
+    </div>
+    <div class="box merke"><span class="lbl">Reihenbezug</span>Der Generator ist der Anfang der Energiekette: Im Kraftwerk treibt eine Turbine denselben Generator. Seine Kurvenform und die 50 Hz sind Oberthema 4.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Wie unterscheiden sich Motor und Generator im Aufbau?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">gar nicht – es ist dieselbe Maschine, nur umgekehrt betrieben</button>
+       <button class="choice" data-ok="0">der Generator hat keinen Magneten</button>
+       <button class="choice" data-ok="0">der Motor hat keine Spule</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Spule, Magnet und Achse sind gleich. Motor: Strom → Drehung. Generator: Drehung → Spannung.</div></div></div>
+    <div class="q"><p>Warum entsteht beim <b>Drehen</b> der Spule eine Spannung?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">weil sich die Feldlinien durch die Spule ständig ändern</button>
+       <button class="choice" data-ok="0">weil die Spule warm wird</button>
+       <button class="choice" data-ok="0">weil der Magnet stärker wird</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Die Drehung ändert fortlaufend den Durchsatz an Feldlinien – und eine Änderung induziert Spannung.</div></div></div>
+    <div class="q"><p>Warum läuft ein Generator <b>nicht</b> von allein weiter?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">die Induktion bremst (Lenz) – man muss antreiben</button>
+       <button class="choice" data-ok="0">weil er keinen Strom braucht</button>
+       <button class="choice" data-ok="0">weil das Feld ihn beschleunigt</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Nach Lenz wirkt die Induktion der Drehung entgegen. Ohne Antrieb (Kurbel, Turbine) käme er zum Stehen.</div></div></div>
+    <div class="q"><p>Beim <b>Bremsen</b> eines E-Autos lädt der Akku. Was ist der Antriebsmotor dabei?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">ein Generator – die Räder treiben ihn an</button>
+       <button class="choice" data-ok="0">eine zusätzliche Batterie</button>
+       <button class="choice" data-ok="0">ein Widerstand, der die Energie verheizt</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Der Motor arbeitet als Generator: Bewegungsenergie der Räder → Strom in den Akku. Die Lenz-Bremskraft bremst das Auto.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>

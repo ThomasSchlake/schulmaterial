@@ -1,0 +1,484 @@
+<!doctype html>
+<!-- GENERIERTE DATEI - NICHT HIER AENDERN. Quelle: Physik/_lesson-engine.html + Physik/Klasse-10/Kernphysik/_common.js + Physik/Klasse-10/Kernphysik/topics/08-kernkraftwerk.js. Neu bauen mit: node build.mjs -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){function v(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}v();window.addEventListener('resize',v);window.addEventListener('orientationchange',v);})();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f6df6'/><circle cx='16' cy='16' r='2.6' fill='%23fff'/><g fill='none' stroke='%23fff' stroke-width='2'><ellipse cx='16' cy='16' rx='10.5' ry='4.6'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='10.5' ry='4.6' transform='rotate(120 16 16)'/></g></svg>">
+<style>
+  /* Farbpalette für alle Seiten (Main-Master). Einzelne Seiten dürfen Werte überschreiben. */
+  :root{
+    --bg:#eef2fa; --panel:#fff; --ink:#1b2440; --muted:#5a6684; --line:#d8def0;
+    --blue:#2f6df6; --blue-d:#1f4fc4; --amber:#f2a521; --green:#25b071; --red:#e5533c;
+    --sky1:#eaf1ff; --sky2:#f7faff; --shadow:0 6px 24px rgba(27,36,64,.10);
+  }
+</style>
+<title>Lektion</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:clamp(16px,1.25vw,20px); line-height:1.5}
+  .app{height:calc(var(--vh,1vh)*100); display:flex; flex-direction:column; max-width:1080px; margin:0 auto;
+    padding:clamp(.6rem,1.6vw,1.1rem); overflow:hidden; position:relative}
+
+  .top{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    padding:.35rem .8rem .45rem; margin-bottom:.5rem}
+  .topline{position:relative; display:flex; align-items:center; justify-content:center; min-height:1.9rem}
+  .top .home{position:absolute; left:0; top:50%; transform:translateY(-50%); width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-size:1.5rem;
+    font-weight:800; text-decoration:none; border-radius:9px; line-height:1}
+  .top .home:hover{background:#eef2fb}
+  /* Impressum/Datenschutz: Markup kommt beim Bauen aus _legal-links.html (Wurzel) */
+  .top .legal{position:absolute; right:0; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:flex-end; gap:.1rem}
+  .top .legal a{color:var(--muted); font-size:.68rem; line-height:1.15; text-decoration:none; padding:0 .3rem; border-radius:6px}
+  .top .legal a:hover{background:#eef2fb; color:var(--blue-d)}
+  .top h1{margin:0; padding:0 2.2rem; font-size:clamp(1.05rem,2.2vw,1.5rem); text-align:center}
+  /* Abschnitte als eine Zeile; passen sie nicht, wird waagerecht gescrollt (Wischen, Mausrad, Leiste) */
+  .steps{display:flex; flex-wrap:nowrap; gap:.35rem; justify-content:flex-start; justify-content:safe center;
+    margin-top:.35rem; overflow-x:auto; overflow-y:hidden; padding:.1rem .2rem .3rem; scrollbar-width:thin;
+    scrollbar-color:#c9d3ea transparent; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain}
+  .steps::-webkit-scrollbar{height:6px} .steps::-webkit-scrollbar-thumb{background:#c9d3ea; border-radius:3px}
+  /* Rand ausblenden, wenn es links oder rechts weitergeht */
+  .steps.mehr-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem)}
+  .steps.mehr-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,#000 calc(100% - 1.6rem),transparent 100%)}
+  .steps.mehr-l.mehr-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 1.6rem,#000 calc(100% - 1.6rem),transparent 100%)}
+  /* Blätter-Navigation als Pfeile an den Seiten; verschwinden, wenn nicht möglich */
+  .navarrow{position:absolute; top:50%; transform:translateY(-50%); z-index:20; width:clamp(38px,4vw,48px);
+    height:clamp(38px,4vw,48px); border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92);
+    color:var(--blue-d); font-size:1.7rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; padding:0}
+  .navarrow.prev{left:clamp(.1rem,.8vw,.5rem)}
+  .navarrow.next{right:clamp(.1rem,.8vw,.5rem)}
+  .navarrow:hover:not(:disabled){background:#fff}
+  .navarrow:active:not(:disabled){transform:translateY(-50%) scale(.94)}
+  .navarrow:disabled{display:none}
+  .step{border:1px solid var(--line); background:#f4f7ff; color:var(--muted); border-radius:999px;
+    padding:.26rem .7rem; font-size:.8rem; font-weight:700; cursor:pointer; flex:0 0 auto; white-space:nowrap}
+  .step.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .step .n{opacity:.7; margin-right:.35rem}
+
+  .stage{flex:1 1 auto; background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:clamp(.9rem,2vw,1.4rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; position:relative}
+  .stage > h2{flex:0 0 auto}
+  .stage h2{margin:.1rem 0 .8rem; font-size:clamp(1.2rem,2.4vw,1.6rem)}
+  /* Zweispaltig: Simulation links, Text rechts. Fällt bei schmal/hochkant auf Stapel zurück. */
+  .split{flex:1 1 auto; min-height:0; display:flex; gap:.85rem; align-items:stretch}
+  .col-viz{flex:0 0 57%; min-width:0; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem}
+  .col-viz.solo{flex:1 1 auto}
+  .col-text{flex:1 1 43%; min-width:0; overflow-y:auto; padding-left:.55rem}
+  .col-single{flex:1 1 auto; min-height:0; overflow-y:auto; max-width:72ch; margin:0 auto; width:100%; padding-inline:.55rem}
+  .col-text > :first-child, .col-single > :first-child{margin-top:0}
+  .split .col-viz > canvas{flex:1 1 auto; height:auto; max-height:none; min-height:170px}
+  @media (max-width:820px), (orientation:portrait){
+    .top h1{padding:0 4.8rem 0 2.2rem}   /* Platz für Impressum/Datenschutz rechts */
+    .split{flex-direction:column; overflow-y:auto; gap:.4rem}
+    .col-viz,.col-text{flex:0 0 auto; overflow:visible}
+    .split .col-viz > canvas{flex:0 0 auto; height:calc(var(--vh,1vh)*40); max-height:380px; min-height:170px}
+  }
+  .stage p{margin:.55rem 0}
+  .stage b{color:var(--ink)}
+  .lead{color:var(--muted)}
+  /* Overarrow für Vektornamen (v, a, AB ...): Linie + Pfeilspitze über dem Symbol */
+  /* --ovg: gemessener Abstand von der Oberkante der Zeile bis zur Oberkante der Buchstaben (em).
+     Der Pfeil sitzt knapp darüber, wie \vec in LaTeX. */
+  .ov{position:relative; white-space:nowrap}
+  .ov::before{content:""; position:absolute; left:.03em; right:.05em; top:calc(var(--ovg,.4em) - .15em); border-top:.065em solid currentColor; border-radius:.03em}
+  .ov::after{content:""; position:absolute; right:.06em; top:calc(var(--ovg,.4em) - .15em - .07em); width:.14em; height:.14em;
+    border-top:.065em solid currentColor; border-right:.065em solid currentColor; transform:rotate(45deg)}
+
+  .box{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1.1rem; margin:.9rem 0}
+  .box.merke{background:#eef4ff; border-color:#cfe0ff}
+  .box.merke .lbl{color:var(--blue-d)}
+  /* Hefteintrag: was die Klasse abschreibt */
+  .heft{background:#fffdf4; border:1px solid #eadfbd; border-left:6px solid #f2a521; border-radius:12px; padding:.9rem 1.2rem; margin:.4rem 0}
+  .heft h3{margin:.1rem 0 .5rem; font-size:1.2rem}
+  .heft .f{font-size:1.25em; font-weight:800; margin:.35rem 0}
+  .heft ul,.heft ol{margin:.3rem 0 .4rem 1.3rem; padding:0}
+  .heft li{margin:.15rem 0}
+  .heft .bsp{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed #eadfbd}
+  .heft svg{display:inline-block; vertical-align:middle}
+  .box.frage{background:#fff7e9; border-color:#f2d9a6}
+  .box.frage .lbl{color:#b06f00}
+  .box.warn{background:#fdecea; border-color:#f3b4ab}
+  .box.warn .lbl{color:#b23a26}
+  .box.ziel{background:#eafaf1; border-color:#bfe8d1}
+  .box.ziel .lbl{color:#1f7a55}
+  .box.quizsumme{background:#f4f7ff; border-color:#cfe0ff}
+  .box .lbl{font-weight:800; font-size:.8em; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:.2rem}
+
+  canvas.viz{width:100%; height:calc(var(--vh,1vh)*30); max-height:300px; min-height:150px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line); touch-action:none}
+  canvas.mini{width:100%; height:calc(var(--vh,1vh)*20); max-height:160px; min-height:110px; display:block; border-radius:12px;
+    background:linear-gradient(var(--sky2),var(--sky1)); border:1px solid var(--line)}
+
+  .cases{display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.6rem; margin:.7rem 0}
+  .case{background:var(--sky2); border:1px solid var(--line); border-radius:14px; padding:.65rem .8rem; font-size:.92em}
+  .case h3{margin:.1rem 0 .25rem; font-size:1rem}
+  .case .res{margin-top:.5rem; padding-top:.45rem; border-top:1px dashed var(--line); color:var(--ink)}
+  .reveal{border:1px solid var(--line); background:#eef2fb; color:var(--ink); border-radius:10px;
+    padding:.5rem .9rem; font:inherit; font-weight:700; cursor:pointer; margin-top:.6rem}
+  .reveal:active{transform:translateY(1px)}
+
+  .cmp{width:100%; border-collapse:collapse; margin:.7rem 0}
+  .cmp th,.cmp td{border:1px solid var(--line); padding:.6rem .85rem; text-align:left; vertical-align:top}
+  .cmp thead th{font-size:1.1rem}
+  .cmp thead th:nth-child(2){background:#fdeeeb; color:#b23a26}
+  .cmp thead th:nth-child(3){background:#fff4e2; color:#9a6300}
+  .cmp tbody th{background:var(--sky2); color:var(--muted); font-weight:700; width:26%; font-size:.9em}
+
+  .choices{display:flex; flex-direction:column; gap:.55rem; margin:.8rem 0}
+  .choice{text-align:left; border:2px solid var(--line); background:#fff; border-radius:12px;
+    padding:.75rem 1rem; font:inherit; color:inherit; cursor:pointer}
+  .choice:active{transform:translateY(1px)}
+  .choice.right{border-color:var(--green); background:#eafaf1}
+  .choice.wrong{border-color:var(--red); background:#fdeeeb}
+  .solution{margin-top:.6rem}
+  .modes,.presets{display:flex; flex-wrap:wrap; gap:.5rem; margin:.8rem 0}
+  .modes button,.presets button{border:1px solid var(--line); background:#f4f7ff; color:var(--ink); border-radius:999px;
+    padding:.5rem 1rem; font:inherit; font-weight:700; cursor:pointer}
+  .modes button.on,.presets button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .modes button:active,.presets button:active{transform:translateY(1px)}
+  .presets{gap:.4rem; margin:.5rem 0}
+  .presets button{padding:.4rem .8rem; font-size:.92em}
+  .ctrl{display:flex; align-items:center; gap:.9rem; margin:.9rem 0 .2rem; background:var(--sky2);
+    border:1px solid var(--line); border-radius:12px; padding:.7rem 1rem}
+  .ctrl label{font-weight:800; color:var(--blue-d); white-space:nowrap}
+  .ctrl input[type=range]{flex:1 1 auto; -webkit-appearance:none; appearance:none; height:10px;
+    background:linear-gradient(90deg,#7fb0ff,#e5533c); border-radius:6px; outline:none}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+    background:#fff; border:3px solid var(--blue); box-shadow:var(--shadow); cursor:pointer}
+  .ctrl input[type=range]::-moz-range-thumb{width:28px; height:28px; border-radius:50%; background:#fff; border:3px solid var(--blue); cursor:pointer}
+  .ctrl .val{font-weight:800; color:var(--ink); min-width:5ch; text-align:right}
+  .btnrow{display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0}
+  /* Alle drei Regler in EINER Reihe, um Höhe für die Abbildung zu sparen */
+  .ctrls{display:flex; flex-wrap:nowrap; gap:.4rem; margin:.5rem 0 .2rem}
+  .ctrls .ctrl{flex:1 1 0; min-width:0; margin:0; padding:.4rem .55rem; gap:.4rem}
+  .ctrls .ctrl label{font-size:.82em; white-space:nowrap}
+  .ctrls .ctrl input[type=range]{flex:1 1 24px; min-width:0}
+  .ctrls .ctrl .val{min-width:1.5ch}
+  /* Winziger Ansichts-Umschalter (Icon), oben rechts auf der Überschriftenzeile */
+  .vswitch{position:absolute; top:clamp(.7rem,1.7vw,1.15rem); right:clamp(.7rem,1.7vw,1.15rem); z-index:3;
+    display:inline-flex; gap:2px; background:#eef2fb; border:1px solid var(--line); border-radius:9px; padding:2px; margin:0}
+  .vswitch button{border:none; background:transparent; border-radius:7px; padding:.12rem .4rem; font-size:1rem;
+    line-height:1.1; cursor:pointer; filter:grayscale(.4); opacity:.65}
+  .vswitch button.on{background:var(--blue); filter:none; opacity:1}
+  .q{margin:.2rem 0 1rem}
+  .q + .q{border-top:1px solid var(--line); padding-top:.9rem; margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="topline">
+      <a class="home" href="../index.html" aria-label="Zur Übersicht">‹</a>
+      <h1 id="h1"></h1>
+      <span class="legal"><a href="../../../impressum.html">Impressum</a><a href="../../../datenschutz.html">Datenschutz</a></span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <button class="navarrow prev" id="prev" aria-label="Zurück">‹</button>
+  <button class="navarrow next" id="next" aria-label="Weiter">›</button>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+
+/* ---------- gemeinsame Bausteine ---------- */
+let RAF=0;
+function stopRAF(){ if(RAF) cancelAnimationFrame(RAF); RAF=0; }
+function fit(c){ const dpr=window.devicePixelRatio||1, W=c.clientWidth||600, H=c.clientHeight||300;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){ c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); }
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,W,H}; }
+function parts(n,seed,speed){ let r=seed; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const a=[]; for(let i=0;i<n;i++){ const ang=rnd()*6.283; a.push({x:0.08+rnd()*0.84,y:0.08+rnd()*0.84,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed}); } return a; }
+function move(ps,dt,mx,my){ mx=mx||0.04; my=my||mx; ps.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+  if(p.x<mx){p.x=mx;p.vx=Math.abs(p.vx);} if(p.x>1-mx){p.x=1-mx;p.vx=-Math.abs(p.vx);}
+  if(p.y<my){p.y=my;p.vy=Math.abs(p.vy);} if(p.y>1-my){p.y=1-my;p.vy=-Math.abs(p.vy);} }); }
+function ball(ctx,x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fill(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function lbl(ctx,x,y,t,size,col,align){ ctx.fillStyle=col||'#3a4256'; ctx.font='700 '+Math.round(size)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y); }
+function drawVessel(ctx,box,ps,r,col,title,sub){
+  ctx.strokeStyle='#b7c2dc'; ctx.lineWidth=2.5; rr(ctx,box.x,box.y,box.w,box.h,12); ctx.stroke();
+  ps.forEach(p=> ball(ctx, box.x+p.x*box.w, box.y+p.y*box.h, r, col));
+  lbl(ctx, box.x+box.w/2, box.y-24, title, 18, '#1b2440');
+  if(sub) lbl(ctx, box.x+box.w/2, box.y-6, sub, 14, '#5a6684');
+}
+function energyBar(ctx,x,y,w,frac,col,cap){ ctx.fillStyle='#e7ecf6'; rr(ctx,x,y,w,16,8); ctx.fill();
+  ctx.fillStyle=col; rr(ctx,x,y,Math.max(8,w*frac),16,8); ctx.fill();
+  lbl(ctx,x,y-14,cap,13,'#5a6684','left'); }
+function arrow(ctx,x1,y1,x2,y2,col,wd){ const a=Math.atan2(y2-y1,x2-x1), h=(wd||2)*3.2;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=wd||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4));
+  ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+// Antworten in den Beispielen erst auf Klick zeigen
+function revealCases(root){ root.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>{
+  const res=b.nextElementSibling; if(res) res.hidden=false; b.hidden=true; })); }
+// Lösung der Transferfragen: ein Reiter je Frage ([data-tf] Knopf, [data-tf-tab] Inhalt), Schritte zum Aufdecken
+function transferTabs(root){ revealCases(root);
+  const btns=root.querySelectorAll('[data-tf]'), tabs=root.querySelectorAll('[data-tf-tab]');
+  const zeig=k=>{ btns.forEach(b=>b.classList.toggle('on', b.dataset.tf===k)); tabs.forEach(t=>{ t.style.display = t.dataset.tfTab===k ? '' : 'none'; }); };
+  btns.forEach(b=>b.addEventListener('click',()=>zeig(b.dataset.tf))); zeig('1'); }
+// Auswahlfrage: mischt die Antworten, markiert richtig/falsch und zeigt die Loesung.
+// Sind alle Fragen beantwortet, erscheint eine Auswertung (erster Versuch zählt). Eine Frage kann
+// mit data-hilfe="…" auf die Stelle der Stunde verweisen, die man bei einem Fehler wiederholen sollte.
+function quiz(root){ const blocks=[...root.querySelectorAll('.choices')], erst=new Map();
+  blocks.forEach(q=>{ const cs=[...q.querySelectorAll('.choice')];
+    for(let k=cs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [cs[k],cs[j]]=[cs[j],cs[k]]; }
+    cs.forEach(c=>q.appendChild(c));
+    cs.forEach(b=>b.addEventListener('click',()=>{
+      cs.forEach(x=>x.classList.remove('right','wrong'));
+      const ok=b.dataset.ok==='1'; b.classList.add(ok?'right':'wrong');
+      if(!erst.has(q)) erst.set(q,ok);
+      const wrap=q.closest('.q')||q.parentElement, sol=wrap&&wrap.querySelector('.solution'); if(sol) sol.hidden=false;
+      if(erst.size===blocks.length) auswertung(); })); });
+  function auswertung(){ let box=root.querySelector('.quizsumme'); if(!box){ box=document.createElement('div'); box.className='box quizsumme';
+      (blocks[blocks.length-1].closest('.q')||blocks[blocks.length-1]).after(box); }
+    const n=blocks.length, r=blocks.filter(q=>erst.get(q)).length;
+    const hilfen=blocks.filter(q=>!erst.get(q)).map((q,k)=>{ const w=q.closest('.q'), h=w&&w.dataset.hilfe;
+      return h?'<li>Frage '+(blocks.indexOf(q)+1)+': '+h+'</li>':''; }).join('');
+    box.innerHTML='<span class="lbl">Auswertung</span><p style="margin:.15rem 0"><b>'+r+' von '+n+'</b> beim ersten Versuch richtig.'
+      +(r===n?' Stark, alles sitzt.':' Die Auflösungen stehen unter den Fragen.')+'</p>'
+      +(hilfen?'<p style="margin:.4rem 0 .1rem">Zum Wiederholen:</p><ul style="margin:.1rem 0">'+hilfen+'</ul>':'')
+      +(typeof PAGE!=='undefined'&&PAGE.ziel?'<p style="margin:.5rem 0 0"><b>Ziel der Stunde:</b> '+PAGE.ziel+' Kannst du das jetzt?</p>':''); } }
+
+// Klasse 10 – Kernphysik: gemeinsame Zeichen-Helfer.
+// Nutzt die Engine-Helfer fit, lbl, arrow, ball, rr.
+// Farbkonvention: Proton rot (+), Neutron grau (0), Elektron blau (−).
+
+function proton(ctx, x, y, r){ ctx.fillStyle='#e5533c'; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); lbl(ctx, x, y, '+', Math.max(11, r), '#fff'); }
+function neutron(ctx, x, y, r){ ctx.fillStyle='#8a94a8'; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); }
+function electron(ctx, x, y, r){ ctx.fillStyle='#2f6df6'; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); lbl(ctx, x, y, '−', Math.max(11, r*1.2), '#fff'); }
+
+// Kern aus nP Protonen und nN Neutronen, kompakt gebündelt (Phyllotaxis).
+function drawNucleus(ctx, cx, cy, nP, nN, R){
+  const items=[]; for(let i=0;i<nP;i++) items.push('p'); for(let i=0;i<nN;i++) items.push('n');
+  const n=items.length, nr=Math.max(7, R/ (1.6+Math.sqrt(n)) );
+  items.forEach((t,i)=>{ const a=i*2.399, rad=(n===1)?0:R*Math.sqrt(i/n)*0.9, x=cx+Math.cos(a)*rad, y=cy+Math.sin(a)*rad;
+    if(t==='p') proton(ctx,x,y,nr); else neutron(ctx,x,y,nr); });
+}
+
+// Elektronenhülle: gestrichelte Bahn + nE Elektronen.
+function drawShell(ctx, cx, cy, R, nE, phase){
+  ctx.strokeStyle='#c0c8da'; ctx.lineWidth=1.5; ctx.setLineDash([3,5]); ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.stroke(); ctx.setLineDash([]);
+  for(let i=0;i<nE;i++){ const a=(phase||0)+i*2*Math.PI/Math.max(1,nE); electron(ctx, cx+Math.cos(a)*R, cy+Math.sin(a)*R, 9); }
+}
+
+// Legende Proton/Neutron/Elektron.
+function nucleonLegend(ctx, x, y){
+  proton(ctx, x, y, 9); lbl(ctx, x+14, y, 'Proton (+)', 12, '#1b2440', 'left');
+  neutron(ctx, x, y+22, 9); lbl(ctx, x+14, y+22, 'Neutron (0)', 12, '#1b2440', 'left');
+  electron(ctx, x, y+44, 8); lbl(ctx, x+14, y+44, 'Elektron (−)', 12, '#1b2440', 'left');
+}
+
+const PAGE={ area:'Kernphysik', slug:'kernkraftwerk', title:'Das Kernkraftwerk', h1:'Das Kernkraftwerk' };
+
+function drawTurbine(ctx, cx, cy, r, th){
+  ctx.strokeStyle='#5a6684'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle='#3a3f4b'; ctx.lineWidth=3; for(let k=0;k<6;k++){ const a=th+k*Math.PI/3; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*r*0.82, cy+Math.sin(a)*r*0.82); ctx.stroke(); }
+  ball(ctx,cx,cy,3,'#3a3f4b');
+}
+function acSym(ctx, cx, cy, r){ ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle='#2f6df6'; ctx.lineWidth=2.5; ctx.beginPath(); for(let i=-r*0.6;i<=r*0.6;i++){ const y=cy-Math.sin(i/(r*0.6)*Math.PI)*r*0.4; i<=-r*0.6+1?ctx.moveTo(cx+i,y):ctx.lineTo(cx+i,y);} ctx.stroke(); }
+
+// Das brauchst du – Kettenreaktion liefert Wärme; bekannte Kraftwerkskette
+function recapLab(root){ const c=root.querySelector('#c-recap'); if(!c) return; let th=0;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); th+=0.06; const y=H*0.42;
+    const box=(x,w,t,col)=>{ ctx.fillStyle=col; ctx.strokeStyle='#c0c8da'; ctx.lineWidth=1.5; rr(ctx,x,y-22,w,44,8); ctx.fill(); ctx.stroke(); lbl(ctx,x+w/2,y,t,12,'#1b2440'); };
+    box(W*0.06,W*0.2,'Wärme','#fdeede'); arrow(ctx,W*0.26,y,W*0.31,y,'#5a6684',2);
+    box(W*0.31,W*0.18,'Dampf','#eef1f7'); arrow(ctx,W*0.49,y,W*0.54,y,'#5a6684',2);
+    box(W*0.54,W*0.18,'Turbine','#eef1f7'); arrow(ctx,W*0.72,y,W*0.77,y,'#5a6684',2);
+    box(W*0.77,W*0.18,'Generator','#e6f2ea');
+    lbl(ctx, W*0.5, H*0.86, 'Wärme → Dampf → Turbine → Generator kennst du aus OT4/OT6', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Die Reaktion steuern – Steuerstäbe
+function reactorLab(root){ const c=root.querySelector('#c-reactor'); if(!c) return; const s=root.querySelector('#sl-rod');
+  const pool=[]; for(let k=0;k<12;k++) pool.push({x:Math.random(),y:Math.random(),vx:(Math.random()-0.5)*0.02,vy:(Math.random()-0.5)*0.02});
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H);
+    const depth=s?+s.value:50, rate=Math.max(0,100-depth);
+    const bx=W*0.14, by=H*0.14, bw=W*0.5, bh=H*0.56;
+    ctx.strokeStyle='#5a6684'; ctx.lineWidth=2.5; rr(ctx,bx,by,bw,bh,10); ctx.stroke(); lbl(ctx,bx+bw/2,by-10,'Reaktorkern',12,'#1b2440');
+    // Brennstäbe
+    ctx.fillStyle='#c9a06a'; for(let k=0;k<4;k++){ const x=bx+bw*(0.16+0.22*k); rr(ctx,x-4,by+8,8,bh-16,3); ctx.fill(); }
+    // Steuerstäbe (fahren von oben ein)
+    ctx.fillStyle='#3a3f4b'; for(let k=0;k<3;k++){ const x=bx+bw*(0.27+0.22*k); rr(ctx,x-5,by,10,(bh)*depth/100,3); ctx.fill(); }
+    lbl(ctx, bx+bw*0.5, by+bh+14, 'Steuerstäbe: '+depth+' % eingefahren', 12, '#5a6684');
+    // Neutronen: Anzahl ~ rate
+    const nN=Math.round(rate/12)+1;
+    pool.slice(0,nN).forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0.05||p.x>0.95)p.vx*=-1; if(p.y<0.05||p.y>0.95)p.vy*=-1; neutron(ctx, bx+8+p.x*(bw-16), by+8+p.y*(bh-16), 6); });
+    // Rate-Anzeige
+    const gx=W*0.72, gw=W*0.22;
+    ctx.fillStyle='#e3e7ef'; rr(ctx,gx,H*0.5,gw,14,6); ctx.fill();
+    ctx.fillStyle=rate>75?'#c0392b':(rate>40?'#1f7a34':(rate>10?'#e08a00':'#8a94a8')); rr(ctx,gx,H*0.5,Math.max(3,gw*rate/100),14,6); ctx.fill();
+    lbl(ctx, gx, H*0.5-12, 'Reaktionsrate', 12, '#1b2440','left');
+    const word=rate>75?'zu schnell (ungebremst)':rate>40?'gleichmäßig geregelt':rate>10?'gedrosselt':'gestoppt';
+    lbl(ctx, gx+gw/2, H*0.62, word, 12, '#1b2440');
+    lbl(ctx, W*0.5, H*0.95, 'Steuerstäbe fangen Neutronen weg – tiefer eingefahren = weniger Spaltungen', 12, '#1b2440');
+    const v=root.querySelector('#val-rod'); if(v) v.textContent=depth+' %';
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+// Vom Kern zum Strom – Kraftwerkskette
+function plantLab(root){ const c=root.querySelector('#c-plant'); if(!c) return; let th=0;
+  const loop=()=>{ const {ctx,W,H}=fit(c); ctx.clearRect(0,0,W,H); th+=0.06; const y=H*0.4;
+    // Reaktor (Wärmequelle)
+    ctx.fillStyle='#fdeede'; ctx.strokeStyle='#c0c8da'; ctx.lineWidth=1.5; rr(ctx,W*0.03,y-H*0.16,W*0.19,H*0.32,8); ctx.fill(); ctx.stroke();
+    drawNucleus(ctx, W*0.125, y-6, 3, 4, 16); lbl(ctx, W*0.125, y+H*0.11, 'Reaktor', 12, '#1b2440');
+    arrow(ctx, W*0.23, y, W*0.31, y, '#5a6684', 2);
+    // Dampf
+    ctx.strokeStyle='#8a94a8'; ctx.lineWidth=2.5; for(let k=-1;k<=1;k++){ ctx.beginPath(); for(let i=0;i<=14;i++){ const x=W*0.37+k*10+Math.sin(i/3+th)*4, yy=y+10-i*1.4; i===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);} ctx.stroke(); }
+    lbl(ctx, W*0.37, y+H*0.2, 'Dampf', 11, '#5a6684');
+    arrow(ctx, W*0.44, y, W*0.52, y, '#5a6684', 2);
+    drawTurbine(ctx, W*0.6, y, Math.min(W,H)*0.1, th); lbl(ctx, W*0.6, y+H*0.2, 'Turbine', 12, '#5a6684');
+    arrow(ctx, W*0.7, y, W*0.78, y, '#5a6684', 2);
+    // Generator
+    ctx.strokeStyle='#9aa8c6'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(W*0.85,y,Math.min(W,H)*0.09,0,7); ctx.stroke();
+    ctx.strokeStyle='#b8792e'; ctx.lineWidth=3; const r=Math.min(W,H)*0.09; ctx.beginPath(); ctx.moveTo(W*0.85-Math.cos(th)*r,y-Math.sin(th)*r); ctx.lineTo(W*0.85+Math.cos(th)*r,y+Math.sin(th)*r); ctx.stroke();
+    lbl(ctx, W*0.85, y+H*0.2, 'Generator', 12, '#5a6684');
+    acSym(ctx, W*0.95, y-H*0.02, Math.min(W,H)*0.05);
+    lbl(ctx, W*0.5, H*0.92, 'Nur die Wärmequelle ist neu (Reaktor) – der Rest ist das bekannte Kraftwerk', 12, '#1b2440');
+    RAF=requestAnimationFrame(loop); };
+  stopRAF(); RAF=requestAnimationFrame(loop); }
+
+const SECTIONS=[
+ { step:'Das brauchst du', title:'Kettenreaktion und Kraftwerkskette', init:recapLab, html:
+   `<p>Das brauchst du:</p>
+    <ul>
+      <li>Die <b>Kettenreaktion</b> setzt fortlaufend Energie (Wärme) frei (7.7).</li>
+      <li>Wie aus <b>Wärme → Dampf → Turbine → Generator</b> Strom wird, kennst du vom Kraftwerk (OT4/OT6).</li>
+    </ul>
+    <canvas class="viz" id="c-recap"></canvas>
+    <p>Ein Kernkraftwerk nutzt genau diese Kette – nur die Wärme kommt aus der Kernspaltung.</p>` },
+
+ { step:'Die Reaktion steuern', title:'Steuerstäbe regeln den Reaktor', init:reactorLab, html:
+   `<p>Damit die Kettenreaktion nicht durchgeht, wird sie <b>geregelt</b>: <b>Steuerstäbe</b> aus neutronen­schluckendem Material fahren zwischen die Brennstäbe. Je tiefer sie eingefahren sind, desto mehr <b>Neutronen</b> fangen sie weg – desto weniger Spaltungen. Verstelle die Eintauchtiefe.</p>
+    <canvas class="viz" id="c-reactor"></canvas>
+    <div class="ctrl"><label>Steuerstäbe</label><input type="range" id="sl-rod" min="0" max="100" step="10" value="50"><span class="val" id="val-rod">50 %</span></div>
+    <div class="box merke"><span class="lbl">Merke</span><b>Steuerstäbe</b> fangen Neutronen ab und regeln so die Kettenreaktion: weiter eingefahren = weniger Spaltungen (gedrosselt bis gestoppt), herausgezogen = mehr. So bleibt die Reaktion <b>gleichmäßig</b> und liefert konstant Wärme.</div>` },
+
+ { step:'Vom Kern zum Strom', title:'Dieselbe Kette wie immer', init:plantLab, html:
+   `<p>Die Wärme aus dem Reaktor erzeugt <b>Dampf</b>, der eine <b>Turbine</b> und damit einen <b>Generator</b> antreibt – genau wie im Kohlekraftwerk. Nur die <b>Wärmequelle</b> ist eine andere: die Kernspaltung statt der Verbrennung.</p>
+    <canvas class="viz" id="c-plant"></canvas>
+    <div class="box merke"><span class="lbl">Merke</span>Ein Kernkraftwerk ist im Kern ein normales <b>Wärmekraftwerk</b>: Wärme → Dampf → Turbine → Generator → Strom. Neu ist nur, dass die Wärme aus der <b>kontrollierten Kernspaltung</b> stammt.</div>` },
+
+ { step:'Mehr Beispiele', title:'Reaktor verstehen', init:revealCases, html:
+   `<p>Überlege erst selbst – tippe dann auf „Antwort zeigen".</p>
+    <div class="cases">
+      <div class="case"><h3>Reaktor abschalten</h3><p>Wie fährt man den Reaktor schnell herunter?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Die Steuerstäbe ganz einfahren. Sie fangen dann fast alle Neutronen weg, es finden kaum noch Spaltungen statt – die Kettenreaktion erlischt.</div></div>
+      <div class="case"><h3>Wozu der Moderator?</h3><p>In vielen Reaktoren gibt es Wasser als „Moderator". Wozu?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Der Moderator bremst die schnellen Neutronen ab. Langsame Neutronen lösen die Spaltung viel zuverlässiger aus – so bleibt die Kettenreaktion in Gang.</div></div>
+      <div class="case"><h3>Wozu die Kühlung?</h3><p>Warum braucht ein Kernkraftwerk große Kühltürme?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Wie bei jedem Wärmekraftwerk kann nicht die ganze Wärme in Strom umgewandelt werden. Die Abwärme muss abgeführt werden – das übernimmt die Kühlung (Wirkungsgrad, OT6).</div></div>
+      <div class="case"><h3>Was ist neu?</h3><p>Was unterscheidet ein Kernkraftwerk vom Kohlekraftwerk wirklich?</p>
+        <button class="reveal">Antwort zeigen</button><div class="res" hidden>Nur die Wärmequelle: Kernspaltung statt Verbrennung. Turbine, Generator und die Stromerzeugung sind gleich.</div></div>
+    </div>` },
+
+ { step:'Einordnung', title:'Wohin das führt', init:reactorLab, html:
+   `<div class="cases">
+      <div class="case"><h3>Das ist neu</h3><p>Der Reaktor <b>regelt</b> die Kettenreaktion mit <b>Steuerstäben</b> und liefert Wärme für die bekannte Kraftwerkskette.</p></div>
+      <div class="case"><h3>Noch offen</h3><p>Die Bruchstücke der Spaltung sind <b>radioaktiv</b> und strahlen lange. Wohin damit?</p></div>
+      <div class="case"><h3>Das kommt als Nächstes</h3><p><b>Kernfusion</b> als andere Kernenergie – und das Problem der <b>Endlagerung</b>.</p></div>
+    </div>
+    <canvas class="viz" id="c-reactor"></canvas>
+    <div class="ctrl"><label>Steuerstäbe</label><input type="range" id="sl-rod" min="0" max="100" step="10" value="50"><span class="val" id="val-rod">50 %</span></div>
+    <div class="box merke"><span class="lbl">Reihenbezug</span>Das Kernkraftwerk liefert Strom wie andere Kraftwerke. Die radioaktiven Spaltprodukte führen zur Frage der Endlagerung – Thema der nächsten Stunde.</div>` },
+
+ { step:'Seid ihr fit?', title:'Jetzt du', init:quiz, html:
+   `<div class="q"><p>Wozu dienen die <b>Steuerstäbe</b>?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">sie fangen Neutronen weg und regeln die Kettenreaktion</button>
+       <button class="choice" data-ok="0">sie erzeugen die Neutronen</button>
+       <button class="choice" data-ok="0">sie kühlen den Reaktor</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Steuerstäbe absorbieren Neutronen. Weiter eingefahren = weniger Spaltungen = gedrosselte Reaktion.</div></div></div>
+    <div class="q"><p>Wie wird aus der Reaktorwärme Strom?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">Wärme → Dampf → Turbine → Generator</button>
+       <button class="choice" data-ok="0">der Reaktor erzeugt direkt Strom</button>
+       <button class="choice" data-ok="0">über Solarzellen</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Wie in jedem Wärmekraftwerk treibt Dampf eine Turbine und damit den Generator an.</div></div></div>
+    <div class="q"><p>Was unterscheidet Kern- und Kohlekraftwerk?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">nur die Wärmequelle (Kernspaltung statt Verbrennung)</button>
+       <button class="choice" data-ok="0">der Generator</button>
+       <button class="choice" data-ok="0">dass Kernkraft keinen Dampf braucht</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Turbine, Generator und Stromerzeugung sind gleich; nur die Wärme stammt aus der Kernspaltung.</div></div></div>
+    <div class="q"><p>Wie schaltet man den Reaktor schnell ab?</p>
+     <div class="choices">
+       <button class="choice" data-ok="1">die Steuerstäbe ganz einfahren</button>
+       <button class="choice" data-ok="0">die Steuerstäbe ganz herausziehen</button>
+       <button class="choice" data-ok="0">mehr Neutronen zugeben</button>
+     </div>
+     <div class="solution" hidden><div class="box merke"><span class="lbl">Auflösung</span>Ganz eingefahren fangen die Stäbe fast alle Neutronen weg – die Kettenreaktion erlischt.</div></div></div>` }
+];
+
+
+/* ---------- Layout: Simulation und Text nebeneinander ---------- */
+// Hat ein Schritt eine Simulation, kommen Canvas + Regler nach links, der Text nach rechts.
+// Schritte ohne Canvas bleiben einspaltig mit begrenzter Lesebreite.
+function layoutStage(stage){
+  const h2=stage.querySelector(':scope > h2');
+  const kids=[...stage.children].filter(el=>el!==h2);
+  if(!kids.length) return;
+  const isViz=el=>el.tagName==='CANVAS'||['ctrl','ctrls','vswitch','modes','btnrow','nav','dots'].some(c=>el.classList.contains(c));
+  if(kids.some(el=>el.tagName==='CANVAS')){
+    const row=document.createElement('div'); row.className='split';
+    const L=document.createElement('div'); L.className='col-viz';
+    const R=document.createElement('div'); R.className='col-text';
+    kids.forEach(el=>(isViz(el)?L:R).appendChild(el));
+    row.appendChild(L);
+    if(R.children.length) row.appendChild(R); else L.classList.add('solo');
+    stage.appendChild(row);
+  } else {
+    const one=document.createElement('div'); one.className='col-single';
+    kids.forEach(el=>one.appendChild(el));
+    stage.appendChild(one);
+  }
+}
+
+/* ---------- Navigation ---------- */
+let i=0;
+function buildSteps(){ const box=$('#steps'); box.innerHTML='';
+  SECTIONS.forEach((s,k)=>{ const b=document.createElement('button'); b.className='step'+(k===i?' on':'');
+    b.innerHTML='<span class="n">'+(k+1)+'</span>'+s.step; b.addEventListener('click',()=>go(k)); box.appendChild(b); });
+  // aktiven Abschnitt in die Mitte der Leiste holen
+  const on=box.querySelector('.step.on');
+  if(on && box.scrollWidth>box.clientWidth){ const r=on.getBoundingClientRect(), rb=box.getBoundingClientRect();
+    box.scrollLeft += (r.left+r.width/2)-(rb.left+rb.width/2); }
+  stepsRand(); }
+// Ausblendung an den Rändern nur dort, wo noch Abschnitte versteckt sind
+function stepsRand(){ const box=$('#steps'); if(!box) return; const max=box.scrollWidth-box.clientWidth;
+  box.classList.toggle('mehr-l', max>1 && box.scrollLeft>2); box.classList.toggle('mehr-r', max>1 && box.scrollLeft<max-2); }
+(function(){ const box=$('#steps'); if(!box) return;
+  box.addEventListener('scroll', stepsRand, {passive:true});
+  // Mausrad nach unten scrollt die Leiste nach rechts
+  box.addEventListener('wheel', e=>{ if(box.scrollWidth<=box.clientWidth || Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    box.scrollLeft+=e.deltaY; e.preventDefault(); }, {passive:false});
+  window.addEventListener('resize', stepsRand); })();
+function render(){ stopRAF(); if(window.__stopSound) try{ window.__stopSound(); }catch(_){} const s=SECTIONS[i];
+  // Lernziel der Stunde (PAGE.ziel, optional) steht im ersten Schritt ganz oben
+  const ziel=(i===0&&PAGE.ziel)?'<div class="box ziel"><span class="lbl">Ziel dieser Stunde</span>'+PAGE.ziel+'</div>':'';
+  $('#stage').innerHTML='<h2>'+s.title+'</h2>'+ziel+s.html;
+  layoutStage($('#stage'));
+  $('#prev').disabled=i===0; $('#next').disabled=i===SECTIONS.length-1;
+  buildSteps(); if(s.init) s.init($('#stage')); }
+function go(k){ i=Math.max(0,Math.min(SECTIONS.length-1,k)); render(); }
+$('#prev').onclick=()=>go(i-1);
+$('#next').onclick=()=>go(i+1);
+document.title=PAGE.title; $('#h1').textContent=PAGE.h1; render();
+</script>
+</body>
+</html>
